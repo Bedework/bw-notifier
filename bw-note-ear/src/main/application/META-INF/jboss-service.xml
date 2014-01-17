@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server>
+  <!--  guarantee separate classloader -->
+  <loader-repository>
+    org.bedework:archive=synch-service
+  </loader-repository>
+</server>
