@@ -1,4 +1,4 @@
-bw-synch
+bw-notifier
 ========
 
-Bedework: Synch
+Bedework: Notification system for bedework.
