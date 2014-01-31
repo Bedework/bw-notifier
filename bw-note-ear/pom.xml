@@ -15,7 +15,7 @@
 		<!-- Project Dependencies -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>bw-synch-common</artifactId>
+			<artifactId>bw-note-common</artifactId>
 			<version>${project.version}</version>
 			<exclusions>
 				<exclusion>
@@ -361,7 +361,7 @@
 					<modules>
 						<jarModule>
 							<groupId>${project.groupId}</groupId>
-							<artifactId>bw-notify-common</artifactId>
+							<artifactId>bw-note-common</artifactId>
 						</jarModule>
 					</modules>
 				</configuration>

@@ -60,7 +60,7 @@
 
 	<modules>
 		<module>bw-note-common</module>
-		<module>bw-note-war</module>
+		<!--<module>bw-note-war</module>-->
 		<module>bw-note-ear</module>
 	</modules>
 
