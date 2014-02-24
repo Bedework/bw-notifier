@@ -22,11 +22,22 @@ import org.bedework.notifier.service.NoteConnConfMBean;
 
 import org.bedework.util.jmx.MBeanInfo;
 
-/** Configure a file connector for the Bedework synch engine service
+/** Configure a connector for the Bedework notification service
  *
  * @author douglm
  */
 public interface BedeworkConnConfMBean extends NoteConnConfMBean {
+  /**
+   * @param val path to notifications directory
+   */
+  void setNotificationDirHref(final String val);
+
+  /**
+   * @return path to notifications directory
+   */
+  @MBeanInfo("Path to notifications directory")
+  String getNotificationDirHref();
+
   /** Min poll - seconds
    *
    * @param val    int seconds

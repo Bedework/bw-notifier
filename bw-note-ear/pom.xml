@@ -357,6 +357,7 @@
 					<earSourceExcludes>**/application.xml</earSourceExcludes>
 					<defaultLibBundleDir>lib</defaultLibBundleDir>
 					<!-- use maven generated application.xml instead -->
+          <includeLibInApplicationXml>true</includeLibInApplicationXml>
 					<generateApplicationXml>true</generateApplicationXml>
 					<modules>
 						<jarModule>

@@ -26,15 +26,28 @@ import org.bedework.notifier.cnctrs.ConnectorInstanceMap;
 import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.util.dav.DavUtil;
+import org.bedework.util.dav.DavUtil.DavChild;
+import org.bedework.util.http.BasicHttpClient;
+import org.bedework.util.misc.Util;
 
 import org.oasis_open.docs.ws_calendar.ns.soap.GetPropertiesResponseType;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/** The synch processor connector for connections to bedework.
+/** The notification inbound processor connector for connections to bedework.
+ *
+ * <p>This connector sets up inbound connection instances to provide a
+ * stream of notification messages into the notification system</p>
+ *
+ * <p>The notification directory path points to a special collection
+ * which contains links to the calendar homes of accounts for which
+ * we want outbound notifications</p>
  *
  * @author Mike Douglass
  */
@@ -43,8 +56,7 @@ public class BedeworkConnector
                                 BedeworkConnectorInstance,
                                 Notification,
                                 BedeworkConnectorConfig> {
-  /* If non-null this is the token we currently have for bedework */
-  private String remoteToken;
+  private List<String> notifyUrls;
 
   private GetPropertiesResponseType sysInfo;
 
@@ -56,98 +68,35 @@ public class BedeworkConnector
   public BedeworkConnector() {
   }
 
-  /** This process will send keep-alive notifications to the remote system.
-   * During startup the first notification is sent so this process starts with
-   * a wait
-   *
-   */
-  private class PingThread extends Thread {
-    boolean showedTrace;
-
-    BedeworkConnector conn;
-
-    /**
-     * @param name - for the thread
-     * @param conn
-     */
-    public PingThread(final String name,
-                      final BedeworkConnector conn) {
-      super(name);
-      this.conn = conn;
-    }
-
-    @Override
-    public void run() {
-      while (!conn.isStopped()) {
-        if (debug) {
-          trace("About to call service - token = " + remoteToken);
-        }
-        /* First see if we need to reinitialize or ping */
-
-        try {
-          if (remoteToken == null) {
-//            initConnection();
-            if (remoteToken != null) {
-              running = true;
-            }
-          } else {
-  //          ping();
-          }
-        } catch (Throwable t) {
-          if (!showedTrace) {
-            error(t);
-            showedTrace = true;
-          } else {
-            error(t.getMessage());
-          }
-        }
-
-        // Wait a bit before trying again
-
-        if (debug) {
-          trace("About to pause - token = " + remoteToken);
-        }
-
-        try {
-          Object o = new Object();
-          long waitTime;
-
-          if (remoteToken == null) {
-            waitTime = config.getRetryInterval() * 1000;
-          } else {
-            waitTime = config.getKeepAliveInterval() * 1000;
-          }
-
-          synchronized (o) {
-            o.wait(waitTime);
-          }
-        } catch (InterruptedException ie) {
-          break;
-        } catch (Throwable t) {
-          error(t.getMessage());
-        }
-      }
-    }
-  }
-
-  private PingThread pinger;
-
   @Override
   public void start(final String connectorId,
                     final ConnectorConfig conf,
                     final String callbackUri,
-                    final NotifyEngine syncher) throws NoteException {
-    super.start(connectorId, conf, callbackUri, syncher);
+                    final NotifyEngine notifier) throws NoteException {
+    super.start(connectorId, conf, callbackUri, notifier);
 
-    config = (BedeworkConnectorConfig)conf;
+    try {
+      config = (BedeworkConnectorConfig)conf;
 
-    if (pinger == null) {
-      pinger = new PingThread(connectorId, this);
-      pinger.start();
+      notifyUrls = getNotifyUrls(config.getNotificationDirHref());
+
+      if (Util.isEmpty(notifyUrls)) {
+        error("No notification collections available on " +
+                      config.getNotificationDirHref());
+        return;
+      }
+
+      if (debug) {
+        for (String s: notifyUrls) {
+          trace("Notify url: " + s);
+        }
+      }
+
+      stopped = false;
+      running = true;
+    } catch (Throwable t) {
+      throw new NoteException(t);
     }
-
-    stopped = false;
-    running = true;
   }
 
   @Override
@@ -212,11 +161,6 @@ public class BedeworkConnector
   @Override
   public void stop() throws NoteException {
     stopped = true;
-    if (pinger != null) {
-      pinger.interrupt();
-    }
-
-    pinger = null;
   }
 
   /* ====================================================================
@@ -226,4 +170,31 @@ public class BedeworkConnector
   /* ====================================================================
    *                   Private methods
    * ==================================================================== */
+
+  private List<String> getNotifyUrls(final String href) throws Throwable {
+    BasicHttpClient cl = null;
+
+    try {
+      cl = new BasicHttpClient(30 * 1000,
+                               false);  // followRedirects
+
+      Collection<DavChild> chs = new DavUtil().getChildrenUrls(cl, href, null);
+
+      if (Util.isEmpty(chs)) {
+        return null;
+      }
+
+      List<String> urls = new ArrayList<>(chs.size());
+
+      for (final DavChild ch: chs) {
+        urls.add(ch.uri);
+      }
+
+      return urls;
+    } finally {
+      if (cl != null){
+        cl.close();
+      }
+    }
+  }
 }

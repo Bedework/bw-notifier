@@ -26,8 +26,10 @@ import org.bedework.util.misc.ToString;
  *
  * @author douglm
  */
-@ConfInfo(elementName = "synch-connector")
+@ConfInfo(elementName = "notify-connector")
 public class BedeworkConnectorConfig extends ConnectorConfig {
+  private String notificationDirHref;
+
   /** WSDL for remote service */
   private String bwWSDLURI;
 
@@ -36,6 +38,20 @@ public class BedeworkConnectorConfig extends ConnectorConfig {
 
   /** seconds before we ping just to say we're still around  */
   private int keepAliveInterval;
+
+  /**
+   * @param val path to notifications directory
+   */
+  public void setNotificationDirHref(final String val) {
+    notificationDirHref = val;
+  }
+
+  /**
+   * @return path to notifications directory
+   */
+  public String getNotificationDirHref() {
+    return notificationDirHref;
+  }
 
   /** bedework web service WSDL uri
    *
@@ -89,9 +105,10 @@ public class BedeworkConnectorConfig extends ConnectorConfig {
   public void toStringSegment(final ToString ts) {
     super.toStringSegment(ts);
 
-    ts.append("bwWSDLURI", getBwWSDLURI()).
-      append("retryInterval", getRetryInterval()).
-      append("keepAliveInterval", getKeepAliveInterval());
+    ts.append("notificationDirHref", getNotificationDirHref()).
+            append("bwWSDLURI", getBwWSDLURI()).
+            append("retryInterval", getRetryInterval()).
+            append("keepAliveInterval", getKeepAliveInterval());
   }
 
   @Override

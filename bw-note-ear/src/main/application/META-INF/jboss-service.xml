@@ -2,6 +2,6 @@
 <server>
   <!--  guarantee separate classloader -->
   <loader-repository>
-    org.bedework:archive=synch-service
+    org.bedework:archive=notifier-service
   </loader-repository>
 </server>

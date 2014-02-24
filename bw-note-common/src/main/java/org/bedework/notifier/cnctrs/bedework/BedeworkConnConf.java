@@ -20,7 +20,9 @@ package org.bedework.notifier.cnctrs.bedework;
 
 import org.bedework.notifier.service.NoteConnConf;
 
-/**
+/** This configuration mbean is registered at startup by the main
+ * configuration bean NotifyConf.
+ *
  * @author douglm
  *
  */
@@ -29,6 +31,16 @@ public class BedeworkConnConf extends NoteConnConf<BedeworkConnectorConfig>
   /* ========================================================================
    * Conf properties
    * ======================================================================== */
+
+  @Override
+  public void setNotificationDirHref(final String val) {
+    cfg.setNotificationDirHref(val);
+  }
+
+  @Override
+  public String getNotificationDirHref() {
+    return cfg.getNotificationDirHref();
+  }
 
   @Override
   public void setBwWSDLURI(final String val) {
