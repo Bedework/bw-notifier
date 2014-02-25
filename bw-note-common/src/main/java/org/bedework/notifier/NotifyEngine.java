@@ -71,8 +71,7 @@ public class NotifyEngine extends TzGetter {
   /* Map of currently active notification subscriptions. These are subscriptions
    * for which we get change messages from the remote system(s).
    */
-  private final Map<String, Subscription> activeSubs =
-      new HashMap<String, Subscription>();
+  private final Map<String, Subscription> activeSubs = new HashMap<>();
 
   private boolean starting;
 
@@ -153,7 +152,7 @@ public class NotifyEngine extends TzGetter {
           Noteling sl = null;
 
           try {
-            /* Get a synchling from the pool */
+            /* Get a noteling from the pool */
             while (true) {
               if (stopping) {
                 return;
@@ -165,7 +164,7 @@ public class NotifyEngine extends TzGetter {
               }
             }
 
-            /* The synchling needs to be running it's own thread. */
+            /* The noteling needs to be running it's own thread. */
             StatusType st = handleNotification(sl, note);
 
             if (st == StatusType.WARNING) {
@@ -216,8 +215,8 @@ public class NotifyEngine extends TzGetter {
   }
 
   /**
-   * @return the syncher
-   * @throws org.bedework.notifier.exception.NoteException
+   * @return the notification engine
+   * @throws NoteException
    */
   public static NotifyEngine getNotifier() throws NoteException {
     if (notifier != null) {
@@ -252,7 +251,7 @@ public class NotifyEngine extends TzGetter {
   }
 
   /**
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public void updateConfig() throws NoteException {
     if (cfgHolder != null) {
@@ -279,9 +278,9 @@ public class NotifyEngine extends TzGetter {
      return tzgetter;
    }
 
-  /** Start synch process.
+  /** Start noyify process.
    *
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public void start() throws NoteException {
     try {
@@ -314,7 +313,7 @@ public class NotifyEngine extends TzGetter {
       notificationInQueue = new ArrayBlockingQueue<Notification>(100);
 
       info("**************************************************");
-      info("Starting synch");
+      info("Starting notifier");
       info("      callback URI: " + getConfig().getCallbackURI());
       info("**************************************************");
 
@@ -403,7 +402,7 @@ public class NotifyEngine extends TzGetter {
       }
 
       info("**************************************************");
-      info("Synch started");
+      info("Notifier started");
       info("**************************************************");
     } catch (NoteException se) {
       error(se);
@@ -421,7 +420,7 @@ public class NotifyEngine extends TzGetter {
   /** Reschedule a subscription for updates.
    *
    * @param sub
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public void reschedule(final Subscription sub) throws NoteException {
     if (debug) {
@@ -446,7 +445,7 @@ public class NotifyEngine extends TzGetter {
   }
 
   /**
-   * @return stats for synch service bean
+   * @return stats for notify service bean
    */
   public List<Stat> getStats() {
     List<Stat> stats = new ArrayList<Stat>();
@@ -459,7 +458,7 @@ public class NotifyEngine extends TzGetter {
     return stats;
   }
 
-  /** Stop synch process.
+  /** Stop notify process.
    *
    */
   public void stop() {
@@ -499,7 +498,7 @@ public class NotifyEngine extends TzGetter {
 
   /**
    * @param note
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public void handleNotification(final Notification note) throws NoteException {
     try {
@@ -519,7 +518,7 @@ public class NotifyEngine extends TzGetter {
   /**
    * @param val
    * @return decrypted string
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public String decrypt(final String val) throws NoteException {
     try {
@@ -533,7 +532,7 @@ public class NotifyEngine extends TzGetter {
 
   /**
    * @return en/decryptor
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public PwEncryptionIntf getEncrypter() throws NoteException {
     if (pwEncrypt != null) {
@@ -562,7 +561,7 @@ public class NotifyEngine extends TzGetter {
   /** Gets an instance and implants it in the subscription object.
    * @param sub
    * @return ConnectorInstance or throws Exception
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public ConnectorInstance getConnectorInstance(final Subscription sub) throws NoteException {
     ConnectorInstance cinst;
@@ -592,7 +591,7 @@ public class NotifyEngine extends TzGetter {
   /** When we start up a new subscription we implant a Connector in the object.
    *
    * @param sub
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public void setConnectors(final Subscription sub) throws NoteException {
     String connectorId = sub.getSourceConnectorInfo().getConnectorId();
@@ -645,7 +644,7 @@ public class NotifyEngine extends TzGetter {
    * as a request is usually hanging on this.
    *
    * @param notes
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public void handleNotifications(
             final NotificationBatch<Notification> notes) throws NoteException {
@@ -697,7 +696,7 @@ public class NotifyEngine extends TzGetter {
   /**
    * @param id
    * @return subscription
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public Subscription getSubscription(final String id) throws NoteException {
     boolean opened = db.open();
@@ -714,7 +713,7 @@ public class NotifyEngine extends TzGetter {
 
   /**
    * @param sub
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public void addSubscription(final Subscription sub) throws NoteException {
     db.add(sub);
@@ -723,7 +722,7 @@ public class NotifyEngine extends TzGetter {
 
   /**
    * @param sub
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public void updateSubscription(final Subscription sub) throws NoteException {
     boolean opened = db.open();
@@ -741,7 +740,7 @@ public class NotifyEngine extends TzGetter {
 
   /**
    * @param sub
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public void deleteSubscription(final Subscription sub) throws NoteException {
     db.delete(sub);
@@ -752,7 +751,7 @@ public class NotifyEngine extends TzGetter {
    *
    * @param sub
    * @return matching subscriptions
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public Subscription find(final Subscription sub) throws NoteException {
     boolean opened = db.open();

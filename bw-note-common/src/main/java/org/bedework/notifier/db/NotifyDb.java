@@ -20,10 +20,6 @@ package org.bedework.notifier.db;
 
 import org.bedework.notifier.conf.NotifyConfig;
 import org.bedework.notifier.exception.NoteException;
-import org.bedework.util.hibernate.HibException;
-import org.bedework.util.hibernate.HibSession;
-import org.bedework.util.hibernate.HibSessionFactory;
-import org.bedework.util.hibernate.HibSessionImpl;
 
 import org.apache.log4j.Logger;
 
@@ -54,10 +50,6 @@ public class NotifyDb implements Serializable {
   /** When we were created for debugging */
   protected Timestamp objTimestamp;
 
-  /** Current hibernate session - exists only across one user interaction
-   */
-  protected HibSession sess;
-
   /**
    * @param config
    *
@@ -77,7 +69,6 @@ public class NotifyDb implements Serializable {
       return false;
     }
 
-    openSession();
     open = true;
     return true;
   }
@@ -93,19 +84,7 @@ public class NotifyDb implements Serializable {
    * @throws org.bedework.notifier.exception.NoteException
    */
   public void close() throws NoteException {
-    try {
-      endTransaction();
-    } catch (NoteException wde) {
-      try {
-        rollbackTransaction();
-      } catch (NoteException wde1) {}
-      throw wde;
-    } finally {
-      try {
-        closeSession();
-      } catch (NoteException wde1) {}
-      open = false;
-    }
+    open = false;
   }
 
   /* ====================================================================
@@ -118,18 +97,7 @@ public class NotifyDb implements Serializable {
    */
   @SuppressWarnings("unchecked")
   public List<Subscription> getAll() throws NoteException {
-    StringBuilder sb = new StringBuilder();
-
-    sb.append("from ");
-    sb.append(Subscription.class.getName());
-
-    try {
-      sess.createQuery(sb.toString());
-
-      return sess.getList();
-    } catch (HibException he) {
-      throw new NoteException(he);
-    }
+    return null;
   }
 
   /** The synch engine generates a unique subscription id
@@ -140,20 +108,7 @@ public class NotifyDb implements Serializable {
    * @throws org.bedework.notifier.exception.NoteException
    */
   public Subscription get(final String id) throws NoteException {
-    try {
-      StringBuilder sb = new StringBuilder();
-
-      sb.append("from ");
-      sb.append(Subscription.class.getName());
-      sb.append(" sub where sub.subscriptionId=:subid");
-
-      sess.createQuery(sb.toString());
-      sess.setString("subid", id);
-
-      return (Subscription)sess.getUnique();
-    } catch (HibException he) {
-      throw new NoteException(he);
-    }
+    return null;
   }
 
   /** Find any subscription that matches this one. There can only be one with
@@ -173,11 +128,6 @@ public class NotifyDb implements Serializable {
    * @throws org.bedework.notifier.exception.NoteException
    */
   public void add(final Subscription sub) throws NoteException {
-    try {
-      sess.save(sub);
-    } catch (HibException he) {
-      throw new NoteException(he);
-    }
   }
 
   /** Update the persisted state of the subscription.
@@ -186,11 +136,6 @@ public class NotifyDb implements Serializable {
    * @throws org.bedework.notifier.exception.NoteException
    */
   public void update(final Subscription sub) throws NoteException {
-    try {
-      sess.update(sub);
-    } catch (HibException he) {
-      throw new NoteException(he);
-    }
   }
 
   /** Delete the subscription.
@@ -199,17 +144,6 @@ public class NotifyDb implements Serializable {
    * @throws org.bedework.notifier.exception.NoteException
    */
   public void delete(final Subscription sub) throws NoteException {
-    boolean opened = open();
-
-    try {
-      sess.delete(sub);
-    } catch (HibException he) {
-      throw new NoteException(he);
-    } finally {
-      if (opened) {
-        close();
-      }
-    }
   }
 
   /* ====================================================================
@@ -219,113 +153,6 @@ public class NotifyDb implements Serializable {
   protected void checkOpen() throws NoteException {
     if (!isOpen()) {
       throw new NoteException("Session call when closed");
-    }
-  }
-
-  protected synchronized void openSession() throws NoteException {
-    if (isOpen()) {
-      throw new NoteException("Already open");
-    }
-
-    open = true;
-
-    if (sess != null) {
-      warn("Session is not null. Will close");
-      try {
-        close();
-      } finally {
-      }
-    }
-
-    if (sess == null) {
-      if (debug) {
-        trace("New hibernate session for " + objTimestamp);
-      }
-      sess = new HibSessionImpl();
-      try {
-        sess.init(HibSessionFactory.getSessionFactory(
-                config.getHibernateProperties()), getLogger());
-      } catch (HibException he) {
-        throw new NoteException(he);
-      }
-      trace("Open session for " + objTimestamp);
-    }
-
-    beginTransaction();
-  }
-
-  protected synchronized void closeSession() throws NoteException {
-    if (!isOpen()) {
-      if (debug) {
-        trace("Close for " + objTimestamp + " closed session");
-      }
-      return;
-    }
-
-    if (debug) {
-      trace("Close for " + objTimestamp);
-    }
-
-    try {
-      if (sess != null) {
-        if (sess.rolledback()) {
-          sess = null;
-          return;
-        }
-
-        if (sess.transactionStarted()) {
-          sess.rollback();
-        }
-//        sess.disconnect();
-        sess.close();
-        sess = null;
-      }
-    } catch (Throwable t) {
-      try {
-        sess.close();
-      } catch (Throwable t1) {}
-      sess = null; // Discard on error
-    } finally {
-      open = false;
-    }
-  }
-
-  protected void beginTransaction() throws NoteException {
-    checkOpen();
-
-    if (debug) {
-      trace("Begin transaction for " + objTimestamp);
-    }
-    try {
-      sess.beginTransaction();
-    } catch (HibException he) {
-      throw new NoteException(he);
-    }
-  }
-
-  protected void endTransaction() throws NoteException {
-    checkOpen();
-
-    if (debug) {
-      trace("End transaction for " + objTimestamp);
-    }
-
-    try {
-      if (!sess.rolledback()) {
-        sess.commit();
-      }
-    } catch (HibException he) {
-      throw new NoteException(he);
-    }
-  }
-
-  protected void rollbackTransaction() throws NoteException {
-    try {
-      checkOpen();
-      sess.rollback();
-    } catch (HibException he) {
-      throw new NoteException(he);
-    } finally {
     }
   }
 

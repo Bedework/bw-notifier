@@ -25,15 +25,9 @@ import org.bedework.notifier.conf.NotifyConfig;
 import org.bedework.util.config.ConfigurationStore;
 import org.bedework.util.jmx.ConfBase;
 import org.bedework.util.jmx.ConfigHolder;
-import org.bedework.util.jmx.InfoLines;
 
-import org.hibernate.cfg.Configuration;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
-
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import javax.management.ObjectName;
 
@@ -54,62 +48,6 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
   /* Be safe - default to false */
   private boolean export;
-
-  private String schemaOutFile;
-
-  private Configuration hibCfg;
-
-  private class SchemaThread extends Thread {
-    InfoLines infoLines = new InfoLines();
-
-    SchemaThread() {
-      super("BuildSchema");
-    }
-
-    @Override
-    public void run() {
-      try {
-        infoLines.addLn("Started export of schema");
-
-        long startTime = System.currentTimeMillis();
-
-        SchemaExport se = new SchemaExport(getHibConfiguration());
-
-//      if (getDelimiter() != null) {
-//        se.setDelimiter(getDelimiter());
-//      }
-
-        se.setFormat(true);       // getFormat());
-        se.setHaltOnError(false); // getHaltOnError());
-        se.setOutputFile(getSchemaOutFile());
-        /* There appears to be a bug in the hibernate code. Everybody initialises
-        this to /import.sql. Set to null causes an NPE
-        Make sure it refers to a non-existant file */
-        //se.setImportFile("not-a-file.sql");
-
-        se.execute(false, // script - causes write to System.out if true
-                   getExport(),
-                   false,   // drop
-                   true);   //   getCreate());
-
-        long millis = System.currentTimeMillis() - startTime;
-        long seconds = millis / 1000;
-        long minutes = seconds / 60;
-        seconds -= (minutes * 60);
-
-        infoLines.addLn("Elapsed time: " + minutes + ":" +
-                        twoDigits(seconds));
-      } catch (Throwable t) {
-        error(t);
-        infoLines.exceptionMsg(t);
-      } finally {
-        infoLines.addLn("Schema build completed");
-        export = false;
-      }
-    }
-  }
-
-  private SchemaThread buildSchema = new SchemaThread();
 
   private class ProcessorThread extends Thread {
     boolean showedTrace;
@@ -165,30 +103,6 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
     setPathSuffix("conf");
 
     NotifyEngine.setConfigHolder(this);
-  }
-
-  /* ========================================================================
-   * Schema attributes
-   * ======================================================================== */
-
-  @Override
-  public void setExport(final boolean val) {
-    export = val;
-  }
-
-  @Override
-  public boolean getExport() {
-    return export;
-  }
-
-  @Override
-  public void setSchemaOutFile(final String val) {
-    schemaOutFile = val;
-  }
-
-  @Override
-  public String getSchemaOutFile() {
-    return schemaOutFile;
   }
 
   /* ========================================================================
@@ -349,86 +263,6 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
    * Operations
    * ======================================================================== */
 
-  @Override
-  public String schema() {
-    try {
-//      buildSchema = new SchemaThread();
-
-      buildSchema.start();
-
-      return "OK";
-    } catch (Throwable t) {
-      error(t);
-
-      return "Exception: " + t.getLocalizedMessage();
-    }
-  }
-
-  @Override
-  public synchronized List<String> schemaStatus() {
-    if (buildSchema == null) {
-      InfoLines infoLines = new InfoLines();
-
-      infoLines.addLn("Schema build has not been started");
-
-      return infoLines;
-    }
-
-    return buildSchema.infoLines;
-  }
-
-  @Override
-  public void setHibernateDialect(final String value) {
-    getConfig().setHibernateDialect(value);
-  }
-
-  @Override
-  public String getHibernateDialect() {
-    return getConfig().getHibernateDialect();
-  }
-
-  @Override
-  public String listHibernateProperties() {
-    StringBuilder res = new StringBuilder();
-
-    List<String> ps = getConfig().getHibernateProperties();
-
-    for (String p: ps) {
-      res.append(p);
-      res.append("\n");
-    }
-
-    return res.toString();
-  }
-
-  @Override
-  public String displayHibernateProperty(final String name) {
-    String val = getConfig().getHibernateProperty(name);
-
-    if (val != null) {
-      return val;
-    }
-
-    return "Not found";
-  }
-
-  @Override
-  public void removeHibernateProperty(final String name) {
-    getConfig().removeHibernateProperty(name);
-  }
-
-  @Override
-  public void addHibernateProperty(final String name,
-                                   final String value) {
-    getConfig().addHibernateProperty(name, value);
-  }
-
-  @Override
-  public void setHibernateProperty(final String name,
-                                   final String value) {
-    getConfig().setHibernateProperty(name, value);
-  }
-
   /* ========================================================================
    * Lifecycle
    * ======================================================================== */
@@ -479,7 +313,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
     notifier = null;
 
     info("************************************************************");
-    info(" * Syncher terminated");
+    info(" * Notifier terminated");
     info("************************************************************");
   }
 
@@ -562,45 +396,6 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
   /* ====================================================================
    *                   Private methods
    * ==================================================================== */
-
-  private synchronized Configuration getHibConfiguration() {
-    if (hibCfg == null) {
-      try {
-        hibCfg = new Configuration();
-
-        StringBuilder sb = new StringBuilder();
-
-        List<String> ps = getConfig().getHibernateProperties();
-
-        for (String p: ps) {
-          sb.append(p);
-          sb.append("\n");
-        }
-
-        Properties hprops = new Properties();
-        hprops.load(new StringReader(sb.toString()));
-
-        hibCfg.addProperties(hprops).configure();
-      } catch (Throwable t) {
-        // Always bad.
-        error(t);
-      }
-    }
-
-    return hibCfg;
-  }
-
-  /**
-   * @param val
-   * @return 2 digit val
-   */
-  private static String twoDigits(final long val) {
-    if (val < 10) {
-      return "0" + val;
-    }
-
-    return String.valueOf(val);
-  }
 
   /* ====================================================================
    *                   Protected methods

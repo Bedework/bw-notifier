@@ -20,9 +20,8 @@ package org.bedework.notifier.conf;
 
 import org.bedework.notifier.db.IpAddrInfo;
 import org.bedework.notifier.service.NoteConnConf;
-
 import org.bedework.util.config.ConfInfo;
-import org.bedework.util.config.HibernateConfigBase;
+import org.bedework.util.config.ConfigBase;
 
 import java.util.List;
 import java.util.SortedSet;
@@ -32,7 +31,7 @@ import java.util.SortedSet;
  * @author Mike Douglass
  */
 @ConfInfo(elementName = "note-confinfo")
-public class NotifyConfig extends HibernateConfigBase<NotifyConfig> {
+public class NotifyConfig extends ConfigBase<NotifyConfig> {
   /* Size of noteling pool */
   private int notelingPoolSize;
 

@@ -24,9 +24,6 @@
 		<servlet-api.version>2.5</servlet-api.version>
 		<ical4j.version>1.0-BW-SNAPSHOT</ical4j.version>
 		<apache-http.version>4.2.2</apache-http.version>
-		<hibernate.version>3.6.9.Final</hibernate.version>
-    <hibernate-ehcache.version>3.6.9.Final</hibernate-ehcache.version>
-		<hibernate-validator.version>3.1.0.GA</hibernate-validator.version>
 		<ehcache.version>1.6.2</ehcache.version>
 		<junit.version>4.8.2</junit.version>
 		<log4j.version>1.2.15</log4j.version>
@@ -60,7 +57,7 @@
 
 	<modules>
 		<module>bw-note-common</module>
-		<!--<module>bw-note-war</module>-->
+		<module>bw-note-war</module>
 		<module>bw-note-ear</module>
 	</modules>
 
@@ -86,11 +83,6 @@
       <dependency>
         <groupId>org.bedework</groupId>
         <artifactId>bw-util-dav</artifactId>
-        <version>${bw-util.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.bedework</groupId>
-        <artifactId>bw-util-hibernate</artifactId>
         <version>${bw-util.version}</version>
       </dependency>
       <dependency>
@@ -145,27 +137,6 @@
 				<version>${ehcache.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.hibernate</groupId>
-				<artifactId>hibernate-core</artifactId>
-				<version>${hibernate.version}</version>
-			</dependency>
-      <dependency>
-        <groupId>org.hibernate</groupId>
-        <artifactId>hibernate-ehcache</artifactId>
-        <version>${hibernate-ehcache.version}</version>
-      </dependency>
-			<dependency>
-				<groupId>org.hibernate</groupId>
-				<artifactId>hibernate-validator</artifactId>
-				<version>${hibernate-validator.version}</version>
-        <exclusions>
-          <exclusion>
-            <artifactId>hibernate-commons-annotations</artifactId>
-            <groupId>org.hibernate</groupId>
-          </exclusion>
-        </exclusions>
-			</dependency>
-			<dependency>
 				<groupId>javax.servlet</groupId>
 				<artifactId>servlet-api</artifactId>
 				<version>${servlet-api.version}</version>
@@ -215,6 +186,7 @@
 	</dependencyManagement>
 
 	<repositories>
+    <!--
 		<repository>
 			<id>jboss.repository</id>
 			<name>JBoss Public Repository Group</name>
@@ -239,6 +211,7 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+		-->
 	</repositories>
 
 	<distributionManagement>
