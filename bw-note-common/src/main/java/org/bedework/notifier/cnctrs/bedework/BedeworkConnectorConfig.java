@@ -28,6 +28,8 @@ import org.bedework.util.misc.ToString;
  */
 @ConfInfo(elementName = "notify-connector")
 public class BedeworkConnectorConfig extends ConnectorConfig {
+  private String id;
+  private String token;
   private String notificationDirHref;
 
   /** WSDL for remote service */
@@ -51,6 +53,34 @@ public class BedeworkConnectorConfig extends ConnectorConfig {
    */
   public String getNotificationDirHref() {
     return notificationDirHref;
+  }
+
+  /**
+   * @param val id for authentication
+   */
+  public void setId(final String val) {
+    id = val;
+  }
+
+  /**
+   * @return id
+   */
+  public String getId() {
+    return id;
+  }
+
+  /**
+   * @param val token for authentication
+   */
+  public void setToken(final String val) {
+    token = val;
+  }
+
+  /**
+   * @return token
+   */
+  public String getToken() {
+    return token;
   }
 
   /** bedework web service WSDL uri
@@ -105,7 +135,9 @@ public class BedeworkConnectorConfig extends ConnectorConfig {
   public void toStringSegment(final ToString ts) {
     super.toStringSegment(ts);
 
-    ts.append("notificationDirHref", getNotificationDirHref()).
+    ts.append("id", getId()).
+            append("token", getToken()).
+            append("notificationDirHref", getNotificationDirHref()).
             append("bwWSDLURI", getBwWSDLURI()).
             append("retryInterval", getRetryInterval()).
             append("keepAliveInterval", getKeepAliveInterval());

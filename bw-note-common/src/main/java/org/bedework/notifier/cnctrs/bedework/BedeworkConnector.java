@@ -31,6 +31,8 @@ import org.bedework.util.dav.DavUtil.DavChild;
 import org.bedework.util.http.BasicHttpClient;
 import org.bedework.util.misc.Util;
 
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
 import org.oasis_open.docs.ws_calendar.ns.soap.GetPropertiesResponseType;
 
 import java.util.ArrayList;
@@ -61,7 +63,7 @@ public class BedeworkConnector
   private GetPropertiesResponseType sysInfo;
 
   private ConnectorInstanceMap<BedeworkConnectorInstance> cinstMap =
-      new ConnectorInstanceMap<BedeworkConnectorInstance>();
+      new ConnectorInstanceMap<>();
 
   /**
    */
@@ -79,6 +81,11 @@ public class BedeworkConnector
       config = (BedeworkConnectorConfig)conf;
 
       notifyUrls = getNotifyUrls(config.getNotificationDirHref());
+
+      if (notifyUrls == null) {
+        error(config.getNotificationDirHref() + " not available");
+        return;
+      }
 
       if (Util.isEmpty(notifyUrls)) {
         error("No notification collections available on " +
@@ -171,6 +178,31 @@ public class BedeworkConnector
    *                   Private methods
    * ==================================================================== */
 
+  private List<Header> authheaders;
+
+  private List<Header> getAuthHeaders() {
+    if (authheaders != null) {
+      return authheaders;
+    }
+
+    String id = config.getId();
+    String token = config.getToken();
+
+    if ((id == null) || (token == null)) {
+      return null;
+    }
+
+    authheaders = new ArrayList<>(1);
+    authheaders.add(new BasicHeader("X-BEDEWORK-NOTE", id + ":" + token));
+
+    return authheaders;
+  }
+
+  /**
+   * @param href of our special collection
+   * @return children hrefs - empty for none - null for bad href
+   * @throws Throwable
+   */
   private List<String> getNotifyUrls(final String href) throws Throwable {
     BasicHttpClient cl = null;
 
@@ -178,13 +210,18 @@ public class BedeworkConnector
       cl = new BasicHttpClient(30 * 1000,
                                false);  // followRedirects
 
-      Collection<DavChild> chs = new DavUtil().getChildrenUrls(cl, href, null);
+      Collection<DavChild> chs = new DavUtil(getAuthHeaders()).
+              getChildrenUrls(cl, href, null);
 
-      if (Util.isEmpty(chs)) {
+      if (chs == null) {
         return null;
       }
 
       List<String> urls = new ArrayList<>(chs.size());
+
+      if (Util.isEmpty(chs)) {
+        return urls;
+      }
 
       for (final DavChild ch: chs) {
         urls.add(ch.uri);

@@ -22,6 +22,22 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-ws-appleServer:4.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-calendar:4.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-ws-icalendar:4.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-misc:4.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-ws-tzsvr:4.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-ws-calws-soap:4.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-xml:4.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-config:4.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-dav:4.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-http:4.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-jmx:4.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-security:4.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-timezones:4.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-caching:4.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-access:4.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-servlet:4.0.0-SNAPSHOT" level="project" />
     <orderEntry type="module" module-name="bw-note-common" />
     <orderEntry type="module" module-name="bw-ws-appleServer" />
     <orderEntry type="module" module-name="bw-util-calendar" />
