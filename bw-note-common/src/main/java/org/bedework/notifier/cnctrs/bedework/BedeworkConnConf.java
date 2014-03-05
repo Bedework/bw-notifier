@@ -43,6 +43,26 @@ public class BedeworkConnConf extends NoteConnConf<BedeworkConnectorConfig>
   }
 
   @Override
+  public void setId(final String val) {
+    cfg.setId(val);
+  }
+
+  @Override
+  public String getId() {
+    return cfg.getId();
+  }
+
+  @Override
+  public void setToken(final String val) {
+    cfg.setToken(val);
+  }
+
+  @Override
+  public String getToken() {
+    return cfg.getToken();
+  }
+
+  @Override
   public void setBwWSDLURI(final String val) {
     cfg.setBwWSDLURI(val);
   }

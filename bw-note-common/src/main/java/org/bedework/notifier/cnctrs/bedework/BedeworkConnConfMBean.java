@@ -38,6 +38,28 @@ public interface BedeworkConnConfMBean extends NoteConnConfMBean {
   @MBeanInfo("Path to notifications directory")
   String getNotificationDirHref();
 
+  /**
+   * @param val id for authentication
+   */
+  void setId(final String val);
+
+  /**
+   * @return id
+   */
+  @MBeanInfo("id for authentication")
+  String getId();
+
+  /**
+   * @param val token for authentication
+   */
+  void setToken(final String val);
+
+  /**
+   * @return token
+   */
+  @MBeanInfo("token for authentication")
+  String getToken();
+
   /** Min poll - seconds
    *
    * @param val    int seconds
