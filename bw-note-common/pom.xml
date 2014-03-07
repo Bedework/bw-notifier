@@ -49,6 +49,10 @@
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-timezones</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.bedework</groupId>
+      <artifactId>bw-caldav-util</artifactId>
+    </dependency>
 		<!-- Bedework: Access -->
 		<dependency>
 			<groupId>org.bedework</groupId>

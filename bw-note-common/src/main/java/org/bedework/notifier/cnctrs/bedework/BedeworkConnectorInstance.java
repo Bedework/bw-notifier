@@ -18,17 +18,26 @@
 */
 package org.bedework.notifier.cnctrs.bedework;
 
+import org.bedework.caldav.util.notifications.NotificationType;
+import org.bedework.caldav.util.notifications.parse.Parser;
 import org.bedework.notifier.cnctrs.AbstractConnectorInstance;
 import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.notifier.notifications.Notification;
+import org.bedework.util.dav.DavUtil;
+import org.bedework.util.dav.DavUtil.DavChild;
+import org.bedework.util.http.BasicHttpClient;
+import org.bedework.util.misc.Util;
+import org.bedework.util.xml.tagdefs.AppleServerTags;
 
 import org.oasis_open.docs.ws_calendar.ns.soap.DeleteItemResponseType;
-import org.oasis_open.docs.ws_calendar.ns.soap.FetchItemResponseType;
 import org.oasis_open.docs.ws_calendar.ns.soap.UpdateItemResponseType;
 import org.oasis_open.docs.ws_calendar.ns.soap.UpdateItemType;
 
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /** Handles bedework synch interactions.
@@ -37,11 +46,13 @@ import java.util.List;
  */
 public class BedeworkConnectorInstance extends AbstractConnectorInstance {
   @SuppressWarnings("unused")
-  private BedeworkConnectorConfig config;
+  private final BedeworkConnectorConfig config;
 
   private final BedeworkConnector cnctr;
 
-  private BedeworkSubscriptionInfo info;
+  private final BedeworkSubscriptionInfo info;
+
+  private BasicHttpClient client;
 
   BedeworkConnectorInstance(final BedeworkConnectorConfig config,
                             final BedeworkConnector cnctr,
@@ -71,32 +82,94 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
   @Override
   public NotifyItemsInfo getItemsInfo() throws NoteException {
-    /* Will do a query on the configurd resource directory and return
-       a list of hrefs.
+    /* Will do a query on the configured resource directory and return
+       a list of hrefs for notifications.
+
+       This could be a filtered query to only return the resource types
+       we want. For the moment just hope the collection is small.
      */
 
+    final BasicHttpClient cl = getClient();
+
+    try {
+      final Collection<DavChild> chs = new DavUtil(cnctr.getAuthHeaders()).
+              getChildrenUrls(cl, info.getUri(), null);
+
+      if (chs == null) {
+        return null;
+      }
+
+      final NotifyItemsInfo nii = new NotifyItemsInfo();
+      nii.items = new ArrayList<>(chs.size());
+
+      if (Util.isEmpty(chs)) {
+        return nii;
+      }
+
+      for (final DavChild ch: chs) {
+        if (Util.isEmpty(ch.resourceTypes)) {
+          continue;
+        }
+
+        if (!ch.resourceTypes.contains(AppleServerTags.notification)) {
+          continue;
+        }
+
+        final ItemInfo ii = new ItemInfo(ch.uri, null, null);
+        nii.items.add(ii);
+      }
+
+      return nii;
+    } catch (final NoteException ne ) {
+      throw ne;
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    } finally {
+      if (cl != null){
+        cl.close();
+      }
+    }
+  }
+
+  @Override
+  public DeleteItemResponseType deleteItem(final ItemInfo item) throws NoteException {
+
     return null;
   }
 
   @Override
-  public DeleteItemResponseType deleteItem(final String uid) throws NoteException {
+  public Notification fetchItem(final ItemInfo item) throws NoteException {
+    if (debug) {
+      trace("Fetch item " + item.href);
+    }
 
+    final BasicHttpClient cl = getClient();
+
+    try {
+      final InputStream is = cl.get(item.href);
+
+      final NotificationType nt = Parser.fromXml(is);
+
+//    } catch (final NoteException ne ) {
+  //    throw ne;
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    } finally {
+      if (cl != null){
+        cl.close();
+      }
+    }
     return null;
   }
 
   @Override
-  public FetchItemResponseType fetchItem(final String uid) throws NoteException {
-    return null;
-  }
-
-  @Override
-  public List<FetchItemResponseType> fetchItems(final List<String> hrefs) throws NoteException {
+  public List<Notification> fetchItems(final List<ItemInfo> items) throws NoteException {
     // XXX this should be a search for multiple uids - need to reimplement caldav search
 
-    List<FetchItemResponseType> firs = new ArrayList<>();
+    final List<Notification> firs = new ArrayList<>();
 
-    for (String href: hrefs) {
-      firs.add(fetchItem(href));
+    for (final ItemInfo item: items) {
+      firs.add(fetchItem(item));
     }
 
     return firs;
@@ -110,4 +183,18 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
   /* ====================================================================
    *                   Private methods
    * ==================================================================== */
+
+  private BasicHttpClient getClient() throws NoteException {
+    if (client != null) {
+      return client;
+    }
+
+    try {
+      client = new BasicHttpClient(30 * 1000,
+                                   false);  // followRedirects
+      return client;
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    }
+  }
 }

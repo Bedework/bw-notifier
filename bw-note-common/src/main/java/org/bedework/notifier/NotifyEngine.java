@@ -19,7 +19,6 @@
 package org.bedework.notifier;
 
 import org.bedework.notifier.cnctrs.Connector;
-import org.bedework.notifier.cnctrs.Connector.NotificationBatch;
 import org.bedework.notifier.cnctrs.ConnectorInstance;
 import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.notifier.conf.NotifyConfig;
@@ -93,7 +92,7 @@ public class NotifyEngine extends TzGetter {
 
   private NotifyTimer notifyTimer;
 
-  private BlockingQueue<Notification> notificationInQueue;
+  private BlockingQueue<Action> actionInQueue;
 
   /* Where we keep subscriptions that come in while we are starting */
   private List<Subscription> subsList;
@@ -104,7 +103,7 @@ public class NotifyEngine extends TzGetter {
 
   /* Some counts */
 
-  private StatLong notificationsCt = new StatLong("notifications");
+  private StatLong actionsCt = new StatLong("notifications");
 
   private StatLong notificationsAddWt = new StatLong("notifications add wait");
 
@@ -128,13 +127,13 @@ public class NotifyEngine extends TzGetter {
         }
 
         try {
-          Notification note = notificationInQueue.take();
-          if (note == null) {
+          Action action = actionInQueue.take();
+          if (action == null) {
             continue;
           }
 
           if (debug) {
-            trace("Received notification");
+            trace("Received action");
           }
 
           /*
@@ -148,8 +147,8 @@ public class NotifyEngine extends TzGetter {
             continue;
           }*/
 
-          notificationsCt.inc();
-          Noteling sl = null;
+          actionsCt.inc();
+          Noteling noteling = null;
 
           try {
             /* Get a noteling from the pool */
@@ -158,24 +157,24 @@ public class NotifyEngine extends TzGetter {
                 return;
               }
 
-              sl = notelingPool.getNoException();
-              if (sl != null) {
+              noteling = notelingPool.getNoException();
+              if (noteling != null) {
                 break;
               }
             }
 
             /* The noteling needs to be running it's own thread. */
-            StatusType st = handleNotification(sl, note);
+            StatusType st = handleAction(noteling, action);
 
             if (st == StatusType.WARNING) {
               /* Back on the queue - these need to be flagged so we don't get an
                * endless loop - perhaps we need a delay queue
                */
 
-              notificationInQueue.put(note);
+              actionInQueue.put(action);
             }
           } finally {
-            notelingPool.add(sl);
+            notelingPool.add(noteling);
           }
 
           /* If this is a poll kind then we should add it to a poll queue
@@ -233,7 +232,7 @@ public class NotifyEngine extends TzGetter {
   }
 
   /**
-   * @param val
+   * @param val the config holder
    */
   public static void setConfigHolder(final ConfigHolder<NotifyConfig> val) {
     cfgHolder = val;
@@ -262,7 +261,7 @@ public class NotifyEngine extends TzGetter {
   /** Get a timezone object given the id. This will return transient objects
    * registered in the timezone directory
    *
-   * @param id
+   * @param id tzid
    * @return TimeZone with id or null
    * @throws Throwable
    */
@@ -271,14 +270,18 @@ public class NotifyEngine extends TzGetter {
      return getNotifier().timezones.getTimeZone(id);
    }
 
-   /**
-    * @return a getter for timezones
-    */
-   public static TzGetter getTzGetter() {
-     return tzgetter;
-   }
+  /**
+   * @param sub to add to the start list
+   */
+  public void add(Subscription sub) {
+    if (subsList == null) {
+      subsList = new ArrayList<>();
+    }
 
-  /** Start noyify process.
+    subsList.add(sub);
+  }
+
+  /** Start notify process.
    *
    * @throws NoteException
    */
@@ -310,7 +313,7 @@ public class NotifyEngine extends TzGetter {
                           getConfig().getNotelingPoolSize(),
                           getConfig().getNotelingPoolTimeout());
 
-      notificationInQueue = new ArrayBlockingQueue<Notification>(100);
+      actionInQueue = new ArrayBlockingQueue<>(100);
 
       info("**************************************************");
       info("Starting notifier");
@@ -322,18 +325,18 @@ public class NotifyEngine extends TzGetter {
         System.setProperty("javax.net.ssl.trustStorePassword", "bedework");
       }
 
-      List<NoteConnConf> connectorConfs = getConfig().getConnectorConfs();
-      String callbackUriBase = getConfig().getCallbackURI();
+      final List<NoteConnConf> connectorConfs = getConfig().getConnectorConfs();
+      final String callbackUriBase = getConfig().getCallbackURI();
 
       /* Register the connectors and start them */
-      for (NoteConnConf scc: connectorConfs) {
-        ConnectorConfig conf = (ConnectorConfig)scc.getConfig();
-        String cnctrId = conf.getName();
+      for (final NoteConnConf scc: connectorConfs) {
+        final ConnectorConfig conf = (ConnectorConfig)scc.getConfig();
+        final String cnctrId = conf.getName();
         info("Register and start connector " + cnctrId);
 
         registerConnector(cnctrId, conf);
 
-        Connector conn = getConnector(cnctrId);
+        final Connector conn = getConnector(cnctrId);
         scc.setConnector(conn);
 
         conn.start(cnctrId,
@@ -370,14 +373,20 @@ public class NotifyEngine extends TzGetter {
 
         startup:
         while (starting) {
-          if (debug) {
-            trace("startList has " + startList.size() + " subscriptions");
-          }
+          if (startList == null) {
+            if (debug) {
+              trace("startList is null");
+            }
+          } else {
+            if (debug) {
+              trace("startList has " + startList.size() + " subscriptions");
+            }
 
-          for (Subscription sub: startList) {
-            setConnectors(sub);
+            for (final Subscription sub: startList) {
+              setConnectors(sub);
 
-            reschedule(sub);
+              reschedule(sub);
+            }
           }
 
           synchronized (this) {
@@ -404,12 +413,12 @@ public class NotifyEngine extends TzGetter {
       info("**************************************************");
       info("Notifier started");
       info("**************************************************");
-    } catch (NoteException se) {
+    } catch (final NoteException se) {
       error(se);
       starting = false;
       running = false;
       throw se;
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       error(t);
       starting = false;
       running = false;
@@ -419,7 +428,7 @@ public class NotifyEngine extends TzGetter {
 
   /** Reschedule a subscription for updates.
    *
-   * @param sub
+   * @param sub the subscription
    * @throws NoteException
    */
   public void reschedule(final Subscription sub) throws NoteException {
@@ -448,11 +457,11 @@ public class NotifyEngine extends TzGetter {
    * @return stats for notify service bean
    */
   public List<Stat> getStats() {
-    List<Stat> stats = new ArrayList<Stat>();
+    final List<Stat> stats = new ArrayList<>();
 
     stats.addAll(notelingPool.getStats());
     stats.addAll(notifyTimer.getStats());
-    stats.add(notificationsCt);
+    stats.add(actionsCt);
     stats.add(notificationsAddWt);
 
     return stats;
@@ -470,7 +479,7 @@ public class NotifyEngine extends TzGetter {
 
     /* Call stop on each connector
      */
-    for (Connector conn: getConnectors()) {
+    for (final Connector conn: getConnectors()) {
       info("Stopping connector " + conn.getId());
       try {
         conn.stop();
@@ -497,17 +506,17 @@ public class NotifyEngine extends TzGetter {
   }
 
   /**
-   * @param note
+   * @param action
    * @throws NoteException
    */
-  public void handleNotification(final Notification note) throws NoteException {
+  public void handleAction(final Action action) throws NoteException {
     try {
       while (true) {
         if (stopping) {
           return;
         }
 
-        if (notificationInQueue.offer(note, 5, TimeUnit.SECONDS)) {
+        if (actionInQueue.offer(action, 5, TimeUnit.SECONDS)) {
           break;
         }
       }
@@ -640,39 +649,39 @@ public class NotifyEngine extends TzGetter {
     }
   }
 
-  /** Processes a batch of notifications. This must be done in a timely manner
+  /* * Processes a batch of notifications. This must be done in a timely manner
    * as a request is usually hanging on this.
    *
    * @param notes
    * @throws NoteException
-   */
+   * /
   public void handleNotifications(
             final NotificationBatch<Notification> notes) throws NoteException {
     for (Notification note: notes.getNotifications()) {
       db.open();
-      Noteling sl = null;
+      Noteling nl = null;
 
       try {
         if (note.getNotification() != null) {
-          sl = notelingPool.get();
+          nl = notelingPool.get();
 
-          handleNotification(sl, note);
+          handleAction(nl, note);
         }
       } finally {
         db.close();
-        if (sl != null) {
-          notelingPool.add(sl);
+        if (nl != null) {
+          notelingPool.add(nl);
         }
       }
     }
 
     return;
-  }
+  }*/
 
   @SuppressWarnings("unchecked")
-  private StatusType handleNotification(final Noteling sl,
-                                        final Notification note) throws NoteException {
-    StatusType st = sl.handleNotification(note);
+  private StatusType handleAction(final Noteling nl,
+                                  final Action action) throws NoteException {
+    StatusType st = nl.handleNotification(action);
 
     /*
     Subscription sub = note.getNotification();

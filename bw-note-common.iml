@@ -50,8 +50,21 @@
     <orderEntry type="module" module-name="bw-util-security" />
     <orderEntry type="module" module-name="bw-util-timezones" />
     <orderEntry type="module" module-name="bw-util-caching" />
+    <orderEntry type="module" module-name="bw-caldav-util" />
+    <orderEntry type="module" module-name="bw-ws-synchws" />
+    <orderEntry type="module" module-name="bw-ws-caldav" />
     <orderEntry type="module" module-name="bw-access" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.8.2" level="project" />
+    <orderEntry type="module" module-name="bw-webdav" />
+    <orderEntry type="module" module-name="bw-util-servlet" />
+    <orderEntry type="library" name="Maven: org.apache.james.jdkim:apache-jdkim-library:0.2.BEDEWORK-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.geronimo.specs:geronimo-activation_1.1_spec:1.0.2" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.geronimo.javamail:geronimo-javamail_1.4_mail:1.6" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.james:apache-mailet-base:1.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.james:apache-mailet:2.4" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.james:apache-mime4j-core:0.7" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.james:apache-mime4j-dom:0.7" level="project" />
+    <orderEntry type="library" name="Maven: dnsjava:dnsjava:2.1.1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: javax.servlet:servlet-api:2.5" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: dom4j:dom4j:1.6.1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: xml-apis:xml-apis:1.0.b2" level="project" />

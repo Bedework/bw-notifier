@@ -18,13 +18,15 @@
 */
 package org.bedework.notifier.cnctrs.bedework;
 
-import org.bedework.notifier.Notification;
+import org.bedework.notifier.BaseSubscriptionInfo;
+import org.bedework.notifier.notifications.Notification;
 import org.bedework.notifier.NotifyDefs.NotifyKind;
 import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.cnctrs.AbstractConnector;
 import org.bedework.notifier.cnctrs.ConnectorInstanceMap;
 import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.notifier.db.Subscription;
+import org.bedework.notifier.db.SubscriptionConnectorInfo;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.util.dav.DavUtil;
 import org.bedework.util.dav.DavUtil.DavChild;
@@ -33,7 +35,6 @@ import org.bedework.util.misc.Util;
 
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
-import org.oasis_open.docs.ws_calendar.ns.soap.GetPropertiesResponseType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,11 +59,7 @@ public class BedeworkConnector
                                 BedeworkConnectorInstance,
                                 Notification,
                                 BedeworkConnectorConfig> {
-  private List<String> notifyUrls;
-
-  private GetPropertiesResponseType sysInfo;
-
-  private ConnectorInstanceMap<BedeworkConnectorInstance> cinstMap =
+  private final ConnectorInstanceMap<BedeworkConnectorInstance> cinstMap =
       new ConnectorInstanceMap<>();
 
   /**
@@ -80,6 +77,8 @@ public class BedeworkConnector
     try {
       config = (BedeworkConnectorConfig)conf;
 
+      final List<String> notifyUrls;
+
       notifyUrls = getNotifyUrls(config.getNotificationDirHref());
 
       if (notifyUrls == null) {
@@ -87,21 +86,35 @@ public class BedeworkConnector
         return;
       }
 
-      if (Util.isEmpty(notifyUrls)) {
-        error("No notification collections available on " +
-                      config.getNotificationDirHref());
-        return;
-      }
-
-      if (debug) {
-        for (String s: notifyUrls) {
-          trace("Notify url: " + s);
+      if (!Util.isEmpty(notifyUrls)) {
+        if (debug) {
+          trace("Notification collections available on " +
+                        config.getNotificationDirHref());
+          for (final String s: notifyUrls) {
+            trace("Notify url: " + s);
+          }
         }
       }
 
+      /* Create a special subscription for this collection and start
+         an instance.
+       */
+
+      final Subscription sub = new Subscription(null);
+      final SubscriptionConnectorInfo subInfo = new SubscriptionConnectorInfo();
+      sub.setSourceConnectorInfo(subInfo);
+      subInfo.setConnectorId(connectorId);
+
+      /* Wrap it to manipulate it */
+      final BaseSubscriptionInfo bi = new BaseSubscriptionInfo(subInfo);
+
+      bi.setUri(config.getNotificationDirHref());
+
+      notifier.add(sub);
+
       stopped = false;
       running = true;
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       throw new NoteException(t);
     }
   }
@@ -138,7 +151,7 @@ public class BedeworkConnector
       return inst;
     }
 
-    BedeworkSubscriptionInfo info;
+    final BedeworkSubscriptionInfo info;
 
     info = new BedeworkSubscriptionInfo(sub.getSourceConnectorInfo());
 
@@ -174,19 +187,15 @@ public class BedeworkConnector
    *                         Package methods
    * ==================================================================== */
 
-  /* ====================================================================
-   *                   Private methods
-   * ==================================================================== */
-
   private List<Header> authheaders;
 
-  private List<Header> getAuthHeaders() {
+  List<Header> getAuthHeaders() {
     if (authheaders != null) {
       return authheaders;
     }
 
-    String id = config.getId();
-    String token = config.getToken();
+    final String id = config.getId();
+    final String token = config.getToken();
 
     if ((id == null) || (token == null)) {
       return null;
@@ -198,7 +207,13 @@ public class BedeworkConnector
     return authheaders;
   }
 
-  /**
+  /* ====================================================================
+   *                   Private methods
+   * ==================================================================== */
+
+  /** Look for collection urls in the special collection. These will be
+   * links to additional notify collections.
+   *
    * @param href of our special collection
    * @return children hrefs - empty for none - null for bad href
    * @throws Throwable
@@ -210,20 +225,23 @@ public class BedeworkConnector
       cl = new BasicHttpClient(30 * 1000,
                                false);  // followRedirects
 
-      Collection<DavChild> chs = new DavUtil(getAuthHeaders()).
+      final Collection<DavChild> chs = new DavUtil(getAuthHeaders()).
               getChildrenUrls(cl, href, null);
 
       if (chs == null) {
         return null;
       }
 
-      List<String> urls = new ArrayList<>(chs.size());
+      final List<String> urls = new ArrayList<>(chs.size());
 
       if (Util.isEmpty(chs)) {
         return urls;
       }
 
       for (final DavChild ch: chs) {
+        if (!ch.isCollection) {
+          continue;
+        }
         urls.add(ch.uri);
       }
 

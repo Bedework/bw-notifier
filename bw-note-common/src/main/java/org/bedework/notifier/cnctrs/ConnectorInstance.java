@@ -19,14 +19,15 @@
 package org.bedework.notifier.cnctrs;
 
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.notifier.notifications.Notification;
 import org.bedework.util.misc.ToString;
 
 import org.oasis_open.docs.ws_calendar.ns.soap.BaseResponseType;
 import org.oasis_open.docs.ws_calendar.ns.soap.DeleteItemResponseType;
-import org.oasis_open.docs.ws_calendar.ns.soap.FetchItemResponseType;
 import org.oasis_open.docs.ws_calendar.ns.soap.UpdateItemResponseType;
 import org.oasis_open.docs.ws_calendar.ns.soap.UpdateItemType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** The interface implemented by connectors. A connector instance is obtained
@@ -62,7 +63,7 @@ public interface ConnectorInstance {
   boolean changed() throws NoteException;
 
 
-  /** Information used to synch ends A and B
+  /** Information used to list notifications
    * This information is only valid in the context of a given subscription.
    */
   public static class ItemInfo {
@@ -93,7 +94,7 @@ public interface ConnectorInstance {
 
     @Override
     public String toString() {
-      ToString ts = new ToString(this);
+      final ToString ts = new ToString(this);
 
       ts.append("href", href);
       ts.append("lastMod", lastMod);
@@ -108,7 +109,7 @@ public interface ConnectorInstance {
   public class NotifyItemsInfo extends BaseResponseType {
     /** the items.
      */
-    public List<ItemInfo> items;
+    public List<ItemInfo> items = new ArrayList<>();
   }
 
   /** Get all notifications..
@@ -118,30 +119,30 @@ public interface ConnectorInstance {
    */
   NotifyItemsInfo getItemsInfo() throws NoteException;
 
-  /** Fetch a resource.
+  /** Delete a resource.
    *
-   * @param href of item
+   * @param item the resource
    * @return response
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
-  DeleteItemResponseType deleteItem(String href) throws NoteException;
+  DeleteItemResponseType deleteItem(ItemInfo item) throws NoteException;
 
   /** Fetch a resource.
    *
-   * @param href of item
+   * @param item the resource
    * @return response
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
-  FetchItemResponseType fetchItem(String href) throws NoteException;
+  Notification fetchItem(ItemInfo item) throws NoteException;
 
   /** Fetch a batch of resources. The number and order of the result
    * set must match that of the parameter uids.
    *
-   * @param hrefs of items
+   * @param items the resources
    * @return responses
    * @throws NoteException
    */
-  List<FetchItemResponseType> fetchItems(List<String> hrefs) throws NoteException;
+  List<Notification> fetchItems(List<ItemInfo> items) throws NoteException;
 
   /** Update a calendar component. The updates component has the change token
    * href, and the component selection fields set.

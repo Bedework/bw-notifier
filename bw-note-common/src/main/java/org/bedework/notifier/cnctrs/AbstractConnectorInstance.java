@@ -41,9 +41,6 @@ public abstract class AbstractConnectorInstance implements ConnectorInstance {
     debug = getLogger().isDebugEnabled();
   }
 
-  /* (non-Javadoc)
-   * @see org.bedework.synch.ConnectorInstance#open()
-   */
   @Override
   public BaseResponseType open() throws NoteException {
     return null;

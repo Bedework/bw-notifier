@@ -18,6 +18,7 @@
 */
 package org.bedework.notifier.cnctrs.bedework;
 
+import org.bedework.notifier.BaseSubscriptionInfo;
 import org.bedework.notifier.db.SubscriptionConnectorInfo;
 import org.bedework.notifier.exception.NoteException;
 
@@ -26,12 +27,12 @@ import org.bedework.notifier.exception.NoteException;
  *
  * @author Mike Douglass
  */
-public class BedeworkSubscriptionInfo /* extends BaseSubscriptionInfo */ {
+public class BedeworkSubscriptionInfo extends BaseSubscriptionInfo {
   /**
    * @param info
    * @throws NoteException
    */
   public BedeworkSubscriptionInfo(final SubscriptionConnectorInfo info) throws NoteException {
-//    super(info);
+    super(info);
   }
 }

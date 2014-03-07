@@ -18,6 +18,7 @@
 */
 package org.bedework.notifier;
 
+import org.bedework.notifier.Action.ActionType;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 
@@ -38,21 +39,21 @@ import java.util.TimerTask;
  *   @author Mike Douglass   douglm   bedework.edu
  */
 public class NotifyTimer {
-  private boolean debug;
+  private final boolean debug;
 
   protected transient Logger log;
 
-  private NotifyEngine notifier;
+  private final NotifyEngine notifier;
 
   /** This is the class that goes into a wait. The run method MUST only take  a
-   * short period or it will hang the timer. Usually it will allocate a synchling
+   * short period or it will hang the timer. Usually it will allocate a noteling
    * then return.
    *
    */
-  class SynchTask extends TimerTask {
-    private Subscription sub;
+  class NotifyTask extends TimerTask {
+    private final Subscription sub;
 
-    SynchTask(final Subscription sub) {
+    NotifyTask(final Subscription sub) {
       this.sub = sub;
 
       synchronized (waiting) {
@@ -71,34 +72,29 @@ public class NotifyTimer {
         trace("About to send resynch notification for " + sub.getSubscriptionId());
       }
 
-      /*
-      NotificationItem ni = new NotificationItem(ActionType.FullSynch,
-                                                 null, null);
-      Notification<NotificationItem> note = new Notification<NotificationItem>(
-          sub, SynchEndType.NONE, ni);
-
       try {
-//        notifier.handleNotification(note);
-      } catch (NoteException ne) {
+        final Action action = new Action(ActionType.fetchItems, sub);
+
+        notifier.handleAction(action);
+      } catch (final NoteException ne) {
         if (debug) {
           error(ne);
         } else {
           error(ne.getMessage());
         }
       }
-          */
     }
   }
 
   Timer timer;
 
-  private Map<String, SynchTask> waiting = new HashMap<String, SynchTask>();
+  private final Map<String, NotifyTask> waiting = new HashMap<>();
 
   private long maxWaitingCt;
 
   /** Start the Timer
    *
-   * @param notifier
+   * @param notifier - the engine
    */
   public NotifyTimer(final NotifyEngine notifier){
     this.notifier = notifier;
@@ -122,8 +118,8 @@ public class NotifyTimer {
 
   /** Schedule a subscription for the given time
    *
-   * @param sub
-   * @param when
+   * @param sub the subscription
+   * @param when the date/time
    * @throws NoteException
    */
   public void schedule(final Subscription sub,
@@ -132,19 +128,19 @@ public class NotifyTimer {
       trace("reschedule " + sub.getSubscriptionId() + " for " + when);
     }
 
-    SynchTask st = new SynchTask(sub);
+    final NotifyTask st = new NotifyTask(sub);
     timer.schedule(st, when);
   }
 
   /** Schedule a subscription after the given delay
    *
-   * @param sub
+   * @param sub the subscription
    * @param delay - delay in milliseconds before subscription is processed.
    * @throws NoteException
    */
   public void schedule(final Subscription sub,
                        final long delay) throws NoteException {
-    SynchTask st = new SynchTask(sub);
+    NotifyTask st = new NotifyTask(sub);
     timer.schedule(st, delay);
   }
 
@@ -167,7 +163,7 @@ public class NotifyTimer {
    * @return List of Stat
    */
   public List<Stat> getStats() {
-    List<Stat> stats = new ArrayList<Stat>();
+    final List<Stat> stats = new ArrayList<Stat>();
 
     stats.add(new Stat("waiting", getWaitingCt()));
     stats.add(new Stat("max waiting", getMaxWaitingCt()));

@@ -15,6 +15,7 @@
 		<!-- Bedework Versions -->
 		<bedework.releases.repo.url>scp://dev.bedework.org/data/repository/maven/maven2</bedework.releases.repo.url>
 		<bedework.snapshots.repo.url>scp://dev.bedework.org/data/repository/maven/maven2</bedework.snapshots.repo.url>
+    <bw-caldav-util.version>4.0.0-SNAPSHOT</bw-caldav-util.version>
 		<bw-ws.version>4.0.0-SNAPSHOT</bw-ws.version>
 		<bw-util.version>4.0.0-SNAPSHOT</bw-util.version>
 		<bw-access.version>4.0.0-SNAPSHOT</bw-access.version>
@@ -114,6 +115,11 @@
         <groupId>org.bedework</groupId>
         <artifactId>bw-util-timezones</artifactId>
         <version>${bw-util.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.bedework</groupId>
+        <artifactId>bw-caldav-util</artifactId>
+        <version>${bw-caldav-util.version}</version>
       </dependency>
 			<!-- Third Party Libraries -->
 			<dependency>

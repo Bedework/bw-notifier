@@ -22,6 +22,7 @@ import org.bedework.notifier.NotifyDefs.NotifyKind;
 import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.cnctrs.ConnectorInstance;
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.util.misc.ToString;
 
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.property.DtStamp;
@@ -32,10 +33,10 @@ import java.util.UUID;
 /** Represents a subscription for the notification engine.
  *
  * <p>A subscription will need to list the source(s) and the manner of
- * notifcation. Or perhaps one subscription per source.
+ * notification. Or perhaps one subscription per source.
  *
  * <p>Each connection has a kind which is a name used to retrieve a connector
- * from the synch engine. The retrieved connector implements the Connector
+ * from the notification engine. The retrieved connector implements the Connector
  * interface. This connector object can then be used to retrieve a ConnectionInst
  * implementation which uses information stored in a serializable object to
  * obtain connection specific properties such as id and password.
@@ -84,14 +85,9 @@ public class Subscription extends DbItem<Subscription> {
 
   private SubscriptionConnectorInfo sourceConnectorInfo;
 
-  private SubscriptionConnectorInfo endBConnectorInfo;
-
   private SubscriptionInfo info;
 
   /* Following not persisted */
-
-  /* Process outstanding after this */
-  private Subscription outstandingSubscription;
 
   private boolean deleted;
 
@@ -230,22 +226,6 @@ public class Subscription extends DbItem<Subscription> {
     return info;
   }
 
-  /** An outstanding request that requires an unsubscribe to complete first
-   *
-   * @param val Subscription
-   */
-  public void setOutstandingSubscription(final Subscription val) {
-    outstandingSubscription = val;
-  }
-
-  /** An outstanding request that requires an unsubscribe to complete first
-   *
-   * @return Subscription
-   */
-  public Subscription getOutstandingSubscription() {
-    return outstandingSubscription;
-  }
-
   /** True if subscription deleted
    *
    * @param val
@@ -356,39 +336,25 @@ public class Subscription extends DbItem<Subscription> {
 
   /** Add our stuff to the StringBuilder
    *
-   * @param sb    StringBuilder for result
+   * @param ts    for result
    */
-  protected void toStringSegment(final StringBuilder sb,
-                                 final String indent) {
-    sb.append("id = ");
-    sb.append(getId());
-    sb.append(", seq = ");
-    sb.append(getSeq());
+  protected void toStringSegment(final ToString ts) {
+    super.toStringSegment(ts);
 
-    sb.append(",\n");
-    sb.append(indent);
-    sb.append("subscriptionId = ");
-    sb.append(getSubscriptionId());
+    ts.newLine();
+    ts.append("subscriptionId", getSubscriptionId());
 
-    sb.append(", lastRefresh = ");
-    sb.append(getLastRefresh());
+    ts.append("lastRefresh", getLastRefresh());
 
-    sb.append(",\n");
-    sb.append(indent);
-    sb.append("errorCt = ");
-    sb.append(getErrorCt());
-    sb.append(", missingTarget = ");
-    sb.append(getMissingTarget());
+    ts.newLine();
+    ts.append("errorCt", getErrorCt());
+    ts.append("missingTarget", getMissingTarget());
 
-    sb.append(",\n");
-    sb.append(indent);
-    sb.append("sourceConnectorInfo = ");
-    sb.append(getSourceConnectorInfo());
+    ts.newLine();
+    ts.append("sourceConnectorInfo", getSourceConnectorInfo());
 
-    sb.append(",\n");
-    sb.append(indent);
-    sb.append("info = ");
-    sb.append(getInfo());
+    ts.newLine();
+    ts.append("info", getInfo());
   }
 
   /* ====================================================================
@@ -401,9 +367,6 @@ public class Subscription extends DbItem<Subscription> {
     return getSubscriptionId().hashCode();
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Comparable#compareTo(java.lang.Object)
-   */
   @Override
   public int compareTo(final Subscription that) {
     if (this == that) {
@@ -415,20 +378,10 @@ public class Subscription extends DbItem<Subscription> {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append("{");
+    ToString ts = new ToString(this);
 
-    super.toStringSegment(sb);
+    toStringSegment(ts);
 
-    toStringSegment(sb, "  ");
-
-    if (getOutstandingSubscription() != null) {
-      sb.append(", \n  OustandingSubscription{");
-
-      toStringSegment(sb, "    ");
-      sb.append("  }");
-    }
-
-    sb.append("}");
-    return sb.toString();
+    return ts.toString();
   }
 }

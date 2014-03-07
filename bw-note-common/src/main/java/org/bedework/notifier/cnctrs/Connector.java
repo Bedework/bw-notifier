@@ -18,7 +18,7 @@
 */
 package org.bedework.notifier.cnctrs;
 
-import org.bedework.notifier.Notification;
+import org.bedework.notifier.notifications.Notification;
 import org.bedework.notifier.NotifyDefs.NotifyKind;
 import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.conf.ConnectorConfig;

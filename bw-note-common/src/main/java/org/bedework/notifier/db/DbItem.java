@@ -18,6 +18,8 @@
 */
 package org.bedework.notifier.db;
 
+import org.bedework.util.misc.ToString;
+
 import java.io.Serializable;
 
 
@@ -41,7 +43,7 @@ public class DbItem<T> implements Comparable<T>, Serializable {
   }
 
   /**
-   * @param val
+   * @param val the id
    */
   public void setId(final Long val) {
     id = val;
@@ -81,15 +83,13 @@ public class DbItem<T> implements Comparable<T>, Serializable {
    *                   Convenience methods
    * ==================================================================== */
 
-  /** Add our stuff to the StringBuilder
+  /** Add our stuff to the ToString builder
    *
-   * @param sb    StringBuilder for result
+   * @param ts for result
    */
-  protected void toStringSegment(final StringBuilder sb) {
-    sb.append("id = ");
-    sb.append(getId());
-    sb.append(", seq = ");
-    sb.append(getSeq());
+  protected void toStringSegment(final ToString ts) {
+    ts.append("id", getId());
+    ts.append("seq", getSeq());
   }
 
   /* ====================================================================

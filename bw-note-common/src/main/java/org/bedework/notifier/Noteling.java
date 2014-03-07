@@ -18,15 +18,23 @@
 */
 package org.bedework.notifier;
 
+import org.bedework.notifier.cnctrs.ConnectorInstance;
+import org.bedework.notifier.cnctrs.ConnectorInstance.NotifyItemsInfo;
+import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.notifier.notifications.Notification;
+import org.bedework.util.misc.Util;
 
 import org.apache.log4j.Logger;
 import org.oasis_open.docs.ws_calendar.ns.soap.StatusType;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+
 /** The noteling handles the processing of a single notification
  *
  * <p>These will be multi-threaded as sending an invitation can be a
- * length process. We have a pool of notelings to limit the max.
+ * lengthy process. We have a pool of notelings to limit the max.
  *
  * <p>The notification engine will combine and schedule notifications
  * and will be signalled by the noteling when it has done it's job.
@@ -39,31 +47,27 @@ import org.oasis_open.docs.ws_calendar.ns.soap.StatusType;
  * @author Mike Douglass
  */
 public class Noteling {
-  private boolean debug;
+  private final boolean debug;
 
   protected transient Logger log;
 
-  private static volatile Object notelingIdLock = new Object();
+  private static final AtomicLong lastNotelingid = new AtomicLong(0);
 
-  private static volatile long lastNotelingid;
-  private long notelingId;
+  private final long notelingId;
 
   private NotifyEngine notifier;
 
   /** Constructor
    *
-   * @param notifier
-   * @throws org.bedework.notifier.exception.NoteException
+   * @param notifier the notifier engine
+   * @throws NoteException
    */
   public Noteling(final NotifyEngine notifier) throws NoteException {
     debug = getLogger().isDebugEnabled();
 
     this.notifier = notifier;
 
-    synchronized (notelingIdLock) {
-      lastNotelingid++;
-      notelingId = lastNotelingid;
-    }
+    notelingId = lastNotelingid.getAndIncrement();
   }
 
   /**
@@ -81,14 +85,18 @@ public class Noteling {
    * <p>A possible response might be busy - in which case the caller
    * should either wait or try another noteling</p>
    *
-   * @param note
+   * @param action - the action to take
    * @return OK for all handled fine. ERROR - discard. WARN - retry.
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
-  public StatusType handleNotification(final Notification note) throws NoteException {
+  public StatusType handleNotification(final Action action) throws NoteException {
     StatusType st;
 
-    // TODO - the meat of it
+    switch (action.getType()) {
+      case fetchItems:
+        fetchItems(action.getSub());
+        break;
+    }
 
     return StatusType.OK;
   }
@@ -97,6 +105,25 @@ public class Noteling {
    *                        Notification methods
    * ==================================================================== */
 
+  private void fetchItems(final Subscription sub) throws NoteException {
+    ConnectorInstance ci = sub.getSourceConnInst();
+
+    NotifyItemsInfo nii = ci.getItemsInfo();
+
+    if ((nii == null) || nii.items.isEmpty()) {
+      return;
+    }
+
+    List<Notification> notes = ci.fetchItems(nii.items);
+
+    if (Util.isEmpty(notes)) {
+      return;
+    }
+
+    for (Notification note: notes) {
+      trace("Got notification " + note);
+    }
+  }
 
   private StatusType invite(final InviteNotification invite) throws NoteException {
     if (debug) {

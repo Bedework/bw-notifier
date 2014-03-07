@@ -18,35 +18,52 @@
 */
 package org.bedework.notifier;
 
+import org.bedework.notifier.db.Subscription;
 import org.bedework.util.misc.ToString;
 
-/** Notification from external system.
+/** Internal system action.
  *
- * <p>This can enclose an invitation or notification from bedework.
+ * <p>Usually a request for a noteling to do something.
  *
  * @author douglm
  *
- * @param <T>
  */
-public abstract class Notification<T> {
-  private T notification;
+public class Action {
+  public enum ActionType {
+    /** (Re)fetch items - polling or a signal came in */
+    fetchItems
+  };
 
-  /** Create a notification
+  private ActionType type;
+
+  private Subscription sub;
+
+  /** Create an action
    */
-  public Notification(T notification) {
-    this.notification = notification;
+  public Action(final ActionType type,
+                final Subscription sub) {
+    this.type = type;
+    this.sub = sub;
   }
 
   /**
-   * @return the wrapped notification
+   * @return the type
    */
-  public T getNotification() {
-    return notification;
+  public ActionType getType() {
+    return type;
   }
 
-  protected abstract void toStringSegment(final ToString ts);
+  /**
+   * @return subscription for this action
+   */
+  public Subscription getSub() {
+    return sub;
+  }
 
-  @Override
+  protected void toStringSegment(final ToString ts) {
+    ts.append("type", getType());
+  }
+
   public String toString() {
     ToString ts = new ToString(this);
 
