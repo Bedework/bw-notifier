@@ -25,6 +25,7 @@ import org.bedework.notifier.conf.NotifyConfig;
 import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.notifier.notifications.Notification;
 import org.bedework.notifier.service.NoteConnConf;
 import org.bedework.util.calendar.XcalUtil.TzGetter;
 import org.bedework.util.http.BasicHttpClient;
@@ -36,7 +37,6 @@ import org.bedework.util.timezones.TimezonesImpl;
 
 import net.fortuna.ical4j.model.TimeZone;
 import org.apache.log4j.Logger;
-import org.oasis_open.docs.ws_calendar.ns.soap.StatusType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,9 +44,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 /** Notification processor.
  * <p>The notification processor manages the notifcatiuon service.
@@ -92,8 +89,6 @@ public class NotifyEngine extends TzGetter {
 
   private NotifyTimer notifyTimer;
 
-  private BlockingQueue<Action> actionInQueue;
-
   /* Where we keep subscriptions that come in while we are starting */
   private List<Subscription> subsList;
 
@@ -101,107 +96,15 @@ public class NotifyEngine extends TzGetter {
 
   private Map<String, Connector> connectorMap = new HashMap<>();
 
-  /* Some counts */
-
-  private StatLong actionsCt = new StatLong("notifications");
-
-  private StatLong notificationsAddWt = new StatLong("notifications add wait");
-
-  /** This process handles startup notifications and (un)subscriptions.
+  /** Queue and process inbound actions.
    *
    */
-  private class NotificationInThread extends Thread {
-    long lastTrace;
+  private static ActionQueue actionInHandler;
 
-    /**
-     */
-    public NotificationInThread() {
-      super("NotifyIn");
-    }
-
-    @Override
-    public void run() {
-      while (true) {
-        if (debug) {
-          trace("About to wait for notification");
-        }
-
-        try {
-          Action action = actionInQueue.take();
-          if (action == null) {
-            continue;
-          }
-
-          if (debug) {
-            trace("Received action");
-          }
-
-          /*
-          if ((note.getSub() != null) && note.getSub().getDeleted()) {
-            // Drop it
-
-            if (debug) {
-              trace("Dropping deleted notification");
-            }
-
-            continue;
-          }*/
-
-          actionsCt.inc();
-          Noteling noteling = null;
-
-          try {
-            /* Get a noteling from the pool */
-            while (true) {
-              if (stopping) {
-                return;
-              }
-
-              noteling = notelingPool.getNoException();
-              if (noteling != null) {
-                break;
-              }
-            }
-
-            /* The noteling needs to be running it's own thread. */
-            StatusType st = handleAction(noteling, action);
-
-            if (st == StatusType.WARNING) {
-              /* Back on the queue - these need to be flagged so we don't get an
-               * endless loop - perhaps we need a delay queue
-               */
-
-              actionInQueue.put(action);
-            }
-          } finally {
-            notelingPool.add(noteling);
-          }
-
-          /* If this is a poll kind then we should add it to a poll queue
-           */
-          // XXX Add it to poll queue
-        } catch (InterruptedException ie) {
-          warn("Notification handler shutting down");
-          break;
-        } catch (Throwable t) {
-          if (debug) {
-            error(t);
-          } else {
-            // Try not to flood the log with error traces
-            long now = System.currentTimeMillis();
-            if ((now - lastTrace) > (30 * 1000)) {
-              error(t);
-              lastTrace = now;
-            } else {
-              error(t.getMessage());
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private static NotificationInThread notifyInHandler;
+  /** Queue and process outbound actions.
+   *
+   */
+  private static ActionQueue actionOutHandler;
 
   /** Constructor
    *
@@ -313,7 +216,8 @@ public class NotifyEngine extends TzGetter {
                           getConfig().getNotelingPoolSize(),
                           getConfig().getNotelingPoolTimeout());
 
-      actionInQueue = new ArrayBlockingQueue<>(100);
+      actionInHandler = new ActionQueue("actionIn", notelingPool);
+      actionOutHandler = new ActionQueue("actionOut", notelingPool);
 
       info("**************************************************");
       info("Starting notifier");
@@ -363,8 +267,8 @@ public class NotifyEngine extends TzGetter {
        * While starting, new subscribe requests get added to the list.
        */
 
-      notifyInHandler = new NotificationInThread();
-      notifyInHandler.start();
+      actionInHandler.start();
+      actionOutHandler.start();
 
       try {
         db.open();
@@ -446,6 +350,10 @@ public class NotifyEngine extends TzGetter {
     activeSubs.put(sub.getSubscriptionId(), sub);
   }
 
+  public void queueNotification(final Notification note) throws NoteException {
+
+  }
+
   /**
    * @return true if we're running
    */
@@ -461,8 +369,9 @@ public class NotifyEngine extends TzGetter {
 
     stats.addAll(notelingPool.getStats());
     stats.addAll(notifyTimer.getStats());
-    stats.add(actionsCt);
-    stats.add(notificationsAddWt);
+
+    actionInHandler.getStats(stats);
+    actionOutHandler.getStats(stats);
 
     return stats;
   }
@@ -494,6 +403,9 @@ public class NotifyEngine extends TzGetter {
 
     info("Connectors stopped");
 
+    actionInHandler.shutdown();
+    actionOutHandler.shutdown();
+
     if (notelingPool != null) {
       notelingPool.stop();
     }
@@ -510,17 +422,13 @@ public class NotifyEngine extends TzGetter {
    * @throws NoteException
    */
   public void handleAction(final Action action) throws NoteException {
-    try {
-      while (true) {
-        if (stopping) {
-          return;
-        }
-
-        if (actionInQueue.offer(action, 5, TimeUnit.SECONDS)) {
-          break;
-        }
-      }
-    } catch (InterruptedException ie) {
+    switch (action.getType()) {
+      case fetchItems:
+        actionInHandler.queueAction(action);
+        break;
+      default:
+        actionOutHandler.queueAction(action);
+        break;
     }
   }
 
@@ -677,26 +585,6 @@ public class NotifyEngine extends TzGetter {
 
     return;
   }*/
-
-  @SuppressWarnings("unchecked")
-  private StatusType handleAction(final Noteling nl,
-                                  final Action action) throws NoteException {
-    StatusType st = nl.handleNotification(action);
-
-    /*
-    Subscription sub = note.getNotification();
-    if (!sub.getMissingTarget()) {
-      return st;
-    }
-
-    if (sub.getErrorCt() > getConfig().getMissingTargetRetries()) {
-      deleteSubscription(sub);
-      info("Subscription deleted after missing target retries exhausted: " + sub);
-    }
-    */
-
-    return st;
-  }
 
   /* ====================================================================
    *                        db methods

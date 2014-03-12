@@ -131,11 +131,6 @@ public interface Connector<C extends ConnectorInstance,
   NotifyEngine getNotifier();
 
   /**
-   * @return an object factory for icalendar
-   */
-  ietf.params.xml.ns.icalendar_2.ObjectFactory getIcalObjectFactory();
-
-  /**
    * @return list of icalendar properties to skip.
    */
   List<Object> getSkipList();

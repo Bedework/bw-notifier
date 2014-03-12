@@ -51,9 +51,6 @@ public abstract class AbstractConnector<T,
 
   private transient Logger log;
 
-  private static ietf.params.xml.ns.icalendar_2.ObjectFactory icalOf =
-      new ietf.params.xml.ns.icalendar_2.ObjectFactory();
-
   protected NotifyEngine notifier;
 
   protected boolean debug;
@@ -132,11 +129,6 @@ public abstract class AbstractConnector<T,
   @Override
   public NotifyEngine getNotifier() {
     return notifier;
-  }
-
-  @Override
-  public ietf.params.xml.ns.icalendar_2.ObjectFactory getIcalObjectFactory() {
-    return icalOf;
   }
 
   @Override

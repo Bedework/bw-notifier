@@ -18,6 +18,7 @@
 */
 package org.bedework.notifier.db;
 
+import org.bedework.notifier.BaseSubscriptionInfo;
 import org.bedework.notifier.NotifyDefs.NotifyKind;
 import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.cnctrs.ConnectorInstance;
@@ -121,17 +122,17 @@ public class Subscription extends DbItem<Subscription> {
     subscriptionId = val;
   }
 
-  /** Our generated subscriptionId.
+  /**
    *
-   * @return String
+   * @return String Our generated subscriptionId.
    */
   public String getSubscriptionId() {
     return subscriptionId;
   }
 
-  /** A UTC dtstamp value
+  /**
    *
-   * @param val
+   * @param val A UTC dtstamp value
    */
   public void setLastRefresh(final String val) {
     lastRefresh = val;
@@ -144,9 +145,9 @@ public class Subscription extends DbItem<Subscription> {
     return lastRefresh;
   }
 
-  /** int consecutive errors
+  /**
    *
-   * @param val
+   * @param val int consecutive errors
    */
   public void setErrorCt(final int val) {
     errorCt = val;
@@ -159,9 +160,9 @@ public class Subscription extends DbItem<Subscription> {
     return errorCt;
   }
 
-  /** True if either target is missing
+  /**
    *
-   * @param val
+   * @param val True if the target is missing
    */
   public void setMissingTarget(final boolean val) {
     missingTarget = val;
@@ -226,9 +227,9 @@ public class Subscription extends DbItem<Subscription> {
     return info;
   }
 
-  /** True if subscription deleted
+  /**
    *
-   * @param val
+   * @param val True if subscription deleted
    */
   public void setDeleted(final boolean val) {
     deleted = val;
@@ -295,7 +296,7 @@ public class Subscription extends DbItem<Subscription> {
    * @return true if this has to be put on a poll queue
    */
   public boolean polling() {
-    return (getSourceConn().getKind() == NotifyKind.poll);
+    return getSourceConn().getKind() == NotifyKind.poll;
   }
 
   /**
@@ -304,6 +305,8 @@ public class Subscription extends DbItem<Subscription> {
    */
   public long refreshDelay() throws NoteException {
     String delay = "31536000000"; // About a year
+
+    delay = new BaseSubscriptionInfo(getSourceConnectorInfo()).getRefreshDelay();
 
     return Long.valueOf(delay);
   }

@@ -19,6 +19,7 @@
 package org.bedework.notifier;
 
 import org.bedework.notifier.db.Subscription;
+import org.bedework.notifier.notifications.Notification;
 import org.bedework.util.misc.ToString;
 
 /** Internal system action.
@@ -31,19 +32,33 @@ import org.bedework.util.misc.ToString;
 public class Action {
   public enum ActionType {
     /** (Re)fetch items - polling or a signal came in */
-    fetchItems
+    fetchItems,
+
+    /** Process a single outbound notification */
+    processOutbound
   };
 
   private ActionType type;
 
   private Subscription sub;
 
+  private Notification note;
+
   /** Create an action
    */
   public Action(final ActionType type,
                 final Subscription sub) {
+    this(type, sub, null);
+  }
+
+  /** Create an action
+   */
+  public Action(final ActionType type,
+                final Subscription sub,
+                final Notification note) {
     this.type = type;
     this.sub = sub;
+    this.note = note;
   }
 
   /**
@@ -58,6 +73,13 @@ public class Action {
    */
   public Subscription getSub() {
     return sub;
+  }
+
+  /**
+   * @return notification for this action
+   */
+  public Notification getNote() {
+    return note;
   }
 
   protected void toStringSegment(final ToString ts) {

@@ -18,11 +18,14 @@
 */
 package org.bedework.notifier;
 
+import org.bedework.notifier.Action.ActionType;
 import org.bedework.notifier.cnctrs.ConnectorInstance;
 import org.bedework.notifier.cnctrs.ConnectorInstance.NotifyItemsInfo;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.outbound.Destination;
+import org.bedework.notifier.outbound.DestinationFactory;
 import org.bedework.util.misc.Util;
 
 import org.apache.log4j.Logger;
@@ -55,7 +58,7 @@ public class Noteling {
 
   private final long notelingId;
 
-  private NotifyEngine notifier;
+  private final NotifyEngine notifier;
 
   /** Constructor
    *
@@ -89,12 +92,21 @@ public class Noteling {
    * @return OK for all handled fine. ERROR - discard. WARN - retry.
    * @throws NoteException
    */
-  public StatusType handleNotification(final Action action) throws NoteException {
-    StatusType st;
-
+  public StatusType handleAction(final Action action) throws NoteException {
     switch (action.getType()) {
       case fetchItems:
-        fetchItems(action.getSub());
+        final Subscription sub = action.getSub();
+        try {
+          notifier.setConnectors(sub);
+          fetchItems(sub);
+        } finally {
+          sub.updateLastRefresh();
+          notifier.reschedule(sub);
+        }
+        break;
+
+      case processOutbound:
+        doOutBound(action);
         break;
     }
 
@@ -102,37 +114,51 @@ public class Noteling {
   }
 
   /* ====================================================================
-   *                        Notification methods
+   *                        private Notification methods
    * ==================================================================== */
 
   private void fetchItems(final Subscription sub) throws NoteException {
-    ConnectorInstance ci = sub.getSourceConnInst();
+    final ConnectorInstance ci = notifier.getConnectorInstance(sub);
 
-    NotifyItemsInfo nii = ci.getItemsInfo();
+    final NotifyItemsInfo nii = ci.getItemsInfo();
 
     if ((nii == null) || nii.items.isEmpty()) {
       return;
     }
 
-    List<Notification> notes = ci.fetchItems(nii.items);
+    final List<Notification> notes = ci.fetchItems(nii.items);
 
     if (Util.isEmpty(notes)) {
       return;
     }
 
-    for (Notification note: notes) {
-      trace("Got notification " + note);
+    for (final Notification note: notes) {
+      if (debug) {
+        trace("Got notification " + note);
+      }
+
+      Action act = new Action(ActionType.processOutbound,
+                              sub, note);
+
+      notifier.handleAction(act);
     }
   }
 
-  private StatusType invite(final InviteNotification invite) throws NoteException {
-    if (debug) {
-      trace("invite " + invite);
+  private void doOutBound(Action action) throws NoteException {
+    List<Destination> dests =
+            DestinationFactory.getDestination(action.getNote());
+
+    if (Util.isEmpty(dests)) {
+      warn("No destination for " + action);
+      // TODO - delete it?
+      return;
     }
 
-    // TODO - the meat of it
+    for (Destination dest: dests) {
+      dest.send(action.getNote());
+    }
 
-    return StatusType.OK;
+    // TODO - now what do we do with the notification?
   }
 
   /* ====================================================================
@@ -152,6 +178,7 @@ public class Noteling {
     getLogger().debug(msg);
   }
 
+  @SuppressWarnings("unused")
   private void warn(final String msg) {
     getLogger().warn(msg);
   }
@@ -161,6 +188,7 @@ public class Noteling {
     getLogger().error(this, t);
   }
 
+  @SuppressWarnings("unused")
   private void info(final String msg) {
     getLogger().info(msg);
   }

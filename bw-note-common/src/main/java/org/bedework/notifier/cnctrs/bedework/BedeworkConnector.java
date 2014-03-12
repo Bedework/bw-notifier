@@ -101,6 +101,7 @@ public class BedeworkConnector
        */
 
       final Subscription sub = new Subscription(null);
+
       final SubscriptionConnectorInfo subInfo = new SubscriptionConnectorInfo();
       sub.setSourceConnectorInfo(subInfo);
       subInfo.setConnectorId(connectorId);
@@ -109,6 +110,7 @@ public class BedeworkConnector
       final BaseSubscriptionInfo bi = new BaseSubscriptionInfo(subInfo);
 
       bi.setUri(config.getNotificationDirHref());
+      bi.setRefreshDelay("60000");
 
       notifier.add(sub);
 
@@ -126,7 +128,8 @@ public class BedeworkConnector
 
   @Override
   public NotifyKind getKind() {
-    return NotifyKind.notify;
+//    return NotifyKind.notify;
+    return NotifyKind.poll;
   }
 
   @Override
