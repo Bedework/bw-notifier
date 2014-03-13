@@ -27,6 +27,7 @@ import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Notification;
 import org.bedework.util.dav.DavUtil;
 import org.bedework.util.dav.DavUtil.DavChild;
+import org.bedework.util.dav.DavUtil.DavProp;
 import org.bedework.util.http.BasicHttpClient;
 import org.bedework.util.misc.Util;
 import org.bedework.util.xml.tagdefs.AppleServerTags;
@@ -39,6 +40,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import javax.xml.namespace.QName;
 
 /** Handles bedework synch interactions.
  *
@@ -53,6 +56,12 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
   private final BedeworkSubscriptionInfo info;
 
   private BasicHttpClient client;
+
+  private static final Collection<QName> noteTypeProps =
+          new ArrayList<>();
+  static {
+    noteTypeProps.add(AppleServerTags.notificationtype);
+  }
 
   BedeworkConnectorInstance(final BedeworkConnectorConfig config,
                             final BedeworkConnector cnctr,
@@ -93,7 +102,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
     try {
       final Collection<DavChild> chs = new DavUtil(cnctr.getAuthHeaders()).
-              getChildrenUrls(cl, info.getUri(), null);
+              getChildrenUrls(cl, info.getUri(), noteTypeProps);
 
       if (chs == null) {
         return null;
@@ -107,11 +116,9 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
       }
 
       for (final DavChild ch: chs) {
-        if (Util.isEmpty(ch.resourceTypes)) {
-          continue;
-        }
+        DavProp dp = ch.findProp(AppleServerTags.notificationtype);
 
-        if (!ch.resourceTypes.contains(AppleServerTags.notification)) {
+        if (dp == null) {
           continue;
         }
 
@@ -167,6 +174,9 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     // XXX this should be a search for multiple uids - need to reimplement caldav search
 
     final List<Notification> firs = new ArrayList<>();
+
+    /* Set the base uri here so it's only done once per batch */
+    getClient().setBaseURIValue(info.getUri());
 
     for (final ItemInfo item: items) {
       firs.add(fetchItem(item));
