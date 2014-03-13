@@ -115,13 +115,11 @@ public class IpAddrInfo extends DbItem<IpAddrInfo> {
     return getOrder();
   }
 
-  protected ToString toStringSegment(final ToString ts) {
-    super.toStringSegment(ts.getSb());
+  protected void toStringSegment(final ToString ts) {
+    super.toStringSegment(ts);
     ts.append("order=", getOrder());
     ts.append("addr", getAddr());
     ts.append("block", getBlock());
-
-    return ts;
   }
 
   @Override
