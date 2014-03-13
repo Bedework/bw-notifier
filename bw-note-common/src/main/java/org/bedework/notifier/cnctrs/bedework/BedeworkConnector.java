@@ -251,6 +251,7 @@ public class BedeworkConnector
       return urls;
     } finally {
       if (cl != null){
+        cl.release();
         cl.close();
       }
     }

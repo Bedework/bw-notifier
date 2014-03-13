@@ -32,6 +32,7 @@ import org.bedework.util.http.BasicHttpClient;
 import org.bedework.util.misc.Util;
 import org.bedework.util.xml.tagdefs.AppleServerTags;
 
+import org.apache.http.HttpException;
 import org.oasis_open.docs.ws_calendar.ns.soap.DeleteItemResponseType;
 import org.oasis_open.docs.ws_calendar.ns.soap.UpdateItemResponseType;
 import org.oasis_open.docs.ws_calendar.ns.soap.UpdateItemType;
@@ -133,6 +134,11 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
       throw new NoteException(t);
     } finally {
       if (cl != null){
+        try {
+          cl.release();
+        } catch (final HttpException e) {
+          error(e);
+        }
         cl.close();
       }
     }
@@ -163,6 +169,11 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
       throw new NoteException(t);
     } finally {
       if (cl != null){
+        try {
+          cl.release();
+        } catch (final HttpException e) {
+          error(e);
+        }
         cl.close();
       }
     }
