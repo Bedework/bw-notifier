@@ -24,7 +24,9 @@ import org.bedework.notifier.cnctrs.AbstractConnectorInstance;
 import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.notifier.notifications.AppleNotification;
 import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.notifications.Notification.DeliveryMethod;
 import org.bedework.util.dav.DavUtil;
 import org.bedework.util.dav.DavUtil.DavChild;
 import org.bedework.util.dav.DavUtil.DavProp;
@@ -159,12 +161,17 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     final BasicHttpClient cl = getClient();
 
     try {
-      final InputStream is = cl.get(item.href);
+      final InputStream is = cl.get(item.href, cnctr.getAuthHeaders());
 
       final NotificationType nt = Parser.fromXml(is);
 
-//    } catch (final NoteException ne ) {
-  //    throw ne;
+      // TODO use nt.getDtstamp()?
+
+      Notification note = new AppleNotification(nt.getNotification());
+
+      note.setDeliveryMethod(DeliveryMethod.email);
+
+      return note;
     } catch (final Throwable t) {
       throw new NoteException(t);
     } finally {
@@ -177,7 +184,6 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
         cl.close();
       }
     }
-    return null;
   }
 
   @Override

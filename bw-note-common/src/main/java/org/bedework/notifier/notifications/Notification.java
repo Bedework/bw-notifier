@@ -104,6 +104,7 @@ public abstract class Notification<T> {
     ts.append("registeredRecipient", isRegisteredRecipient());
     ts.append("kind", getKind());
     ts.append("deliveryMethod", getDeliveryMethod());
+    ts.append("notification", getNotification());
   }
 
   @Override
