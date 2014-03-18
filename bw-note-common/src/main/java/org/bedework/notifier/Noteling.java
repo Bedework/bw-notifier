@@ -24,8 +24,7 @@ import org.bedework.notifier.cnctrs.ConnectorInstance.NotifyItemsInfo;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Notification;
-import org.bedework.notifier.outbound.Destination;
-import org.bedework.notifier.outbound.DestinationFactory;
+import org.bedework.notifier.outbound.Adaptor;
 import org.bedework.util.misc.Util;
 
 import org.apache.log4j.Logger;
@@ -137,28 +136,28 @@ public class Noteling {
         trace("Got notification " + note);
       }
 
-      Action act = new Action(ActionType.processOutbound,
+      final Action act = new Action(ActionType.processOutbound,
                               sub, note);
 
       notifier.handleAction(act);
     }
   }
 
-  private void doOutBound(Action action) throws NoteException {
-    List<Destination> dests =
-            DestinationFactory.getDestination(action.getNote());
+  private void doOutBound(final Action action) throws NoteException {
+    final List<Adaptor> adaptors =
+            notifier.getAdaptors(action.getNote());
 
-    if (Util.isEmpty(dests)) {
-      warn("No destination for " + action);
+    if (Util.isEmpty(adaptors)) {
+      warn("No adaptor for " + action);
       // TODO - delete it?
       return;
     }
 
-    for (Destination dest: dests) {
-      dest.send(action.getNote());
+    for (final Adaptor adaptor: adaptors) {
+      adaptor.send(action.getNote());
     }
 
-    // TODO - now what do we do with the notification?
+    // TODO - put the notification back on the queue for status update
   }
 
   /* ====================================================================

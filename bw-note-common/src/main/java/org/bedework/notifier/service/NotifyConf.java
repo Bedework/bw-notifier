@@ -22,6 +22,8 @@ import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.Stat;
 import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.notifier.conf.NotifyConfig;
+import org.bedework.notifier.outbound.common.AdaptorConf;
+import org.bedework.notifier.outbound.common.AdaptorConfig;
 import org.bedework.util.config.ConfigurationStore;
 import org.bedework.util.jmx.ConfBase;
 import org.bedework.util.jmx.ConfigHolder;
@@ -42,15 +44,16 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
   List<String> connectorNames;
 
+  List<String> adaptorNames;
+
   private boolean running;
 
   private NotifyEngine notifier;
 
-  /* Be safe - default to false */
-  private boolean export;
-
   private class ProcessorThread extends Thread {
     boolean showedTrace;
+
+    final Object locker = new Object();
 
     /**
      * @param name - for the thread
@@ -69,7 +72,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
             notifier = NotifyEngine.getNotifier();
             notifier.start();
           }
-        } catch (Throwable t) {
+        } catch (final Throwable t) {
           if (!showedTrace) {
             error(t);
             showedTrace = true;
@@ -81,11 +84,10 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
         if (running) {
           // Wait a bit before restarting
           try {
-            Object o = new Object();
-            synchronized (o) {
-              o.wait (10 * 1000);
+            synchronized (locker) {
+              locker.wait (10 * 1000);
             }
-          } catch (Throwable t) {
+          } catch (final Throwable t) {
             error(t.getMessage());
           }
         }
@@ -140,7 +142,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
   /** How often we retry when a target is missing
    *
-   * @param val
+   * @param val count
    */
   @Override
   public void setMissingTargetRetries(final int val) {
@@ -253,7 +255,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
   @Override
   public List<Stat> getStats() {
     if (notifier == null) {
-      return new ArrayList<Stat>();
+      return new ArrayList<>();
     }
 
     return notifier.getStats();
@@ -302,8 +304,8 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
     processor.interrupt();
     try {
       processor.join(20 * 1000);
-    } catch (InterruptedException ie) {
-    } catch (Throwable t) {
+    } catch (final InterruptedException ignored) {
+    } catch (final Throwable t) {
       error("Error waiting for processor termination");
       error(t);
     }
@@ -327,53 +329,19 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
     try {
       /* Load up the config */
 
-      String res = loadOnlyConfig(NotifyConfig.class);
+      final String res = loadOnlyConfig(NotifyConfig.class);
 
       if (res != null) {
         return res;
       }
 
-      /* Load up the connectors */
-
-      ConfigurationStore cs = getStore().getStore("connectors");
-
-      connectorNames = cs.getConfigs();
-
-      List<NoteConnConf> sccs = new ArrayList<NoteConnConf>();
-      cfg.setConnectorConfs(sccs);
-
-      for (String cn: connectorNames) {
-        ObjectName objectName = createObjectName("connector", cn);
-
-        /* Read the config so we can get the mbean class name. */
-
-        ConnectorConfig connCfg = (ConnectorConfig)cs.getConfig(cn);
-
-        if (connCfg == null) {
-          error("Unable to read connector configuration " + cn);
-          continue;
-        }
-
-        String mbeanClassName = connCfg.getMbeanClassName();
-
-        if (connCfg.getMbeanClassName() == null) {
-          error("Must set the mbean class name for connector " + cn);
-          error("Falling back to base class for " + cn);
-
-          mbeanClassName = NoteConnConf.class.getCanonicalName();
-        }
-
-        @SuppressWarnings("unchecked")
-        NoteConnConf<ConnectorConfig> scc = (NoteConnConf<ConnectorConfig>)makeObject(mbeanClassName);
-        scc.init(cs, objectName.toString(), connCfg);
-
-        scc.saveConfig();
-        sccs.add(scc);
-        register("connector", cn, scc);
+      if (!loadConnectors() || !loadAdaptors()) {
+        return "failed";
       }
 
+
       return "OK";
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       error("Failed to start management context: " + t.getLocalizedMessage());
       error(t);
       return "failed";
@@ -396,6 +364,102 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
   /* ====================================================================
    *                   Private methods
    * ==================================================================== */
+
+  private boolean loadConnectors() {
+    try {
+      final ConfigurationStore cs = getStore().getStore("connectors");
+
+      connectorNames = cs.getConfigs();
+
+      final List<NoteConnConf> nccs = new ArrayList<>();
+      cfg.setConnectorConfs(nccs);
+
+      for (final String cn: connectorNames) {
+        final ObjectName objectName = createObjectName("connector", cn);
+
+        /* Read the config so we can get the mbean class name. */
+
+        final ConnectorConfig connCfg = (ConnectorConfig)cs.getConfig(cn);
+
+        if (connCfg == null) {
+          error("Unable to read connector configuration " + cn);
+          continue;
+        }
+
+        String mbeanClassName = connCfg.getMbeanClassName();
+
+        if (connCfg.getMbeanClassName() == null) {
+          error("Must set the mbean class name for connector " + cn);
+          error("Falling back to base class for " + cn);
+
+          mbeanClassName = NoteConnConf.class.getCanonicalName();
+        }
+
+        @SuppressWarnings("unchecked")
+        final NoteConnConf<ConnectorConfig> ncc =
+                (NoteConnConf<ConnectorConfig>)makeObject(mbeanClassName);
+        ncc.init(cs, objectName.toString(), connCfg);
+
+        ncc.saveConfig();
+        nccs.add(ncc);
+        register("connector", cn, ncc);
+      }
+
+      return true;
+    } catch (final Throwable t) {
+      error("Failed to start management context: " + t.getLocalizedMessage());
+      error(t);
+      return false;
+    }
+  }
+
+  private boolean loadAdaptors() {
+    try {
+      final ConfigurationStore cs = getStore().getStore("adaptors");
+
+      adaptorNames = cs.getConfigs();
+
+      final List<AdaptorConf> nccs = new ArrayList<>();
+      cfg.setAdaptorConfs(nccs);
+
+      for (final String cn: adaptorNames) {
+        final ObjectName objectName = createObjectName("adaptor", cn);
+
+        /* Read the config so we can get the mbean class name. */
+
+        final AdaptorConfig aCfg = (AdaptorConfig)cs.getConfig(cn);
+
+        if (aCfg == null) {
+          error("Unable to read adaptor configuration " + cn);
+          continue;
+        }
+
+        String mbeanClassName = aCfg.getMbeanClassName();
+
+        if (aCfg.getMbeanClassName() == null) {
+          error("Must set the mbean class name for adaptor " + cn);
+          error("Falling back to base class for " + cn);
+
+          mbeanClassName = AdaptorConf.class.getCanonicalName();
+        }
+
+        @SuppressWarnings("unchecked")
+        final AdaptorConf<AdaptorConfig> ncc =
+                (AdaptorConf<AdaptorConfig>)makeObject(mbeanClassName);
+        ncc.init(cs, objectName.toString(), aCfg);
+
+        ncc.saveConfig();
+        nccs.add(ncc);
+        register("adaptor", cn, ncc);
+      }
+
+      return true;
+    } catch (final Throwable t) {
+      error("Failed to start management context: " + t.getLocalizedMessage());
+      error(t);
+      return false;
+    }
+  }
 
   /* ====================================================================
    *                   Protected methods

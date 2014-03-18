@@ -16,18 +16,47 @@
     specific language governing permissions and limitations
     under the License.
 */
-package org.bedework.notifier.outbound;
+package org.bedework.notifier.outbound.common;
+
+import org.bedework.notifier.outbound.Adaptor;
 
 import org.apache.log4j.Logger;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /** Some useful methods..
  *
  * @author Mike Douglass
  *
  */
-public abstract class AbstractDestination implements Destination {
+public abstract class AbstractAdaptor implements Adaptor {
   private transient Logger log;
 
+  private static AtomicLong nextId = new AtomicLong();
+
+  private Long id;
+
+  protected AdaptorConfig conf;
+
+  protected AbstractAdaptor() {
+    id = nextId.incrementAndGet();
+  }
+
+  public long getId() {
+    return id;
+  }
+
+  public void setConf(AdaptorConfig conf) {
+    this.conf = conf;
+  }
+
+  public AdaptorConfig getConf() {
+    return conf;
+  }
+
+  public String getType() {
+    return conf.getType();
+  }
 
   /* ====================================================================
    *                   Protected methods

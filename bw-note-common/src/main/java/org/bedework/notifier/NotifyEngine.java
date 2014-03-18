@@ -20,13 +20,12 @@ package org.bedework.notifier;
 
 import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.cnctrs.ConnectorInstance;
-import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.notifier.conf.NotifyConfig;
 import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Notification;
-import org.bedework.notifier.service.NoteConnConf;
+import org.bedework.notifier.outbound.Adaptor;
 import org.bedework.util.calendar.XcalUtil.TzGetter;
 import org.bedework.util.http.BasicHttpClient;
 import org.bedework.util.jmx.ConfigHolder;
@@ -39,11 +38,9 @@ import net.fortuna.ical4j.model.TimeZone;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /** Notification processor.
  * <p>The notification processor manages the notifcatiuon service.
@@ -87,14 +84,16 @@ public class NotifyEngine extends TzGetter {
 
   private NotelingPool notelingPool;
 
+  private ConnectorPool connectorPool;
+
+  private AdaptorPool adaptorPool;
+
   private NotifyTimer notifyTimer;
 
   /* Where we keep subscriptions that come in while we are starting */
   private List<Subscription> subsList;
 
   private NotifyDb db;
-
-  private Map<String, Connector> connectorMap = new HashMap<>();
 
   /** Queue and process inbound actions.
    *
@@ -229,37 +228,11 @@ public class NotifyEngine extends TzGetter {
         System.setProperty("javax.net.ssl.trustStorePassword", "bedework");
       }
 
-      final List<NoteConnConf> connectorConfs = getConfig().getConnectorConfs();
-      final String callbackUriBase = getConfig().getCallbackURI();
+      connectorPool = new ConnectorPool(this, 1000 * 60);
+      connectorPool.registerConnectors();
 
-      /* Register the connectors and start them */
-      for (final NoteConnConf scc: connectorConfs) {
-        final ConnectorConfig conf = (ConnectorConfig)scc.getConfig();
-        final String cnctrId = conf.getName();
-        info("Register and start connector " + cnctrId);
-
-        registerConnector(cnctrId, conf);
-
-        final Connector conn = getConnector(cnctrId);
-        scc.setConnector(conn);
-
-        conn.start(cnctrId,
-                   conf,
-                   callbackUriBase + cnctrId + "/",
-                   this);
-
-        while (!conn.isStarted()) {
-          /* Wait for it to start */
-          synchronized (this) {
-            this.wait(250);
-          }
-
-          if (conn.isFailed()) {
-            error("Connector " + cnctrId + " failed to start");
-            break;
-          }
-        }
-      }
+      adaptorPool = new AdaptorPool(this, 1000 * 60);
+      adaptorPool.registerAdaptors();
 
       notifyTimer = new NotifyTimer(this);
 
@@ -388,7 +361,7 @@ public class NotifyEngine extends TzGetter {
 
     /* Call stop on each connector
      */
-    for (final Connector conn: getConnectors()) {
+    for (final Connector conn: connectorPool.getConnectors()) {
       info("Stopping connector " + conn.getId());
       try {
         conn.stop();
@@ -476,13 +449,13 @@ public class NotifyEngine extends TzGetter {
   }
 
   /** Gets an instance and implants it in the subscription object.
-   * @param sub
+   * @param sub a subscription
    * @return ConnectorInstance or throws Exception
    * @throws NoteException
    */
   public ConnectorInstance getConnectorInstance(final Subscription sub) throws NoteException {
     ConnectorInstance cinst;
-    Connector conn;
+    final Connector conn;
 
     cinst = sub.getSourceConnInst();
     conn = sub.getSourceConn();
@@ -507,54 +480,18 @@ public class NotifyEngine extends TzGetter {
 
   /** When we start up a new subscription we implant a Connector in the object.
    *
-   * @param sub
+   * @param sub a subscription
    * @throws NoteException
    */
   public void setConnectors(final Subscription sub) throws NoteException {
-    String connectorId = sub.getSourceConnectorInfo().getConnectorId();
+    final String connectorId = sub.getSourceConnectorInfo().getConnectorId();
 
-    Connector conn = getConnector(connectorId);
+    final Connector conn = connectorPool.getConnector(connectorId);
     if (conn == null) {
       throw new NoteException("No connector for " + sub + "(");
     }
 
     sub.setSourceConn(conn);
-  }
-
-  private Collection<Connector> getConnectors() {
-    return connectorMap.values();
-  }
-
-  /** Return a registered connector with the given id.
-   *
-   * @param id
-   * @return connector or null.
-   */
-  public Connector getConnector(final String id) {
-    return connectorMap.get(id);
-  }
-
-  /**
-   * @return registered ids.
-   */
-  public Set<String> getConnectorIds() {
-    return connectorMap.keySet();
-  }
-
-  private void registerConnector(final String id,
-                                 final ConnectorConfig conf) throws NoteException {
-    try {
-      Class cl = Class.forName(conf.getConnectorClassName());
-
-      if (connectorMap.containsKey(id)) {
-        throw new NoteException("Connector " + id + " already registered");
-      }
-
-      Connector c = (Connector)cl.newInstance();
-      connectorMap.put(id, c);
-    } catch (Throwable t) {
-      throw new NoteException(t);
-    }
   }
 
   /* * Processes a batch of notifications. This must be done in a timely manner
@@ -586,17 +523,36 @@ public class NotifyEngine extends TzGetter {
     return;
   }*/
 
+  /**
+   * @param note
+   * @return list of adaptors
+   * @throws NoteException
+   */
+  public List<Adaptor> getAdaptors(Notification note) throws NoteException {
+    final Adaptor a = adaptorPool.getAdaptor(note.getDeliveryMethod().toString());
+
+    if (a == null) {
+      return null;
+    }
+
+    List<Adaptor> as = new ArrayList<>();
+
+    as.add(a);
+
+    return as;
+  }
+
   /* ====================================================================
    *                        db methods
    * ==================================================================== */
 
   /**
-   * @param id
+   * @param id key
    * @return subscription
    * @throws NoteException
    */
   public Subscription getSubscription(final String id) throws NoteException {
-    boolean opened = db.open();
+    final boolean opened = db.open();
 
     try {
       return db.get(id);
@@ -636,7 +592,7 @@ public class NotifyEngine extends TzGetter {
   }
 
   /**
-   * @param sub
+   * @param sub a subscription
    * @throws NoteException
    */
   public void deleteSubscription(final Subscription sub) throws NoteException {
@@ -646,7 +602,7 @@ public class NotifyEngine extends TzGetter {
   /** Find any subscription that matches this one. There can only be one with
    * the same endpoints
    *
-   * @param sub
+   * @param sub a subscription
    * @return matching subscriptions
    * @throws NoteException
    */

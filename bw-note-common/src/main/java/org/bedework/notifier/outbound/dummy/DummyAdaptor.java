@@ -16,10 +16,11 @@
     specific language governing permissions and limitations
     under the License.
 */
-package org.bedework.notifier.outbound;
+package org.bedework.notifier.outbound.dummy;
 
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.outbound.common.AbstractAdaptor;
 
 /** The interface implemented by destination adaptors. A destination
  * may be an email address or sms.
@@ -27,14 +28,10 @@ import org.bedework.notifier.notifications.Notification;
  * @author Mike Douglass
  *
  */
-public interface Destination {
-  /** Send a notification
-   *
-   * TODO - better status
-   *
-   * @param note the notification to send
-   * @return true if sent ok
-   * @throws NoteException
-   */
-  boolean send(Notification note) throws NoteException;
+public class DummyAdaptor extends AbstractAdaptor {
+  public boolean send(final Notification note) throws NoteException {
+    info("Call to send notification: " + note);
+
+    return true;
+  }
 }

@@ -16,34 +16,19 @@
     specific language governing permissions and limitations
     under the License.
 */
-package org.bedework.notifier.outbound;
+package org.bedework.notifier.outbound.dummy;
 
-import org.bedework.notifier.exception.NoteException;
-import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.outbound.common.AdaptorConf;
 
-import java.util.ArrayList;
-import java.util.List;
-
-/** The interface implemented by destination adaptors. A destination
- * may be an email address or sms.
+/** This configuration mbean is registered at startup by the main
+ * configuration bean NotifyConf.
  *
- * @author Mike Douglass
+ * @author douglm
  *
  */
-public class DestinationFactory {
-  private static Destination dummy = new DummyDestination();
-
-  /** Get an object to send a notification
-   *
-   * @param note the notification to send
-   * @return one or more objects to send it or null.
-   * @throws NoteException
-   */
-  public static List<Destination> getDestination(Notification note) throws NoteException {
-    List<Destination> l = new ArrayList<>(1);
-
-    l.add(dummy);
-
-    return l;
-  }
+public class DummyConf extends AdaptorConf<DummyAdaptorConfig>
+    implements DummyConfMBean {
+  /* ========================================================================
+   * Conf properties
+   * ======================================================================== */
 }

@@ -19,6 +19,7 @@
 package org.bedework.notifier.conf;
 
 import org.bedework.notifier.db.IpAddrInfo;
+import org.bedework.notifier.outbound.common.AdaptorConf;
 import org.bedework.notifier.service.NoteConnConf;
 import org.bedework.util.config.ConfInfo;
 import org.bedework.util.config.ConfigBase;
@@ -56,6 +57,8 @@ public class NotifyConfig extends ConfigBase<NotifyConfig> {
   private String pubKeys;
 
   private List<NoteConnConf> connectorConfs;
+
+  private List<AdaptorConf> adaptorConfs;
 
   private SortedSet<IpAddrInfo> ipInfo;
 
@@ -211,5 +214,21 @@ public class NotifyConfig extends ConfigBase<NotifyConfig> {
    */
   public List<NoteConnConf> getConnectorConfs() {
     return connectorConfs;
+  }
+
+  /** Map of (name, className)
+   *
+   * @param val
+   */
+  public void setAdaptorConfs(final List<AdaptorConf> val) {
+    adaptorConfs = val;
+  }
+
+  /** Set<AdaptorConfig>
+   *
+   * @return map
+   */
+  public List<AdaptorConf> getAdaptorConfs() {
+    return adaptorConfs;
   }
 }

@@ -21,6 +21,7 @@ package org.bedework.notifier;
 
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.exception.NoteTimeout;
+import org.bedework.util.misc.ToString;
 
 import org.apache.log4j.Logger;
 
@@ -31,7 +32,7 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-/** manage a pool of synchlings.
+/** manage a pool of notelings.
  *
  * @author Mike Douglass
  *
@@ -39,11 +40,11 @@ import java.util.concurrent.TimeUnit;
 public class NotelingPool {
   protected transient Logger log;
 
-  private NotifyEngine syncher;
+  private NotifyEngine notifier;
 
   private ArrayBlockingQueue<Noteling> pool;
 
-  private Map<Long, Noteling> active = new HashMap<Long, Noteling>();
+  private Map<Long, Noteling> active = new HashMap<>();
 
   private long timeout; // millisecs
 
@@ -55,20 +56,20 @@ public class NotelingPool {
 
   /** Create a pool with the given size
    *
-   * @param syncher
+   * @param notifier
    * @param size
    * @param timeout - millisecs
    * @throws org.bedework.notifier.exception.NoteException
    */
-  public void start(final NotifyEngine syncher,
+  public void start(final NotifyEngine notifier,
                     final int size,
                     final long timeout) throws NoteException {
-    this.syncher = syncher;
+    this.notifier = notifier;
     this.timeout = timeout;
     resize(size);
   }
 
-  /** Shut down active synchlings
+  /** Shut down active notelings
    */
   public void stop() {
     long maxWait = 1000 * 90; // 90 seconds - needs to be longer than longest poll interval
@@ -79,7 +80,7 @@ public class NotelingPool {
       if ((System.currentTimeMillis() - startTime) > maxWait) {
         warn("**************************************************");
         warn("Synch shutdown completed with " +
-            getActiveCt() + " active synchlings");
+            getActiveCt() + " active notelings");
         warn("**************************************************");
 
         break;
@@ -87,7 +88,7 @@ public class NotelingPool {
 
       info("**************************************************");
       info("Synch shutdown - " +
-           getActiveCt() + " active synchlings");
+           getActiveCt() + " active notelings");
       info("**************************************************");
 
       try {
@@ -114,7 +115,7 @@ public class NotelingPool {
     }
 
     while (size > oldSize) {
-      pool.add(new Noteling(syncher));
+      pool.add(new Noteling(notifier));
       oldSize++;
     }
   }
@@ -173,7 +174,7 @@ public class NotelingPool {
     return thePool.size();
   }
 
-  /** Return approximate number of available synchlings
+  /** Return approximate number of available notelings
    *
    * @return current avail
    */
@@ -186,7 +187,7 @@ public class NotelingPool {
     return thePool.remainingCapacity();
   }
 
-  /** Put a synchling back in the pool if there's room else discard it
+  /** Put a noteling back in the pool if there's room else discard it
    *
    * @param s
    * @throws org.bedework.notifier.exception.NoteException
@@ -198,7 +199,7 @@ public class NotelingPool {
     getPool().offer(s);
   }
 
-  /** Get a synchling from the pool if possible
+  /** Get a noteling from the pool if possible
    *
    * @return a sychling
    * @throws org.bedework.notifier.exception.NoteException if none available
@@ -207,10 +208,10 @@ public class NotelingPool {
     return get(true);
   }
 
-  /** Get a synchling from the pool if possible. Return null if timed out
+  /** Get a noteling from the pool if possible. Return null if timed out
    *
    * @return a sychling or null
-   * @throws org.bedework.notifier.exception.NoteException on error
+   * @throws NoteException on error
    */
   public Noteling getNoException() throws NoteException {
     return get(false);
@@ -219,11 +220,11 @@ public class NotelingPool {
   private Noteling get(final boolean throwOnFailure) throws NoteException {
     Noteling s = null;
     gets++;
-    long st = System.currentTimeMillis();
+    final long st = System.currentTimeMillis();
 
     try {
       s = getPool().poll(getTimeout(), TimeUnit.MILLISECONDS);
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       throw new NoteException(t);
     }
 
@@ -255,42 +256,29 @@ public class NotelingPool {
   public List<Stat> getStats() {
     List<Stat> stats = new ArrayList<Stat>();
 
-    stats.add(new Stat("synchling get timeout", getTimeout()));
-    stats.add(new Stat("synchling active", getActiveCt()));
-    stats.add(new Stat("synchling gets", getGets()));
-    stats.add(new Stat("synchling waitTimes", getWaitTimes()));
-    stats.add(new Stat("synchling get failures", getGetSynchlingFailures()));
-    stats.add(new Stat("synchling currentMaxSize", getCurrentMaxSize()));
-    stats.add(new Stat("synchling currentAvailable", getCurrentAvailable()));
+    stats.add(new Stat("noteling get timeout", getTimeout()));
+    stats.add(new Stat("noteling active", getActiveCt()));
+    stats.add(new Stat("noteling gets", getGets()));
+    stats.add(new Stat("noteling waitTimes", getWaitTimes()));
+    stats.add(new Stat("noteling get failures", getGetSynchlingFailures()));
+    stats.add(new Stat("noteling currentMaxSize", getCurrentMaxSize()));
+    stats.add(new Stat("noteling currentAvailable", getCurrentAvailable()));
 
     return stats;
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append("{");
+    final ToString ts= new ToString(this);
 
-    sb.append("timeout=");
-    sb.append(getTimeout());
+    ts.append("timeout", getTimeout());
+    ts.append("gets", getGets());
+    ts.append("waitTimes", getWaitTimes());
+    ts.append("getNotelingFailures", getGetSynchlingFailures());
+    ts.append("currentMaxSize", getCurrentMaxSize());
+    ts.append("currentAvailable", getCurrentAvailable());
 
-    sb.append(", gets=");
-    sb.append(getGets());
-
-    sb.append("\n,     waitTimes=");
-    sb.append(getWaitTimes());
-
-    sb.append(", getSynchlingFailures=");
-    sb.append(getGetSynchlingFailures());
-
-    sb.append("\n,     currentMaxSize=");
-    sb.append(getCurrentMaxSize());
-
-    sb.append(", currentAvailable=");
-    sb.append(getCurrentAvailable());
-
-    sb.append("}");
-
-    return sb.toString();
+    return ts.toString();
   }
 
   /* ====================================================================
