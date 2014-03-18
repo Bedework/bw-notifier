@@ -74,7 +74,7 @@ public class NotifyEngine extends TzGetter {
 
   //private Configurator config;
 
-  private static Object getNotifierLock = new Object();
+  private final static Object getNotifierLock = new Object();
 
   private static NotifyEngine notifier;
 
@@ -175,7 +175,7 @@ public class NotifyEngine extends TzGetter {
   /**
    * @param sub to add to the start list
    */
-  public void add(Subscription sub) {
+  public void add(final Subscription sub) {
     if (subsList == null) {
       subsList = new ArrayList<>();
     }
@@ -365,7 +365,7 @@ public class NotifyEngine extends TzGetter {
       info("Stopping connector " + conn.getId());
       try {
         conn.stop();
-      } catch (Throwable t) {
+      } catch (final Throwable t) {
         if (debug) {
           error(t);
         } else {
@@ -391,7 +391,7 @@ public class NotifyEngine extends TzGetter {
   }
 
   /**
-   * @param action
+   * @param action to take
    * @throws NoteException
    */
   public void handleAction(final Action action) throws NoteException {
@@ -406,16 +406,16 @@ public class NotifyEngine extends TzGetter {
   }
 
   /**
-   * @param val
+   * @param val to decrypt
    * @return decrypted string
    * @throws NoteException
    */
   public String decrypt(final String val) throws NoteException {
     try {
       return getEncrypter().decrypt(val);
-    } catch (NoteException se) {
+    } catch (final NoteException se) {
       throw se;
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       throw new NoteException(t);
     }
   }
@@ -430,7 +430,7 @@ public class NotifyEngine extends TzGetter {
     }
 
     try {
-      String pwEncryptClass = "org.bedework.util.security.PwEncryptionDefault";
+      final String pwEncryptClass = "org.bedework.util.security.PwEncryptionDefault";
       //String pwEncryptClass = getSysparsHandler().get().getPwEncryptClass();
 
       pwEncrypt = (PwEncryptionIntf)Util.getObject(pwEncryptClass,
@@ -440,9 +440,9 @@ public class NotifyEngine extends TzGetter {
                      getConfig().getPubKeys());
 
       return pwEncrypt;
-    } catch (NoteException se) {
+    } catch (final NoteException se) {
       throw se;
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       t.printStackTrace();
       throw new NoteException(t);
     }
@@ -524,22 +524,32 @@ public class NotifyEngine extends TzGetter {
   }*/
 
   /**
-   * @param note
+   * @param note a notifier that needs adaptors
    * @return list of adaptors
    * @throws NoteException
    */
-  public List<Adaptor> getAdaptors(Notification note) throws NoteException {
+  public List<Adaptor> getAdaptors(final Notification note) throws NoteException {
     final Adaptor a = adaptorPool.getAdaptor(note.getDeliveryMethod().toString());
 
     if (a == null) {
       return null;
     }
 
-    List<Adaptor> as = new ArrayList<>();
+    final List<Adaptor> as = new ArrayList<>();
 
     as.add(a);
 
     return as;
+  }
+
+  /**
+   * @param adaptors list of adaptors
+   * @throws NoteException
+   */
+  public void releaseAdaptors(final List<Adaptor> adaptors) throws NoteException {
+    for (final Adaptor adaptor: adaptors) {
+      adaptorPool.add(adaptor);
+    }
   }
 
   /* ====================================================================
@@ -565,7 +575,7 @@ public class NotifyEngine extends TzGetter {
   }
 
   /**
-   * @param sub
+   * @param sub a subscription
    * @throws NoteException
    */
   public void addSubscription(final Subscription sub) throws NoteException {
@@ -574,11 +584,11 @@ public class NotifyEngine extends TzGetter {
   }
 
   /**
-   * @param sub
+   * @param sub a subscription
    * @throws NoteException
    */
   public void updateSubscription(final Subscription sub) throws NoteException {
-    boolean opened = db.open();
+    final boolean opened = db.open();
 
     try {
       db.update(sub);
@@ -607,7 +617,7 @@ public class NotifyEngine extends TzGetter {
    * @throws NoteException
    */
   public Subscription find(final Subscription sub) throws NoteException {
-    boolean opened = db.open();
+    final boolean opened = db.open();
 
     try {
       return db.find(sub);

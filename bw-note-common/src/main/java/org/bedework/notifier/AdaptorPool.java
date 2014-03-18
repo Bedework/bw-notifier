@@ -96,7 +96,7 @@ public class AdaptorPool {
 
       Adaptor a = null;
 
-      if (as.pool.size() < as.conf.getMaxInstances()) {
+      if ((as.pool.size() + as.active.size()) < as.conf.getMaxInstances()) {
         final Class cl = Class.forName(as.conf.getAdaptorClassName());
 
         a = (Adaptor)cl.newInstance();
@@ -217,6 +217,7 @@ public class AdaptorPool {
 
     if (as == null) {
       error("Bad adaptor with type " + adaptor.getType());
+      return;
     }
 
     synchronized (as) {

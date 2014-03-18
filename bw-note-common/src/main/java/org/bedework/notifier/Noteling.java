@@ -153,11 +153,15 @@ public class Noteling {
       return;
     }
 
-    for (final Adaptor adaptor: adaptors) {
-      adaptor.send(action.getNote());
-    }
+    try {
+      for (final Adaptor adaptor: adaptors) {
+        adaptor.send(action.getNote());
+      }
+    } finally {
+      // TODO - put the notification back on the queue for status update
 
-    // TODO - put the notification back on the queue for status update
+      notifier.releaseAdaptors(adaptors);
+    }
   }
 
   /* ====================================================================
