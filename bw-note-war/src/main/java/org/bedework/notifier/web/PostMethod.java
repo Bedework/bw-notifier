@@ -18,7 +18,6 @@
 */
 package org.bedework.notifier.web;
 
-import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.util.misc.Util;
 
@@ -47,11 +46,11 @@ public class PostMethod extends MethodBase {
 
       /* Find a connector to handle the incoming request.
        */
-      Connector conn = notifier.getConnector(resourceUri.get(0));
+      //Connector conn = notifier.getConnector(resourceUri.get(0));
 
-      if (conn == null) {
-        throw new NoteException("Bad resource url - unknown connector specified");
-      }
+      //if (conn == null) {
+      //  throw new NoteException("Bad resource url - unknown connector specified");
+      //}
 
       resourceUri.remove(0);
 //      NotificationBatch notes = conn.handleCallback(req, resp, resourceUri);
