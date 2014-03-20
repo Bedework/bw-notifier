@@ -24,7 +24,7 @@ import org.bedework.notifier.cnctrs.ConnectorInstance.NotifyItemsInfo;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Notification;
-import org.bedework.notifier.outbound.Adaptor;
+import org.bedework.notifier.outbound.common.Adaptor;
 import org.bedework.util.misc.Util;
 
 import org.apache.log4j.Logger;

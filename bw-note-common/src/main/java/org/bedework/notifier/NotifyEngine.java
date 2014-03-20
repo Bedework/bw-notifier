@@ -25,7 +25,7 @@ import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Notification;
-import org.bedework.notifier.outbound.Adaptor;
+import org.bedework.notifier.outbound.common.Adaptor;
 import org.bedework.util.calendar.XcalUtil.TzGetter;
 import org.bedework.util.http.BasicHttpClient;
 import org.bedework.util.jmx.ConfigHolder;

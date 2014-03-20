@@ -16,7 +16,7 @@
     specific language governing permissions and limitations
     under the License.
 */
-package org.bedework.notifier.outbound;
+package org.bedework.notifier.outbound.common;
 
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Notification;

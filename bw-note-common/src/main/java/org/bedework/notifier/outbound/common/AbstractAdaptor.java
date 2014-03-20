@@ -18,8 +18,6 @@
 */
 package org.bedework.notifier.outbound.common;
 
-import org.bedework.notifier.outbound.Adaptor;
-
 import org.apache.log4j.Logger;
 
 import java.util.concurrent.atomic.AtomicLong;
