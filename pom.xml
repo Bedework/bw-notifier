@@ -46,8 +46,8 @@
 	</licenses>
 
 	<scm>
-		<connection>scm:git:git://github.com/Bedework/bw-notifier.git</connection>
-		<developerConnection>scm:git:git://github.com/Bedework/bw-notifier.git</developerConnection>
+		<connection>scm:git:git@github.com:Bedework/bw-notifier.git</connection>
+		<developerConnection>scm:git:git@github.com:Bedework/bw-notifier.git</developerConnection>
 		<url>https://github.com/Bedework/bw-notifier</url>
 	</scm>
 
