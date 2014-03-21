@@ -20,7 +20,6 @@ package org.bedework.notifier.outbound.common;
 
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Notification;
-import org.bedework.notifier.outbound.common.AdaptorConfig;
 
 /** The interface implemented by destination adaptors. A destination
  * may be an email address or sms.
