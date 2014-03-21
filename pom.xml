@@ -15,15 +15,15 @@
 		<!-- Bedework Versions -->
 		<bedework.releases.repo.url>scp://dev.bedework.org/data/repository/maven/maven2</bedework.releases.repo.url>
 		<bedework.snapshots.repo.url>scp://dev.bedework.org/data/repository/maven/maven2</bedework.snapshots.repo.url>
-    <bw-caldav-util.version>4.0.0-SNAPSHOT</bw-caldav-util.version>
-		<bw-ws.version>4.0.0-SNAPSHOT</bw-ws.version>
-		<bw-util.version>4.0.0-SNAPSHOT</bw-util.version>
-		<bw-access.version>4.0.0-SNAPSHOT</bw-access.version>
+    <bw-caldav-util.version>4.0.1-SNAPSHOT</bw-caldav-util.version>
+		<bw-ws.version>4.0.1-SNAPSHOT</bw-ws.version>
+		<bw-util.version>4.0.1-SNAPSHOT</bw-util.version>
+		<bw-access.version>4.0.1-SNAPSHOT</bw-access.version>
 		<!-- Third Party Library Versions -->
 		<spring.version>3.0.5.RELEASE</spring.version>
 		<commons-codec.version>1.5</commons-codec.version>
 		<servlet-api.version>2.5</servlet-api.version>
-		<ical4j.version>1.0-BW-SNAPSHOT</ical4j.version>
+		<ical4j.version>1.1-BW-SNAPSHOT</ical4j.version>
 		<apache-http.version>4.2.2</apache-http.version>
 		<ehcache.version>1.6.2</ehcache.version>
 		<junit.version>4.8.2</junit.version>
