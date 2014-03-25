@@ -64,11 +64,11 @@
     <orderEntry type="module" module-name="bw-util-timezones" />
     <orderEntry type="module" module-name="bw-util-caching" />
     <orderEntry type="module" module-name="bw-caldav-util" />
-    <orderEntry type="library" name="Maven: org.bedework:bw-ws-synchws:4.0.0" level="project" />
-    <orderEntry type="library" name="Maven: org.bedework:bw-ws-caldav:4.0.0" level="project" />
+    <orderEntry type="module" module-name="bw-ws-synchws" />
+    <orderEntry type="module" module-name="bw-ws-caldav" />
     <orderEntry type="module" module-name="bw-access" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.8.2" level="project" />
-    <orderEntry type="library" name="Maven: org.bedework:bw-webdav:4.0.0" level="project" />
+    <orderEntry type="module" module-name="bw-webdav" />
     <orderEntry type="module" module-name="bw-util-servlet" />
     <orderEntry type="library" name="Maven: org.apache.james.jdkim:apache-jdkim-library:0.2-BW" level="project" />
     <orderEntry type="library" name="Maven: org.apache.geronimo.specs:geronimo-activation_1.1_spec:1.0.2" level="project" />
