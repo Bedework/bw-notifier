@@ -15,10 +15,15 @@
     KIND, either express or implied. See the License for the
     specific language governing permissions and limitations
     under the License.
-*/
+ */
 package org.bedework.notifier.outbound.common;
 
 import org.apache.log4j.Logger;
+import org.bedework.caldav.util.sharing.InviteNotificationType;
+import org.bedework.notifier.exception.NoteException;
+import org.bedework.notifier.notifications.AppleNotification;
+import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.notifications.Notification.NotificationKind;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -28,65 +33,87 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  */
 public abstract class AbstractAdaptor implements Adaptor {
-  private transient Logger log;
+	private transient Logger log;
 
-  private static AtomicLong nextId = new AtomicLong();
+	private static AtomicLong nextId = new AtomicLong();
 
-  private Long id;
+	private Long id;
 
-  protected AdaptorConfig conf;
+	protected AdaptorConfig conf;
 
-  protected AbstractAdaptor() {
-    id = nextId.incrementAndGet();
-  }
+	protected AbstractAdaptor() {
+		id = nextId.incrementAndGet();
+	}
 
-  public long getId() {
-    return id;
-  }
+	public long getId() {
+		return id;
+	}
 
-  public void setConf(AdaptorConfig conf) {
-    this.conf = conf;
-  }
+	public void setConf(AdaptorConfig conf) {
+		this.conf = conf;
+	}
 
-  public AdaptorConfig getConf() {
-    return conf;
-  }
+	public AdaptorConfig getConf() {
+		return conf;
+	}
 
-  public String getType() {
-    return conf.getType();
-  }
+	public String getType() {
+		return conf.getType();
+	}
 
-  /* ====================================================================
-   *                   Protected methods
-   * ==================================================================== */
+	public boolean process(final Notification note) throws NoteException {
+		switch (note.getKind()) {
+		case sharingInvitation:
+			return processSharingInvitation(note);
+		case subscribeInvitation:
+			return processSubscribeInvitation(note);
+		case resourceChange:
+			return processResourceChange(note);
+		}
+		return false;
+	}
 
-  protected void info(final String msg) {
-    getLogger().info(msg);
-  }
+	public abstract boolean processSharingInvitation(final Notification note) throws NoteException;
+	
+	public abstract boolean processSubscribeInvitation(final Notification note) throws NoteException;
 
-  protected void trace(final String msg) {
-    getLogger().debug(msg);
-  }
+	public abstract boolean processResourceChange(final Notification note) throws NoteException;
+	
+	protected String stripMailTo(String address) {
+		return address.replaceAll("^mailto:", "");
+	}
+	
+	/* ====================================================================
+	 *                   Protected methods
+	 * ==================================================================== */
 
-  protected void error(final Throwable t) {
-    getLogger().error(this, t);
-  }
+	protected void info(final String msg) {
+		getLogger().info(msg);
+	}
 
-  protected void error(final String msg) {
-    getLogger().error(msg);
-  }
+	protected void trace(final String msg) {
+		getLogger().debug(msg);
+	}
 
-  protected void warn(final String msg) {
-    getLogger().warn(msg);
-  }
+	protected void error(final Throwable t) {
+		getLogger().error(this, t);
+	}
 
-  /* Get a logger for messages
-   */
-  protected Logger getLogger() {
-    if (log == null) {
-      log = Logger.getLogger(this.getClass());
-    }
+	protected void error(final String msg) {
+		getLogger().error(msg);
+	}
 
-    return log;
-  }
+	protected void warn(final String msg) {
+		getLogger().warn(msg);
+	}
+
+	/* Get a logger for messages
+	 */
+	protected Logger getLogger() {
+		if (log == null) {
+			log = Logger.getLogger(this.getClass());
+		}
+
+		return log;
+	}
 }

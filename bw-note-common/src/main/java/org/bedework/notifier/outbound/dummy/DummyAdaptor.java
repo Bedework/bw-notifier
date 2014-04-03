@@ -15,7 +15,7 @@
     KIND, either express or implied. See the License for the
     specific language governing permissions and limitations
     under the License.
-*/
+ */
 package org.bedework.notifier.outbound.dummy;
 
 import org.bedework.notifier.exception.NoteException;
@@ -29,9 +29,22 @@ import org.bedework.notifier.outbound.common.AbstractAdaptor;
  *
  */
 public class DummyAdaptor extends AbstractAdaptor {
-  public boolean send(final Notification note) throws NoteException {
-    info("Call to send notification: " + note);
 
-    return true;
-  }
+	@Override
+	public boolean processSharingInvitation(Notification note) throws NoteException {
+		info("Call to processSharingInvitation: " + note);
+		return false;
+	}
+
+	@Override
+	public boolean processSubscribeInvitation(Notification note) throws NoteException {
+		info("Call to processSubscribeInvitation: " + note);
+		return false;
+	}
+
+	@Override
+	public boolean processResourceChange(Notification note) throws NoteException {
+		info("Call to processResourceChange: " + note);
+		return false;
+	}
 }

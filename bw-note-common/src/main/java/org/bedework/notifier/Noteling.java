@@ -155,7 +155,7 @@ public class Noteling {
 
     try {
       for (final Adaptor adaptor: adaptors) {
-        adaptor.send(action.getNote());
+        adaptor.process(action.getNote());
       }
     } finally {
       // TODO - put the notification back on the queue for status update

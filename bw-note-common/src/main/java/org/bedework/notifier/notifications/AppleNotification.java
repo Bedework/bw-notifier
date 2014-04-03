@@ -15,8 +15,10 @@
     KIND, either express or implied. See the License for the
     specific language governing permissions and limitations
     under the License.
-*/
+ */
 package org.bedework.notifier.notifications;
+
+import java.util.HashMap;
 
 import org.bedework.caldav.util.notifications.BaseNotificationType;
 import org.bedework.util.xml.tagdefs.AppleServerTags;
@@ -36,36 +38,37 @@ import javax.xml.namespace.QName;
  *
  */
 public class AppleNotification extends Notification<BaseNotificationType> {
-  /**
-   * Create a notification
-   *
-   * @param notification
-   */
-  public AppleNotification(final BaseNotificationType notification) {
-    super(notification);
-  }
+	
+	/**
+	 * Create a notification
+	 *
+	 * @param notification
+	 */
+	public AppleNotification(final BaseNotificationType notification) {
+		super(notification);
+	}
 
-  @Override
-  public Boolean isRegisteredRecipient() {
-    // TODO - extract this from the notification
-    return false;
-  }
+	@Override
+	public Boolean isRegisteredRecipient() {
+		// TODO - extract this from the notification
+		return false;
+	}
 
-  @Override
-  public NotificationKind getKind() {
-    BaseNotificationType bn = getNotification();
+	@Override
+	public NotificationKind getKind() {
+		BaseNotificationType bn = getNotification();
 
-    QName el = bn.getElementName();
+		QName el = bn.getElementName();
 
-    if (el.equals(AppleServerTags.inviteNotification)) {
-      return NotificationKind.sharingInvitation;
-    }
+		if (el.equals(AppleServerTags.inviteNotification)) {
+			return NotificationKind.sharingInvitation;
+		}
 
-    if (el.equals(AppleServerTags.resourceChange)) {
-      return NotificationKind.resourceChange;
-    }
+		if (el.equals(AppleServerTags.resourceChange)) {
+			return NotificationKind.resourceChange;
+		}
 
 
-    return null;
-  }
+		return null;
+	}
 }

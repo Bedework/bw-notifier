@@ -48,13 +48,13 @@ public interface Adaptor {
    */
   String getType();
 
-  /** Send a notification
+  /** Process a notification
    *
    * TODO - better status
    *
-   * @param note the notification to send
-   * @return true if sent ok
+   * @param note the notification to process
+   * @return true if processed ok
    * @throws NoteException
    */
-  boolean send(Notification note) throws NoteException;
+  boolean process(Notification note) throws NoteException;
 }

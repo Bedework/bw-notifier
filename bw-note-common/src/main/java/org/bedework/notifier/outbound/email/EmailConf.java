@@ -15,12 +15,11 @@
     KIND, either express or implied. See the License for the
     specific language governing permissions and limitations
     under the License.
-*/
+ */
 package org.bedework.notifier.outbound.email;
 
 import org.bedework.notifier.outbound.common.AdaptorConf;
-import org.bedework.notifier.outbound.dummy.DummyAdaptorConfig;
-import org.bedework.notifier.outbound.dummy.DummyConfMBean;
+import org.bedework.util.jmx.MBeanInfo;
 
 /** This configuration mbean is registered at startup by the main
  * configuration bean NotifyConf.
@@ -28,9 +27,88 @@ import org.bedework.notifier.outbound.dummy.DummyConfMBean;
  * @author douglm
  *
  */
-public class EmailConf extends AdaptorConf<DummyAdaptorConfig>
-    implements DummyConfMBean {
-  /* ========================================================================
-   * Conf properties
-   * ======================================================================== */
+public class EmailConf extends AdaptorConf<EmailAdaptorConfig> implements EmailConfMBean {
+	/* ========================================================================
+	 * Conf properties
+	 * ======================================================================== */
+
+	@Override
+	public void setProtocol(final String val) {
+		cfg.setProtocol(val);
+	}
+
+	@Override
+	public String getProtocol() {
+		return cfg.getProtocol();
+	}
+
+	@Override
+	public void setProtocolClass(final String val) {
+		cfg.setProtocolClass(val);
+	}
+
+	@Override
+	public String getProtocolClass() {
+		return cfg.getProtocolClass();
+	}
+
+	@Override
+	public void setServerUri(final String val) {
+		cfg.setServerUri(val);
+	}
+
+	@Override
+	public String getServerUri() {
+		return cfg.getServerUri();
+	}
+
+	@Override
+	public void setServerPort(final String val) {
+		cfg.setServerPort(val);
+	}
+
+	@Override
+	public String getServerPort() {
+		return cfg.getServerPort();
+	}
+
+	@Override
+	public void setServerUsername(final String val) {
+		cfg.setServerUsername(val);
+	}
+
+	@Override
+	public String getServerUsername() {
+		return cfg.getServerUsername();
+	}
+
+	@Override
+	public void setServerPassword(final String val) {
+		cfg.setServerPassword(val);
+	}
+
+	@Override
+	public String getServerPassword() {
+		return cfg.getServerPassword();
+	}
+
+	@Override
+	public void setFrom(final String val) {
+		cfg.setFrom(val);
+	}
+
+	@Override
+	public String getFrom() {
+		return cfg.getFrom();
+	}
+
+	@Override
+	public void setLocale(String val) {
+		cfg.setLocale(val);
+	}
+
+	@Override
+	public String getLocale() {
+		return cfg.getLocale();
+	}
 }

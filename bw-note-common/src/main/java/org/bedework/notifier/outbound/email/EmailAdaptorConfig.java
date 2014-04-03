@@ -15,7 +15,7 @@
     KIND, either express or implied. See the License for the
     specific language governing permissions and limitations
     under the License.
-*/
+ */
 package org.bedework.notifier.outbound.email;
 
 import org.bedework.notifier.outbound.common.AdaptorConfig;
@@ -29,103 +29,132 @@ import org.bedework.util.misc.ToString;
  */
 @ConfInfo(elementName = "notify-adaptor")
 public class EmailAdaptorConfig extends AdaptorConfig {
-  private String protocol;
+	private String protocol;
+	private String protocolClass;
+	private String serverUri;
+	private String serverPort;
+	private String serverUsername;
+	private String serverPassword;
+	private String from;
+	private String locale;
 
-  private String protocolClass;
+	/** valid protocol for which an implementation exists, e.g "imap", "smtp"
+	 *
+	 * @param val
+	 */
+	void setProtocol(String val)  {
+		protocol  = val;
+	}
 
-  private String serverUri;
+	/**
+	 * @return String
+	 */
+	@MBeanInfo("valid protocol for which an implementation exists, e.g \"imap\", \"smtp\".")
+	String getProtocol()  {
+		return protocol;
+	}
 
-  private String serverPort;
+	/** Implementation for the selected protocol
+	 *
+	 * @param val
+	 */
+	void setProtocolClass(String val)  {
+		protocolClass  = val;
+	}
 
-  private String from;
+	/**
+	 * @return String
+	 */
+	@MBeanInfo("Implementation for the selected protocol.")
+	String getProtocolClass()  {
+		return protocolClass;
+	}
 
-  /** valid protocol for which an implementation exists, e.g "imap", "smtp"
-   *
-   * @param val
-   */
-  void setProtocol(String val)  {
-    protocol  = val;
-  }
+	/** Where we send it.
+	 *
+	 * @param val
+	 */
+	void setServerUri(String val)  {
+		serverUri  = val;
+	}
 
-  /**
-   * @return String
-   */
-  @MBeanInfo("valid protocol for which an implementation exists, e.g \"imap\", \"smtp\".")
-  String getProtocol()  {
-    return protocol;
-  }
+	/**
+	 * @return String
+	 */
+	@MBeanInfo("Location of server.")
+	String getServerUri()  {
+		return serverUri;
+	}
 
-  /** Implementation for the selected protocol
-   *
-   * @param val
-   */
-  void setProtocolClass(String val)  {
-    protocolClass  = val;
-  }
+	/**
+	 * @param val
+	 */
+	void setServerPort(String val)  {
+		serverPort  = val;
+	}
 
-  /**
-   * @return String
-   */
-  @MBeanInfo("Implementation for the selected protocol.")
-  String getProtocolClass()  {
-    return protocolClass;
-  }
+	/**
+	 * @return String
+	 */
+	@MBeanInfo("The server port.")
+	String getServerPort()  {
+		return serverPort;
+	}
 
-  /** Where we send it.
-   *
-   * @param val
-   */
-  void setServerUri(String val)  {
-    serverUri  = val;
-  }
+	@MBeanInfo("User name if authentication is required.")
+	public String getServerUsername() {
+		return serverUsername;
+	}
 
-  /**
-   * @return String
-   */
-  @MBeanInfo("Location of server.")
-  String getServerUri()  {
-    return serverUri;
-  }
+	public void setServerUsername(String serverUsername) {
+		this.serverUsername = serverUsername;
+	}
 
-  /**
-   * @param val
-   */
-  void setServerPort(String val)  {
-    serverPort  = val;
-  }
+	@MBeanInfo("User password if authentication is required.")
+	public String getServerPassword() {
+		return serverPassword;
+	}
 
-  /**
-   * @return String
-   */
-  @MBeanInfo("The server port.")
-  String getServerPort()  {
-    return serverPort;
-  }
+	public void setServerPassword(String serverPassword) {
+		this.serverPassword = serverPassword;
+	}
 
-  /** Address we use when none supplied
-   *
-   * @param val
-   */
-  void setFrom(String val)  {
-    from = val;
-  }
+	/** Address we use when none supplied
+	 *
+	 * @param val
+	 */
+	void setFrom(String val)  {
+		from = val;
+	}
 
-  /**
-   * @return String
-   */
-  @MBeanInfo("Address we use when none supplied.")
-  String getFrom()  {
-    return from;
-  }
+	/**
+	 * @return String
+	 */
+	@MBeanInfo("Address we use when none supplied.")
+	String getFrom()  {
+		return from;
+	}
 
-  @Override
-  public void toStringSegment(final ToString ts) {
-    super.toStringSegment(ts);
+	public void setLocale(String locale) {
+		this.locale = locale;
+	}
 
-    ts.append("protocol", getProtocol());
-    ts.append("protocolClass", getProtocolClass());
-    ts.append("serverUri", getServerUri());
-    ts.append("serverPort", getServerPort());
-    ts.append("from", getFrom());
-  }
+	/**
+	 * @return String
+	 */
+	@MBeanInfo("Local to user for adaptor emails.")
+	public String getLocale() {
+		return locale;
+	}
+
+	@Override
+	public void toStringSegment(final ToString ts) {
+		super.toStringSegment(ts);
+
+		ts.append("protocol", getProtocol());
+		ts.append("protocolClass", getProtocolClass());
+		ts.append("serverUri", getServerUri());
+		ts.append("serverPort", getServerPort());
+		ts.append("from", getFrom());
+	}
 }

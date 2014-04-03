@@ -70,6 +70,6 @@ public interface AdaptorConfigI {
   /**
    * @return the max number of instances
    */
-  @MBeanInfo("The type of adaptor.")
+  @MBeanInfo("The max number of instances.")
   int getMaxInstances();
 }
