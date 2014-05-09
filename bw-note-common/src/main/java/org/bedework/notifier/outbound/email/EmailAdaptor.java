@@ -18,25 +18,25 @@
  */
 package org.bedework.notifier.outbound.email;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-
+import org.bedework.caldav.util.notifications.ProcessorType;
 import org.bedework.caldav.util.sharing.InviteNotificationType;
-import org.bedework.caldav.util.sharing.OrganizerType;
 import org.bedework.notifier.exception.NoteException;
-import org.bedework.notifier.notifications.AppleNotification;
-import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.outbound.common.AbstractAdaptor;
 import org.bedework.notifier.outbound.common.AdaptorConfig;
+import org.bedework.util.http.HttpUtil;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /** The interface implemented by destination adaptors. A destination
  * may be an email address or sms.
  *
- * @author Mike Douglass
+ * @author Greg Allen
  *
  */
 public class EmailAdaptor extends AbstractAdaptor {
-	
+
 	private static final String BUNDLE_NAME = "org.bedework.notifier.outbound.email.notifications";
 	private static final String KEY_SHARE_EXTERNAL_SUBJECT = "share.invitation.external.subject";
 	private static final String KEY_SHARE_EXTERNAL_TEXT = "share.invitation.external.text";
@@ -44,22 +44,30 @@ public class EmailAdaptor extends AbstractAdaptor {
 	private static final String KEY_SHARE_INTERNAL_SUBJECT = "share.invitation.internal.subject";
 	private static final String KEY_SHARE_INTERNAL_TEXT = "share.invitation.internal.text";
 	private static final String KEY_SHARE_INTERNAL_HTML = "share.invitation.internal.html";
-	
+
 	private static ResourceBundle bundle;
-	
+
 	private Mailer mailer;
-	
+
 	@Override
-	public void setConf(AdaptorConfig config) {
+	public void setConf(final AdaptorConfig config) {
 		super.setConf(config);
 		getResourceBundle();
 	}
 
 	@Override
-	public boolean processSharingInvitation(Notification note) throws NoteException {
-		InviteNotificationType invite = (InviteNotificationType) note.getNotification();
-		EmailMessage email = new EmailMessage(stripMailTo(invite.getOrganizer().getHref()), null);
-		
+	public boolean processSharingInvitation(final Note note) throws NoteException {
+    final ProcessorType pt = getProcessorStatus(note);
+
+    if (processed(pt)) {
+      return true;
+    }
+
+    final InviteNotificationType invite =
+            (InviteNotificationType)note.getNotificationContent();
+
+    final EmailMessage email = new EmailMessage(stripMailTo(invite.getOrganizer().getHref()), null);
+
 		email.addTo(stripMailTo(invite.getHref()));
 		if (note.isRegisteredRecipient()) {
 			info("Inviting registered user " + invite.getHref() + ":\n" + invite);
@@ -71,7 +79,7 @@ public class EmailAdaptor extends AbstractAdaptor {
 				email.addBody(EmailMessage.CONTENT_TYPE_HTML, bundle.getString(KEY_SHARE_INTERNAL_HTML));
 			}
 		} else {
-//			info("Inviting unregistered user " + invite.getHref() + ":\n" + invite);			
+//			info("Inviting unregistered user " + invite.getHref() + ":\n" + invite);
 			email.setSubject(bundle.getString(KEY_SHARE_EXTERNAL_SUBJECT));
 			if (bundle.containsKey(KEY_SHARE_EXTERNAL_TEXT)) {
 				email.addBody(EmailMessage.CONTENT_TYPE_PLAIN, bundle.getString(KEY_SHARE_EXTERNAL_TEXT));
@@ -80,30 +88,34 @@ public class EmailAdaptor extends AbstractAdaptor {
 				email.addBody(EmailMessage.CONTENT_TYPE_HTML, bundle.getString(KEY_SHARE_EXTERNAL_HTML));
 			}
 		}
-		
+
 		getMailer().send(email);
-		return false;
+
+    pt.setDtstamp(getDtstamp());
+    pt.setStatus(HttpUtil.makeOKHttpStatus());
+
+		return true;
 	}
 
 	@Override
-	public boolean processSubscribeInvitation(Notification note) throws NoteException {
+	public boolean processSubscribeInvitation(final Note note) throws NoteException {
 		info("Call to processSubscribeInvitation: " + note);
 		return false;
 	}
 
 	@Override
-	public boolean processResourceChange(Notification note) throws NoteException {
+	public boolean processResourceChange(final Note note) throws NoteException {
 		info("Call to processResourceChange: " + note);
 		return false;
 	}
-	
+
 	public EmailAdaptorConfig getConf() {
 		return (EmailAdaptorConfig)super.getConf();
 	}
-	
+
 	private ResourceBundle getResourceBundle() {
 		if (bundle == null) {
-			EmailAdaptorConfig conf = (EmailAdaptorConfig)getConf();
+      final EmailAdaptorConfig conf = getConf();
 			if (conf.getLocale() == null) {
 				bundle = ResourceBundle.getBundle(BUNDLE_NAME);
 			} else {
@@ -112,22 +124,23 @@ public class EmailAdaptor extends AbstractAdaptor {
 		}
 		return bundle;
 	}
-	
+
 	private Mailer getMailer() {
 		if (mailer == null) {
 			mailer = new Mailer(getConf());
 		}
 		return mailer;
 	}
-	
-	public static void main(String[] args) {
-		InviteNotificationType invite = new InviteNotificationType();
+
+  /* Not sure if this can work now we have updates
+	public static void main(final String[] args) {
+    final InviteNotificationType invite = new InviteNotificationType();
 		invite.setHref("mailto:gallen@mycalet.com");
-		OrganizerType organizer = new OrganizerType();
+    final OrganizerType organizer = new OrganizerType();
 		organizer.setHref("mailto:support@mycalet.com");
 		invite.setOrganizer(organizer);
-		
-		EmailAdaptorConfig config = new EmailAdaptorConfig();
+
+    final EmailAdaptorConfig config = new EmailAdaptorConfig();
 		config.setLocale("en_US");
 		config.setProtocol("smtp");
 		config.setServerPassword("c@lend@r");
@@ -135,15 +148,19 @@ public class EmailAdaptor extends AbstractAdaptor {
 		config.setServerUri("mail.mycalet.com");
 		config.setServerUsername("root");
 		config.setProtocolClass("com.sun.mail.smtp.SMTPTransport");
-		
-		AppleNotification note = new AppleNotification(invite);
-		EmailAdaptor adapter = new EmailAdaptor();
+
+    final NotificationType notification = new NotificationType();
+    notification.setNotification(invite);
+
+    final AppleNotification note = new AppleNotification(notification);
+    final EmailAdaptor adapter = new EmailAdaptor();
 		try {
 			adapter.setConf(config);
 			adapter.process(note);
-		} catch (NoteException e) {
+		} catch (final NoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+	*/
 }

@@ -19,7 +19,7 @@
 package org.bedework.notifier.outbound.dummy;
 
 import org.bedework.notifier.exception.NoteException;
-import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.outbound.common.AbstractAdaptor;
 
 /** The interface implemented by destination adaptors. A destination
@@ -31,19 +31,19 @@ import org.bedework.notifier.outbound.common.AbstractAdaptor;
 public class DummyAdaptor extends AbstractAdaptor {
 
 	@Override
-	public boolean processSharingInvitation(Notification note) throws NoteException {
+	public boolean processSharingInvitation(Note note) throws NoteException {
 		info("Call to processSharingInvitation: " + note);
 		return false;
 	}
 
 	@Override
-	public boolean processSubscribeInvitation(Notification note) throws NoteException {
+	public boolean processSubscribeInvitation(Note note) throws NoteException {
 		info("Call to processSubscribeInvitation: " + note);
 		return false;
 	}
 
 	@Override
-	public boolean processResourceChange(Notification note) throws NoteException {
+	public boolean processResourceChange(Note note) throws NoteException {
 		info("Call to processResourceChange: " + note);
 		return false;
 	}

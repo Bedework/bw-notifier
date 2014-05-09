@@ -18,7 +18,7 @@
 */
 package org.bedework.notifier.cnctrs;
 
-import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.notifier.exception.NoteException;
@@ -40,7 +40,7 @@ import java.util.List;
  */
 public abstract class AbstractConnector<T,
                                         TI extends AbstractConnectorInstance,
-                                        TN extends Notification,
+                                        TN extends Note,
                                         Tconf extends ConnectorConfig> implements Connector<TI,
                                                  TN> {
   protected Tconf config;

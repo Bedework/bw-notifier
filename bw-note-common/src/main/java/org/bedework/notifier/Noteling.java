@@ -23,12 +23,11 @@ import org.bedework.notifier.cnctrs.ConnectorInstance;
 import org.bedework.notifier.cnctrs.ConnectorInstance.NotifyItemsInfo;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
-import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.outbound.common.Adaptor;
 import org.bedework.util.misc.Util;
 
 import org.apache.log4j.Logger;
-import org.oasis_open.docs.ws_calendar.ns.soap.StatusType;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -58,6 +57,14 @@ public class Noteling {
   private final long notelingId;
 
   private final NotifyEngine notifier;
+
+  public enum StatusType {
+    OK,
+
+    Warning,
+
+    Reprocess
+  }
 
   /** Constructor
    *
@@ -105,8 +112,10 @@ public class Noteling {
         break;
 
       case processOutbound:
-        doOutBound(action);
-        break;
+        return doOutBound(action);
+
+      case processOutboundStatus:
+        return doOutBoundStatus(action);
     }
 
     return StatusType.OK;
@@ -125,13 +134,13 @@ public class Noteling {
       return;
     }
 
-    final List<Notification> notes = ci.fetchItems(nii.items);
+    final List<Note> notes = ci.fetchItems(nii.items);
 
     if (Util.isEmpty(notes)) {
       return;
     }
 
-    for (final Notification note: notes) {
+    for (final Note note: notes) {
       if (debug) {
         trace("Got notification " + note);
       }
@@ -143,25 +152,57 @@ public class Noteling {
     }
   }
 
-  private void doOutBound(final Action action) throws NoteException {
+  private StatusType doOutBound(final Action action) throws NoteException {
     final List<Adaptor> adaptors =
             notifier.getAdaptors(action.getNote());
 
     if (Util.isEmpty(adaptors)) {
       warn("No adaptor for " + action);
       // TODO - delete it?
-      return;
+      return StatusType.OK;
     }
+
+    /* We attempt to process the action with all the adaptors.
+       Each adaptor can signal done or not completed. Done might mean
+       success or a permanent error.
+
+       Not completed means we should retry it.
+
+       Each adaptor should put it's status into the processors section
+       of the notification. When processing it should check this status
+       and just return done if it's already processed.
+     */
+    boolean allOk = true;
 
     try {
       for (final Adaptor adaptor: adaptors) {
-        adaptor.process(action.getNote());
+        try {
+          if (!adaptor.process(action.getNote())) {
+            allOk = false;
+          }
+        } catch (final Throwable t) {
+          error(t);
+          allOk = false;
+        }
       }
     } finally {
-      // TODO - put the notification back on the queue for status update
-
       notifier.releaseAdaptors(adaptors);
     }
+
+    if (!allOk) {
+      return StatusType.Reprocess;
+    }
+
+    action.setType(ActionType.processOutboundStatus);
+    return StatusType.OK;
+  }
+
+  private StatusType doOutBoundStatus(final Action action) throws NoteException {
+    final ConnectorInstance ci =
+            notifier.getConnectorInstance(action.getSub());
+
+    ci.updateItem(action.getNote());
+    return StatusType.OK;
   }
 
   /* ====================================================================

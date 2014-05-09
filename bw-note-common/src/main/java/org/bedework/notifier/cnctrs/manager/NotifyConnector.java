@@ -18,7 +18,7 @@
 */
 package org.bedework.notifier.cnctrs.manager;
 
-import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.NotifyDefs.NotifyKind;
 import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.cnctrs.AbstractConnector;
@@ -40,7 +40,7 @@ import javax.servlet.http.HttpServletResponse;
 public class NotifyConnector
         extends AbstractConnector<NotifyConnector,
                                   NotifyConnectorInstance,
-                                  Notification,
+        Note,
                                   ConnectorConfig> {
   /**
    */
@@ -108,7 +108,7 @@ public class NotifyConnector
 
   @Override
   public void respondCallback(final HttpServletResponse resp,
-                              final NotificationBatch<Notification> notifications)
+                              final NotificationBatch<Note> notifications)
                                                     throws NoteException {
     try {
       /* We only expect single notification items in a batch */

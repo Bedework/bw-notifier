@@ -21,12 +21,13 @@ package org.bedework.notifier;
 import org.bedework.notifier.exception.NoteException;
 
 import org.apache.log4j.Logger;
-import org.oasis_open.docs.ws_calendar.ns.soap.StatusType;
 
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import static org.bedework.notifier.Noteling.StatusType;
 
 /** Subscriptions which are waiting for a period before resynching. These are
  * generally the polled kind but other subscriptions may be made to wait before
@@ -133,7 +134,15 @@ public class ActionQueue extends Thread {
             /* TODO The noteling needs to be running it's own thread. */
           final StatusType st = noteling.handleAction(action);
 
-          if (st == StatusType.WARNING) {
+          if (st == StatusType.Reprocess) {
+              /* Back on the queue to be processed again.
+               */
+
+            actionQueue.put(action);
+            continue;
+          }
+
+          if (st == StatusType.Warning) {
               /* Back on the queue - these need to be flagged so we don't get an
                * endless loop - perhaps we need a delay queue
                */

@@ -21,6 +21,7 @@ package org.bedework.notifier.cnctrs;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 
+import net.fortuna.ical4j.model.property.DtStamp;
 import org.apache.log4j.Logger;
 import org.oasis_open.docs.ws_calendar.ns.soap.BaseResponseType;
 
@@ -49,6 +50,10 @@ public abstract class AbstractConnectorInstance implements ConnectorInstance {
   /* ====================================================================
    *                   Protected methods
    * ==================================================================== */
+
+  protected String getDtstamp() {
+    return new DtStamp().getValue();
+  }
 
   /*
 

@@ -19,13 +19,12 @@
 package org.bedework.notifier.cnctrs;
 
 import org.bedework.notifier.exception.NoteException;
-import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.notifications.Note;
 import org.bedework.util.misc.ToString;
 
+import org.apache.http.HttpStatus;
 import org.oasis_open.docs.ws_calendar.ns.soap.BaseResponseType;
 import org.oasis_open.docs.ws_calendar.ns.soap.DeleteItemResponseType;
-import org.oasis_open.docs.ws_calendar.ns.soap.UpdateItemResponseType;
-import org.oasis_open.docs.ws_calendar.ns.soap.UpdateItemType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,22 +73,19 @@ public interface ConnectorInstance {
     public String lastMod;
 
     /** */
-    public String lastSynch;
-
-    /** */
     public boolean seen;
 
+    /** Status of last operation */
+    public HttpStatus status;
+
     /**
-     * @param href
-     * @param lastMod
-     * @param lastSynch
+     * @param href for the resource
+     * @param lastMod last time updated
      */
     public ItemInfo(final String href,
-                     final String lastMod,
-                     final String lastSynch) {
+                     final String lastMod) {
       this.href = href;
       this.lastMod = lastMod;
-      this.lastSynch = lastSynch;
     }
 
     @Override
@@ -98,7 +94,6 @@ public interface ConnectorInstance {
 
       ts.append("href", href);
       ts.append("lastMod", lastMod);
-      ts.append("lastSynch", lastSynch);
 
       return ts.toString();
     }
@@ -133,7 +128,7 @@ public interface ConnectorInstance {
    * @return response
    * @throws NoteException
    */
-  Notification fetchItem(ItemInfo item) throws NoteException;
+  Note fetchItem(ItemInfo item) throws NoteException;
 
   /** Fetch a batch of resources. The number and order of the result
    * set must match that of the parameter uids.
@@ -142,14 +137,13 @@ public interface ConnectorInstance {
    * @return responses
    * @throws NoteException
    */
-  List<Notification> fetchItems(List<ItemInfo> items) throws NoteException;
+  List<Note> fetchItems(List<ItemInfo> items) throws NoteException;
 
-  /** Update a calendar component. The updates component has the change token
-   * href, and the component selection fields set.
+  /** Update a notification.
    *
-   * @param updates
-   * @return response
+   * @param note - specifyng the item to be updated
+   * @return true OK -false check status
    * @throws NoteException
    */
-  UpdateItemResponseType updateItem(UpdateItemType updates) throws NoteException;
+  boolean updateItem(Note note) throws NoteException;
 }

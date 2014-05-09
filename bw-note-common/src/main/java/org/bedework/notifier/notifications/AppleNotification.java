@@ -18,9 +18,9 @@
  */
 package org.bedework.notifier.notifications;
 
-import java.util.HashMap;
-
 import org.bedework.caldav.util.notifications.BaseNotificationType;
+import org.bedework.caldav.util.notifications.NotificationType;
+import org.bedework.notifier.cnctrs.ConnectorInstance.ItemInfo;
 import org.bedework.util.xml.tagdefs.AppleServerTags;
 
 import javax.xml.namespace.QName;
@@ -37,15 +37,17 @@ import javax.xml.namespace.QName;
  * @author douglm
  *
  */
-public class AppleNotification extends Notification<BaseNotificationType> {
-	
+public class AppleNotification extends Note<BaseNotificationType> {
+
 	/**
 	 * Create a notification
 	 *
-	 * @param notification
+	 * @param itemInfo so we can update it
+   * @param notification the notification
 	 */
-	public AppleNotification(final BaseNotificationType notification) {
-		super(notification);
+	public AppleNotification(final ItemInfo itemInfo,
+                           final NotificationType notification) {
+		super(itemInfo, notification);
 	}
 
 	@Override
@@ -56,7 +58,7 @@ public class AppleNotification extends Notification<BaseNotificationType> {
 
 	@Override
 	public NotificationKind getKind() {
-		BaseNotificationType bn = getNotification();
+		BaseNotificationType bn = getNotificationContent();
 
 		QName el = bn.getElementName();
 

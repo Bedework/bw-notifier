@@ -18,6 +18,9 @@
 */
 package org.bedework.notifier.notifications;
 
+import org.bedework.caldav.util.notifications.BaseNotificationType;
+import org.bedework.caldav.util.notifications.NotificationType;
+import org.bedework.notifier.cnctrs.ConnectorInstance.ItemInfo;
 import org.bedework.util.misc.ToString;
 
 /** Notification from external system. We extract some of the system specific
@@ -29,12 +32,17 @@ import org.bedework.util.misc.ToString;
  *
  * <p>This can enclose an invitation or notification from bedework.
  *
+ * <p>The incoming notification is a generic wrapper with common fields
+ * which encloses different types of notification message.</p>
+ *
  * @author douglm
  *
  * @param <T>
  */
-public abstract class Notification<T> {
-  private final T notification;
+public abstract class Note<T extends BaseNotificationType> {
+  private final ItemInfo itemInfo;
+
+  private final NotificationType notification;
 
   public static enum NotificationKind {
     /** The owner of a collection is inviting the recipient to share
@@ -62,8 +70,13 @@ public abstract class Notification<T> {
   private DeliveryMethod deliveryMethod;
 
   /** Create a notification
+   *
+   * @param itemInfo so we can update it
+   * @param notification the notification
    */
-  public Notification(final T notification) {
+  public Note(final ItemInfo itemInfo,
+              final NotificationType notification) {
+    this.itemInfo = itemInfo;
     this.notification = notification;
   }
 
@@ -80,10 +93,25 @@ public abstract class Notification<T> {
   public abstract NotificationKind getKind();
 
   /**
-   * @return the wrapped notification
+   * @return info about where it came from
    */
-  public T getNotification() {
+  public ItemInfo getItemInfo() {
+    return itemInfo;
+  }
+
+  /**
+   * @return the wrapped notification content
+   */
+  public NotificationType getNotification() {
     return notification;
+  }
+
+  /**
+   * @return the wrapped notification content
+   */
+  @SuppressWarnings("unchecked")
+  public T getNotificationContent() {
+    return (T)notification.getNotification();
   }
 
   /**

@@ -19,7 +19,7 @@
 package org.bedework.notifier.cnctrs.bedework;
 
 import org.bedework.notifier.BaseSubscriptionInfo;
-import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.NotifyDefs.NotifyKind;
 import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.cnctrs.AbstractConnector;
@@ -57,7 +57,7 @@ import javax.servlet.http.HttpServletResponse;
 public class BedeworkConnector
       extends AbstractConnector<BedeworkConnector,
                                 BedeworkConnectorInstance,
-                                Notification,
+        Note,
                                 BedeworkConnectorConfig> {
   private final ConnectorInstanceMap<BedeworkConnectorInstance> cinstMap =
       new ConnectorInstanceMap<>();
@@ -165,7 +165,7 @@ public class BedeworkConnector
     return inst;
   }
 
-  class BedeworkNotificationBatch extends NotificationBatch<Notification> {
+  class BedeworkNotificationBatch extends NotificationBatch<Note> {
   }
 
   @Override
@@ -177,7 +177,7 @@ public class BedeworkConnector
 
   @Override
   public void respondCallback(final HttpServletResponse resp,
-                              final NotificationBatch<Notification> notifications)
+                              final NotificationBatch<Note> notifications)
                                                     throws NoteException {
   }
 
@@ -206,6 +206,7 @@ public class BedeworkConnector
 
     authheaders = new ArrayList<>(1);
     authheaders.add(new BasicHeader("X-BEDEWORK-NOTE", id + ":" + token));
+    authheaders.add(new BasicHeader("X-BEDEWORK-EXTENSIONS", "true"));
 
     return authheaders;
   }

@@ -18,7 +18,7 @@
 */
 package org.bedework.notifier.cnctrs;
 
-import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.NotifyDefs.NotifyKind;
 import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.conf.ConnectorConfig;
@@ -50,7 +50,7 @@ import javax.servlet.http.HttpServletResponse;
  * @param <N>
  */
 public interface Connector<C extends ConnectorInstance,
-                           N extends Notification> {
+                           N extends Note> {
   /** Start the connector. A response of null means no synch available.
    *
    * <p>The callback url is unique to the connector. It will be used as a path
@@ -149,7 +149,7 @@ public interface Connector<C extends ConnectorInstance,
    *
    * @param <N>
    */
-  static class NotificationBatch<N extends Notification> {
+  static class NotificationBatch<N extends Note> {
     private List<N> notifications = new ArrayList<N>();
 
     private StatusType status;

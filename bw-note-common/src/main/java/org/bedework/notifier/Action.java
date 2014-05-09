@@ -19,7 +19,7 @@
 package org.bedework.notifier;
 
 import org.bedework.notifier.db.Subscription;
-import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.notifications.Note;
 import org.bedework.util.misc.ToString;
 
 /** Internal system action.
@@ -35,14 +35,18 @@ public class Action {
     fetchItems,
 
     /** Process a single outbound notification */
-    processOutbound
-  };
+    processOutbound,
+
+    /** Process outbound notification response -
+     * We did the processOutbound - now echo back any status */
+    processOutboundStatus
+  }
 
   private ActionType type;
 
-  private Subscription sub;
+  private final Subscription sub;
 
-  private Notification note;
+  private final Note note;
 
   /** Create an action
    */
@@ -55,10 +59,17 @@ public class Action {
    */
   public Action(final ActionType type,
                 final Subscription sub,
-                final Notification note) {
+                final Note note) {
     this.type = type;
     this.sub = sub;
     this.note = note;
+  }
+
+  /**
+   * @param val the action type
+   */
+  public void setType(final ActionType val) {
+    type = val;
   }
 
   /**
@@ -78,7 +89,7 @@ public class Action {
   /**
    * @return notification for this action
    */
-  public Notification getNote() {
+  public Note getNote() {
     return note;
   }
 
@@ -87,7 +98,7 @@ public class Action {
   }
 
   public String toString() {
-    ToString ts = new ToString(this);
+    final ToString ts = new ToString(this);
 
     toStringSegment(ts);
 

@@ -18,14 +18,18 @@
  */
 package org.bedework.notifier.outbound.common;
 
-import org.apache.log4j.Logger;
-import org.bedework.caldav.util.sharing.InviteNotificationType;
+import org.bedework.caldav.util.notifications.ProcessorType;
+import org.bedework.caldav.util.notifications.ProcessorsType;
 import org.bedework.notifier.exception.NoteException;
-import org.bedework.notifier.notifications.AppleNotification;
-import org.bedework.notifier.notifications.Notification;
-import org.bedework.notifier.notifications.Notification.NotificationKind;
+import org.bedework.notifier.notifications.Note;
+import org.bedework.util.http.HttpUtil;
+
+import net.fortuna.ical4j.model.property.DtStamp;
+import org.apache.log4j.Logger;
 
 import java.util.concurrent.atomic.AtomicLong;
+
+import javax.servlet.http.HttpServletResponse;
 
 /** Some useful methods..
  *
@@ -35,9 +39,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class AbstractAdaptor implements Adaptor {
 	private transient Logger log;
 
-	private static AtomicLong nextId = new AtomicLong();
+	private final static AtomicLong nextId = new AtomicLong();
 
-	private Long id;
+	private final Long id;
 
 	protected AdaptorConfig conf;
 
@@ -49,7 +53,7 @@ public abstract class AbstractAdaptor implements Adaptor {
 		return id;
 	}
 
-	public void setConf(AdaptorConfig conf) {
+	public void setConf(final AdaptorConfig conf) {
 		this.conf = conf;
 	}
 
@@ -61,7 +65,12 @@ public abstract class AbstractAdaptor implements Adaptor {
 		return conf.getType();
 	}
 
-	public boolean process(final Notification note) throws NoteException {
+  /**
+   * @param note the notification to process
+   * @return true if processed OK
+   * @throws NoteException
+   */
+	public boolean process(final Note note) throws NoteException {
 		switch (note.getKind()) {
 		case sharingInvitation:
 			return processSharingInvitation(note);
@@ -73,21 +82,85 @@ public abstract class AbstractAdaptor implements Adaptor {
 		return false;
 	}
 
-	public abstract boolean processSharingInvitation(final Notification note) throws NoteException;
-	
-	public abstract boolean processSubscribeInvitation(final Notification note) throws NoteException;
+  /**
+   * @param note the notification
+   * @return true if processed OK
+   * @throws NoteException
+   */
+	public abstract boolean processSharingInvitation(final Note note) throws NoteException;
 
-	public abstract boolean processResourceChange(final Notification note) throws NoteException;
-	
-	protected String stripMailTo(String address) {
-		return address.replaceAll("^mailto:", "");
-	}
-	
+  /**
+   * @param note the notification
+   * @return true if processed OK
+   * @throws NoteException
+   */
+	public abstract boolean processSubscribeInvitation(final Note note) throws NoteException;
+
+  /**
+   * @param note the notification
+   * @return true if processed OK
+   * @throws NoteException
+   */
+	public abstract boolean processResourceChange(final Note note) throws NoteException;
+
 	/* ====================================================================
 	 *                   Protected methods
 	 * ==================================================================== */
 
-	protected void info(final String msg) {
+  protected String getDtstamp() {
+    return new DtStamp().getValue();
+  }
+
+  protected ProcessorType getProcessorStatus(final Note note) {
+    ProcessorsType pst = note.getNotification().getProcessors();
+    ProcessorType pt = null;
+
+    if (pst != null) {
+      for (final ProcessorType notePt: pst.getProcessor()) {
+        // TODO Define standard types?
+        if (notePt.getType().equals("email")) {
+          pt = notePt;
+          break;
+        }
+      }
+    }
+
+    if (pt != null) {
+      return pt;
+    }
+
+    if (pst == null) {
+      pst = new ProcessorsType();
+      note.getNotification().setProcessors(pst);
+    }
+    pt = new ProcessorType();
+    pt.setType("email");
+
+    pst.getProcessor().add(pt);
+
+    return pt;
+  }
+
+  protected boolean processed(final ProcessorType pt) {
+    if (pt.getStatus() == null) {
+      return false;
+    }
+
+    try {
+      final int scode = HttpUtil.getHttpStatus(pt.getStatus()).getStatusCode();
+
+      return scode == HttpServletResponse.SC_OK;
+    } catch (final Throwable t) {
+      warn("Bad status: " + pt.getStatus());
+      return false;
+    }
+  }
+
+  protected String stripMailTo(final String address) {
+    return address.replaceAll("^mailto:", "");
+  }
+
+  protected void info(final String msg) {
 		getLogger().info(msg);
 	}
 

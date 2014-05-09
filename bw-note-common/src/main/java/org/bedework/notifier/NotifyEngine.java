@@ -24,7 +24,7 @@ import org.bedework.notifier.conf.NotifyConfig;
 import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
-import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.outbound.common.Adaptor;
 import org.bedework.util.calendar.XcalUtil.TzGetter;
 import org.bedework.util.http.BasicHttpClient;
@@ -323,7 +323,7 @@ public class NotifyEngine extends TzGetter {
     activeSubs.put(sub.getSubscriptionId(), sub);
   }
 
-  public void queueNotification(final Notification note) throws NoteException {
+  public void queueNotification(final Note note) throws NoteException {
 
   }
 
@@ -528,7 +528,7 @@ public class NotifyEngine extends TzGetter {
    * @return list of adaptors
    * @throws NoteException
    */
-  public List<Adaptor> getAdaptors(final Notification note) throws NoteException {
+  public List<Adaptor> getAdaptors(final Note note) throws NoteException {
     final Adaptor a = adaptorPool.getAdaptor(note.getDeliveryMethod().toString());
 
     if (a == null) {

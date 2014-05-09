@@ -19,7 +19,7 @@
 package org.bedework.notifier.outbound.common;
 
 import org.bedework.notifier.exception.NoteException;
-import org.bedework.notifier.notifications.Notification;
+import org.bedework.notifier.notifications.Note;
 
 /** The interface implemented by destination adaptors. A destination
  * may be an email address or sms.
@@ -56,5 +56,5 @@ public interface Adaptor {
    * @return true if processed ok
    * @throws NoteException
    */
-  boolean process(Notification note) throws NoteException;
+  boolean process(Note note) throws NoteException;
 }

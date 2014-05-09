@@ -25,8 +25,8 @@ import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.AppleNotification;
-import org.bedework.notifier.notifications.Notification;
-import org.bedework.notifier.notifications.Notification.DeliveryMethod;
+import org.bedework.notifier.notifications.Note;
+import org.bedework.notifier.notifications.Note.DeliveryMethod;
 import org.bedework.util.dav.DavUtil;
 import org.bedework.util.dav.DavUtil.DavChild;
 import org.bedework.util.dav.DavUtil.DavProp;
@@ -36,8 +36,6 @@ import org.bedework.util.xml.tagdefs.AppleServerTags;
 
 import org.apache.http.HttpException;
 import org.oasis_open.docs.ws_calendar.ns.soap.DeleteItemResponseType;
-import org.oasis_open.docs.ws_calendar.ns.soap.UpdateItemResponseType;
-import org.oasis_open.docs.ws_calendar.ns.soap.UpdateItemType;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -125,7 +123,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
           continue;
         }
 
-        final ItemInfo ii = new ItemInfo(ch.uri, null, null);
+        final ItemInfo ii = new ItemInfo(ch.uri, null);
         nii.items.add(ii);
       }
 
@@ -153,7 +151,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
   }
 
   @Override
-  public Notification fetchItem(final ItemInfo item) throws NoteException {
+  public Note fetchItem(final ItemInfo item) throws NoteException {
     if (debug) {
       trace("Fetch item " + item.href);
     }
@@ -161,14 +159,17 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     final BasicHttpClient cl = getClient();
 
     try {
-      final InputStream is = cl.get(item.href, cnctr.getAuthHeaders());
+      final InputStream is = cl.get(item.href,
+                                    "application/xml",
+                                    cnctr.getAuthHeaders());
 
       final NotificationType nt = Parser.fromXml(is);
 
       // TODO use nt.getDtstamp()?
 
-      Notification note = new AppleNotification(nt.getNotification());
+      Note note = new AppleNotification(item, nt);
 
+      // TODO temp - until we set this at the other end.
       note.setDeliveryMethod(DeliveryMethod.email);
 
       return note;
@@ -187,10 +188,10 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
   }
 
   @Override
-  public List<Notification> fetchItems(final List<ItemInfo> items) throws NoteException {
+  public List<Note> fetchItems(final List<ItemInfo> items) throws NoteException {
     // XXX this should be a search for multiple uids - need to reimplement caldav search
 
-    final List<Notification> firs = new ArrayList<>();
+    final List<Note> firs = new ArrayList<>();
 
     /* Set the base uri here so it's only done once per batch */
     getClient().setBaseURIValue(info.getUri());
@@ -203,8 +204,34 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
   }
 
   @Override
-  public UpdateItemResponseType updateItem(final UpdateItemType updates) throws NoteException {
-    return null;
+  public boolean updateItem(final Note note) throws NoteException {
+    final ItemInfo item = note.getItemInfo();
+
+    final NotificationType notification = note.getNotification();
+
+    notification.setDtstamp(getDtstamp());
+
+    final BasicHttpClient cl = getClient();
+
+    try {
+      String s = notification.toXml(true);
+
+      cl.putObject(item.href, s,
+                   "application/xml");
+
+      return true;
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    } finally {
+      if (cl != null){
+        try {
+          cl.release();
+        } catch (final HttpException e) {
+          error(e);
+        }
+        cl.close();
+      }
+    }
   }
 
   /* ====================================================================
