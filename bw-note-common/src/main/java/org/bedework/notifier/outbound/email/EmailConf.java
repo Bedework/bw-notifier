@@ -19,7 +19,6 @@
 package org.bedework.notifier.outbound.email;
 
 import org.bedework.notifier.outbound.common.AdaptorConf;
-import org.bedework.util.jmx.MBeanInfo;
 
 /** This configuration mbean is registered at startup by the main
  * configuration bean NotifyConf.
@@ -103,7 +102,7 @@ public class EmailConf extends AdaptorConf<EmailAdaptorConfig> implements EmailC
 	}
 
 	@Override
-	public void setLocale(String val) {
+	public void setLocale(final String val) {
 		cfg.setLocale(val);
 	}
 

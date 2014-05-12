@@ -43,7 +43,7 @@ public abstract class AbstractAdaptor implements Adaptor {
 
 	private final Long id;
 
-	protected AdaptorConfig conf;
+	protected AdaptorConf conf;
 
 	protected AbstractAdaptor() {
 		id = nextId.incrementAndGet();
@@ -53,12 +53,12 @@ public abstract class AbstractAdaptor implements Adaptor {
 		return id;
 	}
 
-	public void setConf(final AdaptorConfig conf) {
+	public void setConf(final AdaptorConf conf) {
 		this.conf = conf;
 	}
 
-	public AdaptorConfig getConf() {
-		return conf;
+	public AdaptorConfig getConfig() {
+		return (AdaptorConfig)conf.getConfig();
 	}
 
 	public String getType() {

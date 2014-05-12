@@ -89,6 +89,8 @@ public class ActionQueue extends Thread {
 
   @Override
   public void run() {
+    int exceptions = 0;
+
     while (true) {
       if (debug) {
         trace("About to wait for action");
@@ -149,6 +151,8 @@ public class ActionQueue extends Thread {
 
             actionQueue.put(action);
           }
+
+          exceptions = 0; // somethings working
         } finally {
           notelingPool.add(noteling);
         }
@@ -160,6 +164,7 @@ public class ActionQueue extends Thread {
         warn("Notification handler shutting down");
         break;
       } catch (final Throwable t) {
+        exceptions++;
         if (debug) {
           error(t);
         } else {
@@ -171,6 +176,10 @@ public class ActionQueue extends Thread {
           } else {
             error(t.getMessage());
           }
+        }
+
+        if (exceptions > 10) {
+          break; // Nothings working apparently.
         }
       }
     }

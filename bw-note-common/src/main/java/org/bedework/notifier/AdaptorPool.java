@@ -43,16 +43,16 @@ public class AdaptorPool {
   protected transient Logger log;
 
   private static class AdaptorState {
-    AdaptorConfig conf;
+    AdaptorConf conf;
 
     ArrayBlockingQueue<Adaptor> pool ;
 
     Map<Long, Adaptor> active = new HashMap<>();
   }
 
-  private Map<String, AdaptorState> adaptorMap = new HashMap<>();
+  private final Map<String, AdaptorState> adaptorMap = new HashMap<>();
 
-  private NotifyEngine notifier;
+  private final NotifyEngine notifier;
 
   private long timeout; // millisecs timeout wait
 
@@ -236,19 +236,19 @@ public class AdaptorPool {
       final String name = conf.getName();
       info("Register adaptor " + name + " with type " + conf.getType());
 
-      registerAdaptor(conf);
+      registerAdaptor(ac);
     }
   }
 
-  private void registerAdaptor(final AdaptorConfig conf) throws NoteException {
+  private void registerAdaptor(final AdaptorConf conf) throws NoteException {
     try {
-      String type = conf.getType();
+      final String type = conf.getType();
 
       if (adaptorMap.containsKey(type)) {
         throw new NoteException("Adaptor " + type + " already registered");
       }
 
-      AdaptorState as = new AdaptorState();
+      final AdaptorState as = new AdaptorState();
 
       as.conf = conf;
       as.pool = new ArrayBlockingQueue<Adaptor>(conf.getMaxInstances());

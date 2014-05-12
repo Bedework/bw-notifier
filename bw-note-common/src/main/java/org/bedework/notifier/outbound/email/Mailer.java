@@ -18,6 +18,8 @@
 */
 package org.bedework.notifier.outbound.email;
 
+import org.bedework.notifier.exception.NoteException;
+
 import java.util.Properties;
 
 import javax.activation.CommandMap;
@@ -36,76 +38,89 @@ import javax.mail.internet.MimeMultipart;
 public class Mailer {
 	EmailAdaptorConfig config;
 	Session session;
-	
-	public Mailer(EmailAdaptorConfig config) {
-	    this.config = config;
 
-	    Properties props = new Properties();
+  public Mailer(final EmailAdaptorConfig config) throws NoteException {
+    this.config = config;
 
-	    props.put("mail.transport.protocol", config.getProtocol());
-	    props.put("mail." + config.getProtocol() + ".class", config.getProtocolClass());
-	    props.put("mail." + config.getProtocol() + ".host", config.getServerUri());
-	    if (config.getServerPort() != null) {
-	      props.put("mail." + config.getProtocol() + ".port", config.getServerPort());
-	    }
-	    
-	    //  add handlers for main MIME types
-	    MailcapCommandMap mc = (MailcapCommandMap)CommandMap.getDefaultCommandMap();
-	    mc.addMailcap("text/html;; x-java-content-handler=com.sun.mail.handlers.text_html");
-	    mc.addMailcap("text/xml;; x-java-content-handler=com.sun.mail.handlers.text_xml");
-	    mc.addMailcap("text/plain;; x-java-content-handler=com.sun.mail.handlers.text_plain");
-	    mc.addMailcap("text/calendar;; x-java-content-handler=com.sun.mail.handlers.text_html");
-	    mc.addMailcap("multipart/*;; x-java-content-handler=com.sun.mail.handlers.multipart_mixed");
-	    mc.addMailcap("message/rfc822;; x-java-content-handler=com.sun.mail.handlers.message_rfc822");
-	    CommandMap.setDefaultCommandMap(mc);
-	    
-	    if (config.getServerUsername() != null) {
-	    	// Authentication required.
-	    	MailerAuthenticator authenticator = new MailerAuthenticator(config.getServerUsername(), config.getServerPassword());
-		    props.put("mail." + config.getProtocol() + ".auth", "true");
-		    session = Session.getInstance(props, authenticator);
-	    } else {
-	    	session = Session.getInstance(props);
-	    }
-	}
-	
-	public void send(BaseEmailMessage email) {
-		MimeMessage msg = new MimeMessage(session);
-		try {
-			if (email.getFrom() == null) {
-				msg.setFrom(new InternetAddress(config.getFrom()));
-			} else {
-				msg.setFrom(new InternetAddress(email.getFrom()));
-			}
+    final Properties props = new Properties();
 
-			for (String to : email.getTos()) {
-				msg.addRecipient(RecipientType.TO, new InternetAddress(to));
-			}
-			msg.setSubject(email.getSubject());
-			
-			MimeMultipart multipart = new MimeMultipart("alternative");
-			for (String type : email.getBodies().keySet()) {
-				MimeBodyPart part = new MimeBodyPart();
-				part.setContent(email.getBodies().get(type), type);
-				multipart.addBodyPart(part);
-			}
-			msg.setContent(multipart);
-			
-			Transport.send(msg);
-		} catch (MessagingException e) {
-			e.printStackTrace();
-		}
-	}
+    setNonNull(props, "mail.transport.protocol", config.getProtocol());
+    setNonNull(props, "mail." + config.getProtocol() + ".class",
+               config.getProtocolClass());
+    setNonNull(props, "mail." + config.getProtocol() + ".host",               config.getServerUri());
+    if (config.getServerPort() != null) {
+      props.put("mail." + config.getProtocol() + ".port",
+                config.getServerPort());
+    }
 
-	private class MailerAuthenticator extends Authenticator {
-		private PasswordAuthentication authentication;
-		
-		MailerAuthenticator(String user, String password) {
-			authentication = new PasswordAuthentication(user, password);
-		}
-	 
-		protected PasswordAuthentication getPasswordAuthentication() {
-			return authentication;
-		}
-	}
+    //  add handlers for main MIME types
+    final MailcapCommandMap mc = (MailcapCommandMap)CommandMap.getDefaultCommandMap();
+    mc.addMailcap("text/html;; x-java-content-handler=com.sun.mail.handlers.text_html");
+    mc.addMailcap("text/xml;; x-java-content-handler=com.sun.mail.handlers.text_xml");
+    mc.addMailcap("text/plain;; x-java-content-handler=com.sun.mail.handlers.text_plain");
+    mc.addMailcap("text/calendar;; x-java-content-handler=com.sun.mail.handlers.text_html");
+    mc.addMailcap("multipart/*;; x-java-content-handler=com.sun.mail.handlers.multipart_mixed");
+    mc.addMailcap("message/rfc822;; x-java-content-handler=com.sun.mail.handlers.message_rfc822");
+    CommandMap.setDefaultCommandMap(mc);
+
+    if (config.getServerUsername() != null) {
+      // Authentication required.
+      final MailerAuthenticator authenticator =
+              new MailerAuthenticator(config.getServerUsername(), config.getServerPassword());
+      props.put("mail." + config.getProtocol() + ".auth", "true");
+      session = Session.getInstance(props, authenticator);
+    } else {
+      session = Session.getInstance(props);
+    }
+  }
+
+  public void send(final BaseEmailMessage email) throws NoteException {
+    final MimeMessage msg = new MimeMessage(session);
+    try {
+      if (email.getFrom() == null) {
+        msg.setFrom(new InternetAddress(config.getFrom()));
+      } else {
+        msg.setFrom(new InternetAddress(email.getFrom()));
+      }
+
+      for (final String to : email.getTos()) {
+        msg.addRecipient(RecipientType.TO, new InternetAddress(to));
+      }
+      msg.setSubject(email.getSubject());
+
+      final MimeMultipart multipart = new MimeMultipart("alternative");
+      for (final String type : email.getBodies().keySet()) {
+        final MimeBodyPart part = new MimeBodyPart();
+        part.setContent(email.getBodies().get(type), type);
+        multipart.addBodyPart(part);
+      }
+      msg.setContent(multipart);
+
+      Transport.send(msg);
+    } catch (final MessagingException e) {
+      throw new NoteException(e);
+    }
+  }
+
+  private void setNonNull(final Properties props,
+                          final String name,
+                          final String val) throws NoteException {
+    if (val == null) {
+      throw new NoteException("Null property value for " + name);
+    }
+
+    props.setProperty(name, val);
+  }
+
+  private class MailerAuthenticator extends Authenticator {
+    private final PasswordAuthentication authentication;
+
+    MailerAuthenticator(final String user, final String password) {
+      authentication = new PasswordAuthentication(user, password);
+    }
+
+    protected PasswordAuthentication getPasswordAuthentication() {
+      return authentication;
+    }
+  }
 }

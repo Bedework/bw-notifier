@@ -176,12 +176,7 @@ public class Noteling {
 
     try {
       for (final Adaptor adaptor: adaptors) {
-        try {
-          if (!adaptor.process(action.getNote())) {
-            allOk = false;
-          }
-        } catch (final Throwable t) {
-          error(t);
+        if (!adaptor.process(action.getNote())) {
           allOk = false;
         }
       }

@@ -36,12 +36,12 @@ public interface Adaptor {
   /**
    * @param conf the configuration
    */
-  void setConf(AdaptorConfig conf);
+  void setConf(AdaptorConf conf);
 
   /**
    * @return the configuration
    */
-  AdaptorConfig getConf();
+  AdaptorConfig getConfig();
 
   /**
    * @return type

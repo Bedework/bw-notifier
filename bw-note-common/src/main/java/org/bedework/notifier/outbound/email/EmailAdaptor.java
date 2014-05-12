@@ -23,9 +23,10 @@ import org.bedework.caldav.util.sharing.InviteNotificationType;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.outbound.common.AbstractAdaptor;
-import org.bedework.notifier.outbound.common.AdaptorConfig;
 import org.bedework.util.http.HttpUtil;
+import org.bedework.util.misc.Util;
 
+import java.util.ListResourceBundle;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -37,7 +38,7 @@ import java.util.ResourceBundle;
  */
 public class EmailAdaptor extends AbstractAdaptor {
 
-	private static final String BUNDLE_NAME = "org.bedework.notifier.outbound.email.notifications";
+	private static final String BUNDLE_NAME = "/org.bedework.notifier.outbound.email.EmailBundle";
 	private static final String KEY_SHARE_EXTERNAL_SUBJECT = "share.invitation.external.subject";
 	private static final String KEY_SHARE_EXTERNAL_TEXT = "share.invitation.external.text";
 	private static final String KEY_SHARE_EXTERNAL_HTML = "share.invitation.external.html";
@@ -50,42 +51,42 @@ public class EmailAdaptor extends AbstractAdaptor {
 	private Mailer mailer;
 
 	@Override
-	public void setConf(final AdaptorConfig config) {
-		super.setConf(config);
-		getResourceBundle();
-	}
-
-	@Override
 	public boolean processSharingInvitation(final Note note) throws NoteException {
     final ProcessorType pt = getProcessorStatus(note);
 
     if (processed(pt)) {
       return true;
     }
-
     final InviteNotificationType invite =
             (InviteNotificationType)note.getNotificationContent();
 
     final EmailMessage email = new EmailMessage(stripMailTo(invite.getOrganizer().getHref()), null);
 
 		email.addTo(stripMailTo(invite.getHref()));
+
+    final ResourceBundle bundle = getResourceBundle();
+
 		if (note.isRegisteredRecipient()) {
 			info("Inviting registered user " + invite.getHref() + ":\n" + invite);
 			email.setSubject(bundle.getString(KEY_SHARE_INTERNAL_SUBJECT));
 			if (bundle.containsKey(KEY_SHARE_INTERNAL_TEXT)) {
-				email.addBody(EmailMessage.CONTENT_TYPE_PLAIN, bundle.getString(KEY_SHARE_INTERNAL_TEXT));
+				email.addBody(EmailMessage.CONTENT_TYPE_PLAIN,
+                      bundle.getString(KEY_SHARE_INTERNAL_TEXT));
 			}
 			if (bundle.containsKey(KEY_SHARE_INTERNAL_HTML)) {
-				email.addBody(EmailMessage.CONTENT_TYPE_HTML, bundle.getString(KEY_SHARE_INTERNAL_HTML));
+				email.addBody(EmailMessage.CONTENT_TYPE_HTML,
+                      bundle.getString(KEY_SHARE_INTERNAL_HTML));
 			}
 		} else {
 //			info("Inviting unregistered user " + invite.getHref() + ":\n" + invite);
 			email.setSubject(bundle.getString(KEY_SHARE_EXTERNAL_SUBJECT));
 			if (bundle.containsKey(KEY_SHARE_EXTERNAL_TEXT)) {
-				email.addBody(EmailMessage.CONTENT_TYPE_PLAIN, bundle.getString(KEY_SHARE_EXTERNAL_TEXT));
+				email.addBody(EmailMessage.CONTENT_TYPE_PLAIN,
+                      bundle.getString(KEY_SHARE_EXTERNAL_TEXT));
 			}
 			if (bundle.containsKey(KEY_SHARE_EXTERNAL_HTML)) {
-				email.addBody(EmailMessage.CONTENT_TYPE_HTML, bundle.getString(KEY_SHARE_EXTERNAL_HTML));
+				email.addBody(EmailMessage.CONTENT_TYPE_HTML,
+                      bundle.getString(KEY_SHARE_EXTERNAL_HTML));
 			}
 		}
 
@@ -109,25 +110,52 @@ public class EmailAdaptor extends AbstractAdaptor {
 		return false;
 	}
 
-	public EmailAdaptorConfig getConf() {
-		return (EmailAdaptorConfig)super.getConf();
+	public EmailAdaptorConfig getConfig() {
+		return (EmailAdaptorConfig)super.getConfig();
 	}
 
-	private ResourceBundle getResourceBundle() {
-		if (bundle == null) {
-      final EmailAdaptorConfig conf = getConf();
-			if (conf.getLocale() == null) {
-				bundle = ResourceBundle.getBundle(BUNDLE_NAME);
-			} else {
-				bundle = ResourceBundle.getBundle(BUNDLE_NAME, new Locale(conf.getLocale()));
-			}
-		}
-		return bundle;
+	private ResourceBundle getResourceBundle() throws NoteException {
+    try {
+      if (bundle != null) {
+        return bundle;
+      }
+
+      final ClassLoader cl = getClass().getClassLoader();
+
+      final EmailAdaptorConfig conf = getConfig();
+      if (conf.getLocale() == null) {
+        bundle = ResourceBundle.getBundle(BUNDLE_NAME,
+                                          Locale.getDefault(), cl);
+      } else {
+        bundle = ResourceBundle.getBundle(BUNDLE_NAME,
+                                          Util.makeLocale(conf.getLocale()),
+                                          cl);
+      }
+      return bundle;
+    } catch (final Throwable t) {
+      error(t);
+      bundle = new TempResourceBundle();
+      return bundle;
+    }
 	}
 
-	private Mailer getMailer() {
+  // TODO fix loading problem and delete this
+  private static class TempResourceBundle extends ListResourceBundle {
+    protected Object[][] getContents() {
+      return new Object[][] {
+              {"share.invitation.external.subject", "Share invitation to external user"},
+              {"share.invitation.external.text", "This is the text version of the invitation email to external users."},
+              {"share.invitation.external.html", "This is the <b>html</b> version of the invitation email to external users."},
+              {"share.invitation.internal.subject", "Share invitation to internal user"},
+              {"share.invitation.internal.text", "This is the text version of the invitation email to internal users."},
+              {"share.invitation.internal.html", "This is the <b>html</b> version of the invitation email to internal users."},
+      };
+    }
+  }
+
+  private Mailer getMailer() throws NoteException {
 		if (mailer == null) {
-			mailer = new Mailer(getConf());
+			mailer = new Mailer(getConfig());
 		}
 		return mailer;
 	}

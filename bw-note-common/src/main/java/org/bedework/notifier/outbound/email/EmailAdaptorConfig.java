@@ -40,25 +40,25 @@ public class EmailAdaptorConfig extends AdaptorConfig {
 
 	/** valid protocol for which an implementation exists, e.g "imap", "smtp"
 	 *
-	 * @param val
+	 * @param val the protocol
 	 */
-	void setProtocol(String val)  {
-		protocol  = val;
+	public void setProtocol(final String val)  {
+		protocol = val;
 	}
 
 	/**
 	 * @return String
 	 */
 	@MBeanInfo("valid protocol for which an implementation exists, e.g \"imap\", \"smtp\".")
-	String getProtocol()  {
+	public String getProtocol()  {
 		return protocol;
 	}
 
 	/** Implementation for the selected protocol
 	 *
-	 * @param val
+	 * @param val class
 	 */
-	void setProtocolClass(String val)  {
+	public void setProtocolClass(final String val)  {
 		protocolClass  = val;
 	}
 
@@ -66,15 +66,15 @@ public class EmailAdaptorConfig extends AdaptorConfig {
 	 * @return String
 	 */
 	@MBeanInfo("Implementation for the selected protocol.")
-	String getProtocolClass()  {
+	public String getProtocolClass()  {
 		return protocolClass;
 	}
 
 	/** Where we send it.
 	 *
-	 * @param val
+	 * @param val uri
 	 */
-	void setServerUri(String val)  {
+	public void setServerUri(final String val)  {
 		serverUri  = val;
 	}
 
@@ -82,14 +82,14 @@ public class EmailAdaptorConfig extends AdaptorConfig {
 	 * @return String
 	 */
 	@MBeanInfo("Location of server.")
-	String getServerUri()  {
+	public String getServerUri()  {
 		return serverUri;
 	}
 
 	/**
-	 * @param val
+	 * @param val port
 	 */
-	void setServerPort(String val)  {
+	public void setServerPort(final String val)  {
 		serverPort  = val;
 	}
 
@@ -97,33 +97,42 @@ public class EmailAdaptorConfig extends AdaptorConfig {
 	 * @return String
 	 */
 	@MBeanInfo("The server port.")
-	String getServerPort()  {
+	public String getServerPort()  {
 		return serverPort;
 	}
+
+  /**
+   * @param val server Username
+   */
+  public void setServerUsername(final String val) {
+    serverUsername = val;
+  }
 
 	@MBeanInfo("User name if authentication is required.")
 	public String getServerUsername() {
 		return serverUsername;
 	}
 
-	public void setServerUsername(String serverUsername) {
-		this.serverUsername = serverUsername;
-	}
+  /**
+   * @param val server Password
+   */
+  public void setServerPassword(final String val) {
+    serverPassword = val;
+  }
 
+  /**
+   * @return password
+   */
 	@MBeanInfo("User password if authentication is required.")
 	public String getServerPassword() {
 		return serverPassword;
 	}
 
-	public void setServerPassword(String serverPassword) {
-		this.serverPassword = serverPassword;
-	}
-
 	/** Address we use when none supplied
 	 *
-	 * @param val
+	 * @param val from for message
 	 */
-	void setFrom(String val)  {
+	void setFrom(final String val)  {
 		from = val;
 	}
 
@@ -135,8 +144,11 @@ public class EmailAdaptorConfig extends AdaptorConfig {
 		return from;
 	}
 
-	public void setLocale(String locale) {
-		this.locale = locale;
+  /**
+   * @param val for messages
+   */
+	public void setLocale(final String val) {
+		locale = val;
 	}
 
 	/**
@@ -156,5 +168,6 @@ public class EmailAdaptorConfig extends AdaptorConfig {
 		ts.append("serverUri", getServerUri());
 		ts.append("serverPort", getServerPort());
 		ts.append("from", getFrom());
+    ts.append("locale", getLocale());
 	}
 }
