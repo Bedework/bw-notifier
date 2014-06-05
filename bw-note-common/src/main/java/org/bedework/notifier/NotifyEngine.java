@@ -27,6 +27,8 @@ import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.outbound.common.Adaptor;
 import org.bedework.util.calendar.XcalUtil.TzGetter;
+import org.bedework.util.config.ConfigException;
+import org.bedework.util.config.ConfigurationStore;
 import org.bedework.util.http.BasicHttpClient;
 import org.bedework.util.jmx.ConfigHolder;
 import org.bedework.util.misc.Util;
@@ -149,6 +151,21 @@ public class NotifyEngine extends TzGetter {
     }
 
     return cfgHolder.getConfig();
+  }
+
+  /**
+   * @return configuration store
+   */
+  public static ConfigurationStore getConfigStore() throws NoteException {
+    if (cfgHolder == null) {
+      return null;
+    }
+
+    try {
+      return cfgHolder.getStore();
+    } catch (final ConfigException ce) {
+      throw new NoteException(ce);
+    }
   }
 
   /**

@@ -20,14 +20,12 @@ package org.bedework.notifier.outbound.email;
 
 import org.bedework.caldav.util.notifications.ProcessorType;
 import org.bedework.caldav.util.sharing.InviteNotificationType;
+import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.outbound.common.AbstractAdaptor;
 import org.bedework.util.http.HttpUtil;
-import org.bedework.util.misc.Util;
 
-import java.util.ListResourceBundle;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 /** The interface implemented by destination adaptors. A destination
@@ -38,7 +36,7 @@ import java.util.ResourceBundle;
  */
 public class EmailAdaptor extends AbstractAdaptor {
 
-	private static final String BUNDLE_NAME = "/org.bedework.notifier.outbound.email.EmailBundle";
+	private static final String BUNDLE_NAME = "adaptors.EmailBundle";
 	private static final String KEY_SHARE_EXTERNAL_SUBJECT = "share.invitation.external.subject";
 	private static final String KEY_SHARE_EXTERNAL_TEXT = "share.invitation.external.text";
 	private static final String KEY_SHARE_EXTERNAL_HTML = "share.invitation.external.html";
@@ -115,43 +113,20 @@ public class EmailAdaptor extends AbstractAdaptor {
 	}
 
 	private ResourceBundle getResourceBundle() throws NoteException {
+    if (bundle != null) {
+      return bundle;
+    }
+
     try {
-      if (bundle != null) {
-        return bundle;
-      }
-
-      final ClassLoader cl = getClass().getClassLoader();
-
-      final EmailAdaptorConfig conf = getConfig();
-      if (conf.getLocale() == null) {
-        bundle = ResourceBundle.getBundle(BUNDLE_NAME,
-                                          Locale.getDefault(), cl);
-      } else {
-        bundle = ResourceBundle.getBundle(BUNDLE_NAME,
-                                          Util.makeLocale(conf.getLocale()),
-                                          cl);
-      }
-      return bundle;
+      bundle = NotifyEngine.getConfigStore().
+              getResource(BUNDLE_NAME,
+                          getConfig().getLocale());
     } catch (final Throwable t) {
-      error(t);
-      bundle = new TempResourceBundle();
-      return bundle;
+      throw new NoteException(t);
     }
-	}
 
-  // TODO fix loading problem and delete this
-  private static class TempResourceBundle extends ListResourceBundle {
-    protected Object[][] getContents() {
-      return new Object[][] {
-              {"share.invitation.external.subject", "Share invitation to external user"},
-              {"share.invitation.external.text", "This is the text version of the invitation email to external users."},
-              {"share.invitation.external.html", "This is the <b>html</b> version of the invitation email to external users."},
-              {"share.invitation.internal.subject", "Share invitation to internal user"},
-              {"share.invitation.internal.text", "This is the text version of the invitation email to internal users."},
-              {"share.invitation.internal.html", "This is the <b>html</b> version of the invitation email to internal users."},
-      };
-    }
-  }
+    return bundle;
+	}
 
   private Mailer getMailer() throws NoteException {
 		if (mailer == null) {
@@ -186,7 +161,7 @@ public class EmailAdaptor extends AbstractAdaptor {
 			adapter.setConf(config);
 			adapter.process(note);
 		} catch (final NoteException e) {
-			// TODO Auto-generated catch block
+			//  Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

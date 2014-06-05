@@ -228,7 +228,7 @@ public class AdaptorPool {
   }
 
   public void registerAdaptors() throws NoteException {
-    final List<AdaptorConf> adaptorConfs = notifier.getConfig().getAdaptorConfs();
+    final List<AdaptorConf> adaptorConfs = NotifyEngine.getConfig().getAdaptorConfs();
 
     /* Register the adaptors */
     for (final AdaptorConf ac: adaptorConfs) {
