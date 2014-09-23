@@ -286,7 +286,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>bw-notify-${project.version}</finalName>
+		<finalName>bw-notifier-${project.version}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -296,9 +296,11 @@
 					<!-- Exclude eclipse generated application.xml during mvn package -->
 					<earSourceExcludes>**/application.xml</earSourceExcludes>
 					<defaultLibBundleDir>lib</defaultLibBundleDir>
+          <skinnyWars>true</skinnyWars>
 					<!-- use maven generated application.xml instead -->
           <includeLibInApplicationXml>false</includeLibInApplicationXml>
 					<generateApplicationXml>true</generateApplicationXml>
+          <unpackTypes>sar,rar,war</unpackTypes>
 					<modules>
             <webModule>
               <groupId>${project.groupId}</groupId>
