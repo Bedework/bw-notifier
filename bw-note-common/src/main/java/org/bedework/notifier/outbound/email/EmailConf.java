@@ -27,6 +27,9 @@ import org.bedework.notifier.outbound.common.AdaptorConf;
  *
  */
 public class EmailConf extends AdaptorConf<EmailAdaptorConfig> implements EmailConfMBean {
+  private String transientUsername;
+  private String transientPassword;
+
 	/* ========================================================================
 	 * Conf properties
 	 * ======================================================================== */
@@ -110,4 +113,24 @@ public class EmailConf extends AdaptorConf<EmailAdaptorConfig> implements EmailC
 	public String getLocale() {
 		return cfg.getLocale();
 	}
+
+  @Override
+  public void setTransientUsername(final String val) {
+    transientUsername = val;
+  }
+
+  @Override
+  public String getTransientUsername() {
+    return transientUsername;
+  }
+
+  @Override
+  public void setTransientPassword(final String val) {
+    transientPassword = val;
+  }
+
+  @Override
+  public String getTransientPassword() {
+    return transientPassword;
+  }
 }

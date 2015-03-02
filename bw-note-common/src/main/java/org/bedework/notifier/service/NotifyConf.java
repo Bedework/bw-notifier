@@ -400,7 +400,6 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
                 (NoteConnConf<ConnectorConfig>)makeObject(mbeanClassName);
         ncc.init(cs, objectName.toString(), connCfg);
 
-        ncc.saveConfig();
         nccs.add(ncc);
         register("connector", cn, ncc);
       }
@@ -448,7 +447,6 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
                 (AdaptorConf<AdaptorConfig>)makeObject(mbeanClassName);
         ncc.init(cs, objectName.toString(), aCfg);
 
-        ncc.saveConfig();
         nccs.add(ncc);
         register("adaptor", cn, ncc);
       }

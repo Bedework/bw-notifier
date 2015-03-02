@@ -18,11 +18,11 @@
 */
 package org.bedework.notifier.conf;
 
+import org.bedework.notifier.NotifyConfPropertiesImpl;
 import org.bedework.notifier.db.IpAddrInfo;
 import org.bedework.notifier.outbound.common.AdaptorConf;
 import org.bedework.notifier.service.NoteConnConf;
 import org.bedework.util.config.ConfInfo;
-import org.bedework.util.config.ConfigBase;
 
 import java.util.List;
 import java.util.SortedSet;
@@ -32,162 +32,15 @@ import java.util.SortedSet;
  * @author Mike Douglass
  */
 @ConfInfo(elementName = "note-confinfo")
-public class NotifyConfig extends ConfigBase<NotifyConfig> {
-  /* Size of noteling pool */
-  private int notelingPoolSize;
-
-  /* millisecs */
-  private long notelingPoolTimeout;
-
-  /* How often we retry when a target is missing */
-  private int missingTargetRetries;
-
-  /* web service push callback uri - null for no service */
-  private String callbackURI;
-
-  /* Timezone server location */
-  private String timezonesURI;
-
-  /* Path to keystore - null for use default */
-  private String keystore;
-
-  /* Path to keystores  */
-  private String privKeys;
-  /* Path to keystores  */
-  private String pubKeys;
-
+public class NotifyConfig extends NotifyConfPropertiesImpl {
   private List<NoteConnConf> connectorConfs;
 
   private List<AdaptorConf> adaptorConfs;
 
   private SortedSet<IpAddrInfo> ipInfo;
 
-
   /**
-   * @param val current size of noteling pool
-   */
-  public void setNotelingPoolSize(final int val) {
-    notelingPoolSize = val;
-  }
-
-  /**
-   * @return current size of noteling pool
-   */
-  public int getNotelingPoolSize() {
-    return notelingPoolSize;
-  }
-
-  /**
-   * @param val timeout in millisecs
-   */
-  public void setNotelingPoolTimeout(final long val) {
-    notelingPoolTimeout = val;
-  }
-
-  /**
-   * @return timeout in millisecs
-   */
-  public long getNotelingPoolTimeout() {
-    return notelingPoolTimeout;
-  }
-
-  /** How often we retry when a target is missing
-   *
-   * @param val
-   */
-  public void setMissingTargetRetries(final int val) {
-    missingTargetRetries = val;
-  }
-
-  /**
-   * @return How often we retry when a target is missing
-   */
-  public int getMissingTargetRetries() {
-    return missingTargetRetries;
-  }
-
-  /** web service push callback uri - null for no service
-   *
-   * @param val    String
-   */
-  public void setCallbackURI(final String val) {
-    callbackURI = val;
-  }
-
-  /** web service push callback uri - null for no service
-   *
-   * @return String
-   */
-  public String getCallbackURI() {
-    return callbackURI;
-  }
-
-  /** Timezone server location
-   *
-   * @param val    String
-   */
-  public void setTimezonesURI(final String val) {
-    timezonesURI = val;
-  }
-
-  /** Timezone server location
-   *
-   * @return String
-   */
-  public String getTimezonesURI() {
-    return timezonesURI;
-  }
-
-  /** Path to keystore - null for use default
-   *
-   * @param val    String
-   */
-  public void setKeystore(final String val) {
-    keystore = val;
-  }
-
-  /** Path to keystore - null for use default
-   *
-   * @return String
-   */
-  public String getKeystore() {
-    return keystore;
-  }
-
-  /**
-   *
-   * @param val    String
-   */
-  public void setPrivKeys(final String val) {
-    privKeys = val;
-  }
-
-  /**
-   *
-   * @return String
-   */
-  public String getPrivKeys() {
-    return privKeys;
-  }
-
-  /**
-   *
-   * @param val    String
-   */
-  public void setPubKeys(final String val) {
-    pubKeys = val;
-  }
-
-  /**
-   *
-   * @return String
-   */
-  public String getPubKeys() {
-    return pubKeys;
-  }
-
-  /**
-   * @param val
+   * @param val set of IpAddrInfo
    */
   public void setIpInfo(final SortedSet<IpAddrInfo> val) {
     ipInfo = val;
@@ -202,15 +55,15 @@ public class NotifyConfig extends ConfigBase<NotifyConfig> {
 
   /** Map of (name, className)
    *
-   * @param val
+   * @param val list of NoteConnConf
    */
   public void setConnectorConfs(final List<NoteConnConf> val) {
     connectorConfs = val;
   }
 
-  /** Set<ConnectorConfig>
+  /**
    *
-   * @return map
+   * @return list of NoteConnConf
    */
   public List<NoteConnConf> getConnectorConfs() {
     return connectorConfs;

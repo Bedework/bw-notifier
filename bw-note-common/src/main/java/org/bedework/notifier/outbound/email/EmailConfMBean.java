@@ -18,104 +18,33 @@
  */
 package org.bedework.notifier.outbound.email;
 
-import org.bedework.notifier.outbound.common.AdaptorConfMBean;
+import org.bedework.util.jmx.ConfBaseMBean;
 import org.bedework.util.jmx.MBeanInfo;
 
 /** Configure an email adaptor for the Bedework notification service
  *
  * @author douglm
  */
-public interface EmailConfMBean extends AdaptorConfMBean {
-	/** valid protocol for which an implementation exists, e.g "imap", "smtp"
-	 *
-	 * @param val
+public interface EmailConfMBean extends ConfBaseMBean, EmailAdaptorConfigI {
+	/**
+	 * @param val user name
 	 */
-	void setProtocol(String val);
+	void setTransientUsername(String val);
 
 	/**
 	 * @return String
 	 */
-	@MBeanInfo("valid protocol for which an implementation exists, e.g \"imap\", \"smtp\".")
-	String getProtocol();
+	@MBeanInfo("Override or supply a transient username if authentication is required.")
+	String getTransientUsername();
 
-	/** Implementation for the selected protocol
-	 *
-	 * @param val
+	/**
+	 * @param val a password
 	 */
-	void setProtocolClass(String val);
+	void setTransientPassword(String val);
 
 	/**
 	 * @return String
 	 */
-	@MBeanInfo("Implementation for the selected protocol.")
-	String getProtocolClass();
-
-	/** Where we send it.
-	 *
-	 * @param val
-	 */
-	void setServerUri(String val);
-
-	/**
-	 * @return String
-	 */
-	@MBeanInfo("Location of server.")
-	String getServerUri();
-
-	/**
-	 * @param val
-	 */
-	void setServerPort(String val);
-
-	/**
-	 * @return String
-	 */
-	@MBeanInfo("The server port.")
-	String getServerPort();
-
-	/**
-	 * @param val
-	 */
-	void setServerUsername(String val);
-
-	/**
-	 * @return String
-	 */
-	@MBeanInfo("The server username if authentication is required.")
-	String getServerUsername();
-
-	/**
-	 * @param val
-	 */
-	void setServerPassword(String val);
-
-	/**
-	 * @return String
-	 */
-	@MBeanInfo("The server password if authentication is required.")
-	String getServerPassword();
-
-	/** Address we use when none supplied
-	 *
-	 * @param val
-	 */
-	void setFrom(String val);
-
-	/**
-	 * @return String
-	 */
-	@MBeanInfo("Address we use when none supplied.")
-	String getFrom();
-
-	/** Address we use when none supplied
-	 *
-	 * @param val
-	 */
-	void setLocale(String val);
-
-	/**
-	 * @return String
-	 */
-	@MBeanInfo("Locale to use for email messages.")
-	String getLocale();
+	@MBeanInfo("Override or supply a transient password if authentication is required.")
+	String getTransientPassword();
 }

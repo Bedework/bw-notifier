@@ -25,29 +25,30 @@ import java.util.Properties;
 import javax.activation.CommandMap;
 import javax.activation.MailcapCommandMap;
 import javax.mail.Authenticator;
+import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
-import javax.mail.Message.RecipientType;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 public class Mailer {
-	EmailAdaptorConfig config;
+	EmailConf config;
 	Session session;
 
-  public Mailer(final EmailAdaptorConfig config) throws NoteException {
+  public Mailer(final EmailConf config) throws NoteException {
     this.config = config;
 
     final Properties props = new Properties();
 
     setNonNull(props, "mail.transport.protocol", config.getProtocol());
-    setNonNull(props, "mail." + config.getProtocol() + ".class",
-               config.getProtocolClass());
-    setNonNull(props, "mail." + config.getProtocol() + ".host",               config.getServerUri());
+//    setNonNull(props, "mail." + config.getProtocol() + ".class",
+//               config.getProtocolClass());
+    setNonNull(props, "mail." + config.getProtocol() + ".host",
+               config.getServerUri());
     if (config.getServerPort() != null) {
       props.put("mail." + config.getProtocol() + ".port",
                 config.getServerPort());
@@ -63,10 +64,24 @@ public class Mailer {
     mc.addMailcap("message/rfc822;; x-java-content-handler=com.sun.mail.handlers.message_rfc822");
     CommandMap.setDefaultCommandMap(mc);
 
-    if (config.getServerUsername() != null) {
+    final String username;
+    final String pw;
+
+    if (config.getTransientUsername() != null) {
+      username = config.getTransientUsername();
+      pw = config.getTransientPassword();
+    } else if (config.getServerUsername() != null) {
+      username = config.getServerUsername();
+      pw = config.getServerPassword();
+    } else {
+      username = null;
+      pw = null;
+    }
+
+    if (username != null) {
       // Authentication required.
       final MailerAuthenticator authenticator =
-              new MailerAuthenticator(config.getServerUsername(), config.getServerPassword());
+              new MailerAuthenticator(username, pw);
       props.put("mail." + config.getProtocol() + ".auth", "true");
       session = Session.getInstance(props, authenticator);
     } else {
@@ -96,7 +111,14 @@ public class Mailer {
       }
       msg.setContent(multipart);
 
-      Transport.send(msg);
+//      Transport.send(msg);
+      Transport transport = session.getTransport(config.getProtocol());
+      try {
+        transport.connect(/*host, from, pass*/);
+        transport.sendMessage(msg, msg.getAllRecipients());
+      } finally {
+        transport.close();
+      }
     } catch (final MessagingException e) {
       throw new NoteException(e);
     }

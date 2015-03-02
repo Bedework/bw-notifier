@@ -19,10 +19,11 @@
 package org.bedework.notifier.outbound.dummy;
 
 import org.bedework.notifier.outbound.common.AdaptorConfMBean;
+import org.bedework.util.jmx.ConfBaseMBean;
 
 /** Configure a dummy adaptor for the Bedework notification service
  *
  * @author douglm
  */
-public interface DummyConfMBean extends AdaptorConfMBean {
+public interface DummyConfMBean extends ConfBaseMBean, AdaptorConfMBean {
 }

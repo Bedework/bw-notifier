@@ -27,7 +27,7 @@ import org.bedework.notifier.notifications.Note;
  * @author Mike Douglass
  *
  */
-public interface Adaptor {
+public interface Adaptor<Conf extends AdaptorConf> {
   /**
    * @return Unique id for this adaptor
    */
@@ -36,12 +36,12 @@ public interface Adaptor {
   /**
    * @param conf the configuration
    */
-  void setConf(AdaptorConf conf);
+  void setConf(Conf conf);
 
   /**
    * @return the configuration
    */
-  AdaptorConfig getConfig();
+  Conf getConfig();
 
   /**
    * @return type

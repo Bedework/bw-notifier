@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Notification processor.
- * <p>The notification processor manages the notifcatiuon service.
+ * <p>The notification processor manages the notification service.
  *
  * <p>There are two ends to a subscription handled by connectors.
  *
