@@ -37,11 +37,49 @@ import javax.mail.internet.MimeMultipart;
 
 public class Mailer {
 	EmailConf config;
-	Session session;
 
   public Mailer(final EmailConf config) throws NoteException {
     this.config = config;
+  }
 
+  public void send(final BaseEmailMessage email) throws NoteException {
+    Session session = getSession();
+
+    final MimeMessage msg = new MimeMessage(session);
+    try {
+      if (email.getFrom() == null) {
+        msg.setFrom(new InternetAddress(config.getFrom()));
+      } else {
+        msg.setFrom(new InternetAddress(email.getFrom()));
+      }
+
+      for (final String to : email.getTos()) {
+        msg.addRecipient(RecipientType.TO, new InternetAddress(to));
+      }
+      msg.setSubject(email.getSubject());
+
+      final MimeMultipart multipart = new MimeMultipart("alternative");
+      for (final String type : email.getBodies().keySet()) {
+        final MimeBodyPart part = new MimeBodyPart();
+        part.setContent(email.getBodies().get(type), type);
+        multipart.addBodyPart(part);
+      }
+      msg.setContent(multipart);
+
+//      Transport.send(msg);
+      Transport transport = session.getTransport(config.getProtocol());
+      try {
+        transport.connect(/*host, from, pass*/);
+        transport.sendMessage(msg, msg.getAllRecipients());
+      } finally {
+        transport.close();
+      }
+    } catch (final MessagingException e) {
+      throw new NoteException(e);
+    }
+  }
+
+  private Session getSession() throws NoteException {
     final Properties props = new Properties();
 
     setNonNull(props, "mail.transport.protocol", config.getProtocol());
@@ -83,45 +121,10 @@ public class Mailer {
       final MailerAuthenticator authenticator =
               new MailerAuthenticator(username, pw);
       props.put("mail." + config.getProtocol() + ".auth", "true");
-      session = Session.getInstance(props, authenticator);
-    } else {
-      session = Session.getInstance(props);
+      return Session.getInstance(props, authenticator);
     }
-  }
 
-  public void send(final BaseEmailMessage email) throws NoteException {
-    final MimeMessage msg = new MimeMessage(session);
-    try {
-      if (email.getFrom() == null) {
-        msg.setFrom(new InternetAddress(config.getFrom()));
-      } else {
-        msg.setFrom(new InternetAddress(email.getFrom()));
-      }
-
-      for (final String to : email.getTos()) {
-        msg.addRecipient(RecipientType.TO, new InternetAddress(to));
-      }
-      msg.setSubject(email.getSubject());
-
-      final MimeMultipart multipart = new MimeMultipart("alternative");
-      for (final String type : email.getBodies().keySet()) {
-        final MimeBodyPart part = new MimeBodyPart();
-        part.setContent(email.getBodies().get(type), type);
-        multipart.addBodyPart(part);
-      }
-      msg.setContent(multipart);
-
-//      Transport.send(msg);
-      Transport transport = session.getTransport(config.getProtocol());
-      try {
-        transport.connect(/*host, from, pass*/);
-        transport.sendMessage(msg, msg.getAllRecipients());
-      } finally {
-        transport.close();
-      }
-    } catch (final MessagingException e) {
-      throw new NoteException(e);
-    }
+    return Session.getInstance(props);
   }
 
   private void setNonNull(final Properties props,
