@@ -88,12 +88,20 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
 			}
 		}
 
-		getMailer().send(email);
+    try {
+      getMailer().send(email);
 
-    pt.setDtstamp(getDtstamp());
-    pt.setStatus(HttpUtil.makeOKHttpStatus());
+      pt.setDtstamp(getDtstamp());
+      pt.setStatus(HttpUtil.makeOKHttpStatus());
 
-		return true;
+      return true;
+    } catch (final NoteException ne) {
+      if (debug) {
+        error(ne);
+      }
+
+      return false;
+    }
 	}
 
 	@Override

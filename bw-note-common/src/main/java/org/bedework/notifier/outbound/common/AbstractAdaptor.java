@@ -40,6 +40,8 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
         implements Adaptor<Conf> {
 	private transient Logger log;
 
+  protected boolean debug;
+
 	private final static AtomicLong nextId = new AtomicLong();
 
 	private final Long id;
@@ -47,7 +49,8 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
 	protected Conf conf;
 
 	protected AbstractAdaptor() {
-		id = nextId.incrementAndGet();
+		debug = getLogger().isDebugEnabled();
+    id = nextId.incrementAndGet();
 	}
 
 	public long getId() {
