@@ -48,18 +48,22 @@ public class ActionQueue extends Thread {
 
   private final BlockingQueue<Action> actionQueue;
 
+  private final NotifyEngine notifier;
+
   private final NotelingPool notelingPool;
 
   private boolean stopping;
 
   /**
    */
-  public ActionQueue(final String name,
+  public ActionQueue(final NotifyEngine notifier,
+                     final String name,
                      final NotelingPool notelingPool) {
     super(name);
 
     debug = getLogger().isDebugEnabled();
 
+    this.notifier = notifier;
     this.notelingPool = notelingPool;
     actionQueue = new ArrayBlockingQueue<>(100);
     actionsCt = new StatLong(name + ".actions");
@@ -137,19 +141,18 @@ public class ActionQueue extends Thread {
           final StatusType st = noteling.handleAction(action);
 
           if (st == StatusType.Reprocess) {
-              /* Back on the queue to be processed again.
+              /* Delay then eventually back on the queue to be processed again.
                */
 
-            actionQueue.put(action);
+            notifier.reschedule(action);
             continue;
           }
 
           if (st == StatusType.Warning) {
-              /* Back on the queue - these need to be flagged so we don't get an
-               * endless loop - perhaps we need a delay queue
+              /* Delay then eventually back on the queue to be processed again.
                */
 
-            actionQueue.put(action);
+            notifier.reschedule(action);
           }
 
           exceptions = 0; // somethings working
