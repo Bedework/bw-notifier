@@ -18,8 +18,6 @@
 */
 package org.bedework.notifier;
 
-import org.bedework.notifier.Action.ActionType;
-import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 
 import org.apache.log4j.Logger;
@@ -51,13 +49,13 @@ public class NotifyTimer {
    *
    */
   class NotifyTask extends TimerTask {
-    private final Subscription sub;
+    private final Action action;
 
-    NotifyTask(final Subscription sub) {
-      this.sub = sub;
+    NotifyTask(final Action action) {
+      this.action = action;
 
       synchronized (waiting) {
-        waiting.put(sub.getSubscriptionId(), this);
+        waiting.put(action.getSub().getSubscriptionId(), this);
         maxWaitingCt = Math.max(maxWaitingCt, waiting.size());
       }
     }
@@ -65,16 +63,14 @@ public class NotifyTimer {
     @Override
     public void run() {
       synchronized (waiting) {
-        waiting.remove(sub.getSubscriptionId());
+        waiting.remove(action.getSub().getSubscriptionId());
       }
 
       if (debug){
-        trace("About to send resynch notification for " + sub.getSubscriptionId());
+        trace("About to requeue action for " + action.getSub().getSubscriptionId());
       }
 
       try {
-        final Action action = new Action(ActionType.fetchItems, sub);
-
         notifier.handleAction(action);
       } catch (final NoteException ne) {
         if (debug) {
@@ -118,29 +114,34 @@ public class NotifyTimer {
 
   /** Schedule a subscription for the given time
    *
-   * @param sub the subscription
+   * @param action the action
    * @param when the date/time
    * @throws NoteException
    */
-  public void schedule(final Subscription sub,
+  public void schedule(final Action action,
                        final Date when) throws NoteException {
     if (debug){
-      trace("reschedule " + sub.getSubscriptionId() + " for " + when);
+      trace("reschedule " + action.getSub().getSubscriptionId() + " for " + when);
     }
 
-    final NotifyTask st = new NotifyTask(sub);
+    final NotifyTask st = new NotifyTask(action);
     timer.schedule(st, when);
   }
 
   /** Schedule a subscription after the given delay
    *
-   * @param sub the subscription
+   * @param action the action
    * @param delay - delay in milliseconds before subscription is processed.
    * @throws NoteException
    */
-  public void schedule(final Subscription sub,
+  public void schedule(final Action action,
                        final long delay) throws NoteException {
-    NotifyTask st = new NotifyTask(sub);
+    if (debug){
+      trace("reschedule " + action.getSub().getSubscriptionId() +
+                    " in " + delay + " millisecs");
+    }
+
+    NotifyTask st = new NotifyTask(action);
     timer.schedule(st, delay);
   }
 

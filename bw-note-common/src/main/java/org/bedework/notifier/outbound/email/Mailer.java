@@ -25,56 +25,26 @@ import java.util.Properties;
 import javax.activation.CommandMap;
 import javax.activation.MailcapCommandMap;
 import javax.mail.Authenticator;
+import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
-import javax.mail.Message.RecipientType;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 public class Mailer {
-	EmailAdaptorConfig config;
-	Session session;
+	EmailConf config;
 
-  public Mailer(final EmailAdaptorConfig config) throws NoteException {
+  public Mailer(final EmailConf config) throws NoteException {
     this.config = config;
-
-    final Properties props = new Properties();
-
-    setNonNull(props, "mail.transport.protocol", config.getProtocol());
-    setNonNull(props, "mail." + config.getProtocol() + ".class",
-               config.getProtocolClass());
-    setNonNull(props, "mail." + config.getProtocol() + ".host",               config.getServerUri());
-    if (config.getServerPort() != null) {
-      props.put("mail." + config.getProtocol() + ".port",
-                config.getServerPort());
-    }
-
-    //  add handlers for main MIME types
-    final MailcapCommandMap mc = (MailcapCommandMap)CommandMap.getDefaultCommandMap();
-    mc.addMailcap("text/html;; x-java-content-handler=com.sun.mail.handlers.text_html");
-    mc.addMailcap("text/xml;; x-java-content-handler=com.sun.mail.handlers.text_xml");
-    mc.addMailcap("text/plain;; x-java-content-handler=com.sun.mail.handlers.text_plain");
-    mc.addMailcap("text/calendar;; x-java-content-handler=com.sun.mail.handlers.text_html");
-    mc.addMailcap("multipart/*;; x-java-content-handler=com.sun.mail.handlers.multipart_mixed");
-    mc.addMailcap("message/rfc822;; x-java-content-handler=com.sun.mail.handlers.message_rfc822");
-    CommandMap.setDefaultCommandMap(mc);
-
-    if (config.getServerUsername() != null) {
-      // Authentication required.
-      final MailerAuthenticator authenticator =
-              new MailerAuthenticator(config.getServerUsername(), config.getServerPassword());
-      props.put("mail." + config.getProtocol() + ".auth", "true");
-      session = Session.getInstance(props, authenticator);
-    } else {
-      session = Session.getInstance(props);
-    }
   }
 
   public void send(final BaseEmailMessage email) throws NoteException {
+    Session session = getSession();
+
     final MimeMessage msg = new MimeMessage(session);
     try {
       if (email.getFrom() == null) {
@@ -96,10 +66,65 @@ public class Mailer {
       }
       msg.setContent(multipart);
 
-      Transport.send(msg);
+//      Transport.send(msg);
+      Transport transport = session.getTransport(config.getProtocol());
+      try {
+        transport.connect(/*host, from, pass*/);
+        transport.sendMessage(msg, msg.getAllRecipients());
+      } finally {
+        transport.close();
+      }
     } catch (final MessagingException e) {
       throw new NoteException(e);
     }
+  }
+
+  private Session getSession() throws NoteException {
+    final Properties props = new Properties();
+
+    setNonNull(props, "mail.transport.protocol", config.getProtocol());
+//    setNonNull(props, "mail." + config.getProtocol() + ".class",
+//               config.getProtocolClass());
+    setNonNull(props, "mail." + config.getProtocol() + ".host",
+               config.getServerUri());
+    if (config.getServerPort() != null) {
+      props.put("mail." + config.getProtocol() + ".port",
+                config.getServerPort());
+    }
+
+    //  add handlers for main MIME types
+    final MailcapCommandMap mc = (MailcapCommandMap)CommandMap.getDefaultCommandMap();
+    mc.addMailcap("text/html;; x-java-content-handler=com.sun.mail.handlers.text_html");
+    mc.addMailcap("text/xml;; x-java-content-handler=com.sun.mail.handlers.text_xml");
+    mc.addMailcap("text/plain;; x-java-content-handler=com.sun.mail.handlers.text_plain");
+    mc.addMailcap("text/calendar;; x-java-content-handler=com.sun.mail.handlers.text_html");
+    mc.addMailcap("multipart/*;; x-java-content-handler=com.sun.mail.handlers.multipart_mixed");
+    mc.addMailcap("message/rfc822;; x-java-content-handler=com.sun.mail.handlers.message_rfc822");
+    CommandMap.setDefaultCommandMap(mc);
+
+    final String username;
+    final String pw;
+
+    if (config.getTransientUsername() != null) {
+      username = config.getTransientUsername();
+      pw = config.getTransientPassword();
+    } else if (config.getServerUsername() != null) {
+      username = config.getServerUsername();
+      pw = config.getServerPassword();
+    } else {
+      username = null;
+      pw = null;
+    }
+
+    if (username != null) {
+      // Authentication required.
+      final MailerAuthenticator authenticator =
+              new MailerAuthenticator(username, pw);
+      props.put("mail." + config.getProtocol() + ".auth", "true");
+      return Session.getInstance(props, authenticator);
+    }
+
+    return Session.getInstance(props);
   }
 
   private void setNonNull(final Properties props,

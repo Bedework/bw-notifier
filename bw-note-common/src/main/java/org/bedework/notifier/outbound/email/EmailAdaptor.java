@@ -34,7 +34,7 @@ import java.util.ResourceBundle;
  * @author Greg Allen
  *
  */
-public class EmailAdaptor extends AbstractAdaptor {
+public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
 
 	private static final String BUNDLE_NAME = "adaptors.EmailBundle";
 	private static final String KEY_SHARE_EXTERNAL_SUBJECT = "share.invitation.external.subject";
@@ -88,12 +88,20 @@ public class EmailAdaptor extends AbstractAdaptor {
 			}
 		}
 
-		getMailer().send(email);
+    try {
+      getMailer().send(email);
 
-    pt.setDtstamp(getDtstamp());
-    pt.setStatus(HttpUtil.makeOKHttpStatus());
+      pt.setDtstamp(getDtstamp());
+      pt.setStatus(HttpUtil.makeOKHttpStatus());
 
-		return true;
+      return true;
+    } catch (final NoteException ne) {
+      if (debug) {
+        error(ne);
+      }
+
+      return false;
+    }
 	}
 
 	@Override
@@ -106,10 +114,6 @@ public class EmailAdaptor extends AbstractAdaptor {
 	public boolean processResourceChange(final Note note) throws NoteException {
 		info("Call to processResourceChange: " + note);
 		return false;
-	}
-
-	public EmailAdaptorConfig getConfig() {
-		return (EmailAdaptorConfig)super.getConfig();
 	}
 
 	private ResourceBundle getResourceBundle() throws NoteException {

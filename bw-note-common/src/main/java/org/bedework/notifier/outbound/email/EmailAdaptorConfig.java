@@ -28,7 +28,8 @@ import org.bedework.util.misc.ToString;
  * @author douglm
  */
 @ConfInfo(elementName = "notify-adaptor")
-public class EmailAdaptorConfig extends AdaptorConfig {
+public class EmailAdaptorConfig extends AdaptorConfig
+        implements EmailAdaptorConfigI {
 	private String protocol;
 	private String protocolClass;
 	private String serverUri;
@@ -38,122 +39,88 @@ public class EmailAdaptorConfig extends AdaptorConfig {
 	private String from;
 	private String locale;
 
-	/** valid protocol for which an implementation exists, e.g "imap", "smtp"
-	 *
-	 * @param val the protocol
-	 */
+  @Override
 	public void setProtocol(final String val)  {
 		protocol = val;
 	}
 
-	/**
-	 * @return String
-	 */
+  @Override
 	@MBeanInfo("valid protocol for which an implementation exists, e.g \"imap\", \"smtp\".")
 	public String getProtocol()  {
 		return protocol;
 	}
 
-	/** Implementation for the selected protocol
-	 *
-	 * @param val class
-	 */
+  @Override
 	public void setProtocolClass(final String val)  {
 		protocolClass  = val;
 	}
 
-	/**
-	 * @return String
-	 */
+  @Override
 	@MBeanInfo("Implementation for the selected protocol.")
 	public String getProtocolClass()  {
 		return protocolClass;
 	}
 
-	/** Where we send it.
-	 *
-	 * @param val uri
-	 */
+  @Override
 	public void setServerUri(final String val)  {
 		serverUri  = val;
 	}
 
-	/**
-	 * @return String
-	 */
+  @Override
 	@MBeanInfo("Location of server.")
 	public String getServerUri()  {
 		return serverUri;
 	}
 
-	/**
-	 * @param val port
-	 */
+  @Override
 	public void setServerPort(final String val)  {
 		serverPort  = val;
 	}
 
-	/**
-	 * @return String
-	 */
+  @Override
 	@MBeanInfo("The server port.")
 	public String getServerPort()  {
 		return serverPort;
 	}
 
-  /**
-   * @param val server Username
-   */
+  @Override
   public void setServerUsername(final String val) {
     serverUsername = val;
   }
 
+  @Override
 	@MBeanInfo("User name if authentication is required.")
 	public String getServerUsername() {
 		return serverUsername;
 	}
 
-  /**
-   * @param val server Password
-   */
+  @Override
   public void setServerPassword(final String val) {
     serverPassword = val;
   }
 
-  /**
-   * @return password
-   */
+  @Override
 	@MBeanInfo("User password if authentication is required.")
 	public String getServerPassword() {
 		return serverPassword;
 	}
 
-	/** Address we use when none supplied
-	 *
-	 * @param val from for message
-	 */
-	void setFrom(final String val)  {
+  @Override
+	public void setFrom(final String val)  {
 		from = val;
 	}
 
-	/**
-	 * @return String
-	 */
 	@MBeanInfo("Address we use when none supplied.")
-	String getFrom()  {
+	public String getFrom()  {
 		return from;
 	}
 
-  /**
-   * @param val for messages
-   */
+  @Override
 	public void setLocale(final String val) {
 		locale = val;
 	}
 
-	/**
-	 * @return String
-	 */
+  @Override
 	@MBeanInfo("Local to user for adaptor emails.")
 	public String getLocale() {
 		return locale;

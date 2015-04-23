@@ -18,6 +18,7 @@
 */
 package org.bedework.notifier;
 
+import org.bedework.notifier.Action.ActionType;
 import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.cnctrs.ConnectorInstance;
 import org.bedework.notifier.conf.NotifyConfig;
@@ -45,7 +46,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Notification processor.
- * <p>The notification processor manages the notifcatiuon service.
+ * <p>The notification processor manages the notification service.
  *
  * <p>There are two ends to a subscription handled by connectors.
  *
@@ -232,8 +233,8 @@ public class NotifyEngine extends TzGetter {
                           getConfig().getNotelingPoolSize(),
                           getConfig().getNotelingPoolTimeout());
 
-      actionInHandler = new ActionQueue("actionIn", notelingPool);
-      actionOutHandler = new ActionQueue("actionOut", notelingPool);
+      actionInHandler = new ActionQueue(this, "actionIn", notelingPool);
+      actionOutHandler = new ActionQueue(this, "actionOut", notelingPool);
 
       info("**************************************************");
       info("Starting notifier");
@@ -331,13 +332,28 @@ public class NotifyEngine extends TzGetter {
     }
 
     if (sub.polling()) {
-      notifyTimer.schedule(sub, sub.nextRefresh());
+      final Action action = new Action(ActionType.fetchItems, sub);
+
+      notifyTimer.schedule(action, sub.nextRefresh());
       return;
     }
 
     // XXX start up the add to active subs
 
     activeSubs.put(sub.getSubscriptionId(), sub);
+  }
+
+  /** Reschedule an action for retry.
+   *
+   * @param act the action
+   * @throws NoteException
+   */
+  public void reschedule(final Action act) throws NoteException {
+    if (debug) {
+      trace("reschedule action after error " + act.getSub());
+    }
+
+    notifyTimer.schedule(act, 1 * 60 * 1000);  // 1 minute
   }
 
   public void queueNotification(final Note note) throws NoteException {

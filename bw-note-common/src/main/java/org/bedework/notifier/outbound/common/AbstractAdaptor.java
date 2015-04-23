@@ -36,29 +36,33 @@ import javax.servlet.http.HttpServletResponse;
  * @author Mike Douglass
  *
  */
-public abstract class AbstractAdaptor implements Adaptor {
+public abstract class AbstractAdaptor<Conf extends AdaptorConf>
+        implements Adaptor<Conf> {
 	private transient Logger log;
+
+  protected boolean debug;
 
 	private final static AtomicLong nextId = new AtomicLong();
 
 	private final Long id;
 
-	protected AdaptorConf conf;
+	protected Conf conf;
 
 	protected AbstractAdaptor() {
-		id = nextId.incrementAndGet();
+		debug = getLogger().isDebugEnabled();
+    id = nextId.incrementAndGet();
 	}
 
 	public long getId() {
 		return id;
 	}
 
-	public void setConf(final AdaptorConf conf) {
+	public void setConf(final Conf conf) {
 		this.conf = conf;
 	}
 
-	public AdaptorConfig getConfig() {
-		return (AdaptorConfig)conf.getConfig();
+	public Conf getConfig() {
+		return conf;
 	}
 
 	public String getType() {

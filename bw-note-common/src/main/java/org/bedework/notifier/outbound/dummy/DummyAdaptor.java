@@ -28,7 +28,7 @@ import org.bedework.notifier.outbound.common.AbstractAdaptor;
  * @author Mike Douglass
  *
  */
-public class DummyAdaptor extends AbstractAdaptor {
+public class DummyAdaptor extends AbstractAdaptor<DummyConf> {
 
 	@Override
 	public boolean processSharingInvitation(final Note note) throws NoteException {
