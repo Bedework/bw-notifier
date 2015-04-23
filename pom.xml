@@ -191,7 +191,7 @@
 		</dependencies>
 	</dependencyManagement>
 
-	<repositories>
+  <repositories>
     <repository>
       <id>bedework.repository</id>
       <name>Bedework Maven Repository</name>
@@ -204,7 +204,7 @@
         <enabled>true</enabled>
       </snapshots>
     </repository>
-	</repositories>
+  </repositories>
 
 	<distributionManagement>
 		<repository>
