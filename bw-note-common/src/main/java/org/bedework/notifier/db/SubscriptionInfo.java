@@ -18,19 +18,40 @@
 */
 package org.bedework.notifier.db;
 
-/** Serializable form of information about the whole subscription.
+import org.bedework.notifier.NotifyRegistry;
+import org.bedework.notifier.exception.NoteException;
+
+import java.util.Map;
+
+/** Serializable form of information about the subscription. May be
+ * subclassed for specific connectors.
  *
  * @author douglm
  */
-public class SubscriptionInfo extends SerializableProperties<SubscriptionInfo> {
-  /* properties saved by connector instance */
+public class SubscriptionInfo extends SerializableProperties {
+  /* ====================================================================
+   *                   Deserialization methods
+   * ==================================================================== */
 
+  public static SubscriptionInfo getInfo(final String type,
+                                         final Map vals) throws NoteException {
+    final NotifyRegistry.Info info = NotifyRegistry.getInfo(type);
 
-  /** Strip out alarms if true */
-  public static final String propnameAlarmProcessing = "alarm-processing";
+    if (info == null) {
+      throw new NoteException("Unhandled type " + type);
+    }
 
-  /** Strip out scheduling properties if true */
-  public static final String propnameSchedulingProcessing = "scheduling-processing";
+    SubscriptionInfo subInfo;
+    try {
+      subInfo = info.getSubscriptionInfoClass().newInstance();
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    }
+
+    subInfo.init(vals);
+
+    return subInfo;
+  }
 
   /* ====================================================================
    *                   Convenience methods
@@ -39,32 +60,5 @@ public class SubscriptionInfo extends SerializableProperties<SubscriptionInfo> {
   /* ====================================================================
    *                   Object methods
    * ==================================================================== */
-
-  @Override
-  public int compareTo(final SubscriptionInfo that) {
-    if (this == that) {
-      return 0;
-    }
-
-    try {
-      return super.compareTo(that);
-    } catch (Throwable t) {
-      throw new RuntimeException(t);
-    }
-  }
-
-  @Override
-  public String toString() {
-    try {
-      StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append("{");
-
-      super.toStringSegment(sb, "  ");
-
-      sb.append("}");
-      return sb.toString();
-    } catch (Throwable t) {
-      throw new RuntimeException(t);
-    }
-  }
 
 }

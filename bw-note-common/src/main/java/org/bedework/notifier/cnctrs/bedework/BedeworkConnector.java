@@ -18,16 +18,15 @@
 */
 package org.bedework.notifier.cnctrs.bedework;
 
-import org.bedework.notifier.BaseSubscriptionInfo;
-import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.NotifyDefs.NotifyKind;
 import org.bedework.notifier.NotifyEngine;
+import org.bedework.notifier.NotifyRegistry;
 import org.bedework.notifier.cnctrs.AbstractConnector;
 import org.bedework.notifier.cnctrs.ConnectorInstanceMap;
-import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.db.SubscriptionConnectorInfo;
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.notifier.notifications.Note;
 import org.bedework.util.dav.DavUtil;
 import org.bedework.util.dav.DavUtil.DavChild;
 import org.bedework.util.http.BasicHttpClient;
@@ -39,6 +38,7 @@ import org.apache.http.message.BasicHeader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -57,10 +57,21 @@ import javax.servlet.http.HttpServletResponse;
 public class BedeworkConnector
       extends AbstractConnector<BedeworkConnector,
                                 BedeworkConnectorInstance,
-        Note,
+                                Note,
                                 BedeworkConnectorConfig> {
   private final ConnectorInstanceMap<BedeworkConnectorInstance> cinstMap =
       new ConnectorInstanceMap<>();
+
+  private static class Authenticator implements NotifyRegistry.Authenticator {
+    BedeworkConnectorConfig conf;
+
+    @Override
+    public boolean authenticate(final String token)
+            throws NoteException {
+      return (token != null) && (conf.getToken() != null) &&
+              token.equals(conf.getToken());
+    }
+  }
 
   /**
    */
@@ -68,15 +79,11 @@ public class BedeworkConnector
   }
 
   @Override
-  public void start(final String connectorId,
-                    final ConnectorConfig conf,
-                    final String callbackUri,
+  public void start(final String callbackUri,
                     final NotifyEngine notifier) throws NoteException {
-    super.start(connectorId, conf, callbackUri, notifier);
+    super.start(callbackUri, notifier);
 
     try {
-      config = (BedeworkConnectorConfig)conf;
-
       final List<String> notifyUrls;
 
       notifyUrls = getNotifyUrls(config.getNotificationDirHref());
@@ -100,17 +107,13 @@ public class BedeworkConnector
          an instance.
        */
 
-      final Subscription sub = new Subscription(null);
+      final Subscription sub = new Subscription();
 
-      final SubscriptionConnectorInfo subInfo = new SubscriptionConnectorInfo();
+      final SubscriptionConnectorInfo subInfo = new BedeworkConnectorInfo();
       sub.setSourceConnectorInfo(subInfo);
-      subInfo.setConnectorId(connectorId);
+      subInfo.setConnectorName(getConnectorName());
 
-      /* Wrap it to manipulate it */
-      final BaseSubscriptionInfo bi = new BaseSubscriptionInfo(subInfo);
-
-      bi.setUri(config.getNotificationDirHref());
-      bi.setRefreshDelay("60000");
+      subInfo.setUri(config.getNotificationDirHref());
 
       notifier.add(sub);
 
@@ -119,6 +122,34 @@ public class BedeworkConnector
     } catch (final Throwable t) {
       throw new NoteException(t);
     }
+  }
+
+  @Override
+  public NotifyRegistry.Info getInfo() {
+    final Authenticator authenticator = new Authenticator();
+
+    authenticator.conf = config;
+
+    return new NotifyRegistry.Info(getConnectorName(),
+                                   BedeworkConnectorInfo.class,
+                                   BedeworkSubscriptionInfo.class,
+                                   authenticator);
+  }
+
+  @Override
+  public Subscription subscribe(final Map<?, ?> vals)
+          throws NoteException {
+    final String href = must("href", vals);
+
+    final Subscription sub = new Subscription();
+
+    final SubscriptionConnectorInfo subInfo = new BedeworkConnectorInfo();
+    sub.setSourceConnectorInfo(subInfo);
+    subInfo.setConnectorName(getConnectorName());
+
+    subInfo.setUri(href);
+
+    return sub;
   }
 
   @Override
@@ -154,9 +185,9 @@ public class BedeworkConnector
       return inst;
     }
 
-    final BedeworkSubscriptionInfo info;
+    final BedeworkConnectorInfo info;
 
-    info = new BedeworkSubscriptionInfo(sub.getSourceConnectorInfo());
+    info = (BedeworkConnectorInfo)sub.getSourceConnectorInfo();
 
     inst = new BedeworkConnectorInstance(config,
                                          this, sub, info);

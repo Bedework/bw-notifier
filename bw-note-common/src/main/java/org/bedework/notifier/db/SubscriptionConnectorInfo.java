@@ -18,27 +18,149 @@
 */
 package org.bedework.notifier.db;
 
+import org.bedework.notifier.NotifyRegistry;
+import org.bedework.notifier.exception.NoteException;
+import org.bedework.util.misc.ToString;
+
+import java.util.Map;
 
 /** Serializable form of information for a connection to a system via a
  * connector - a connector id and the serialized properties.
  *
  * @author douglm
  */
-public class SubscriptionConnectorInfo extends SerializableProperties<SubscriptionConnectorInfo> {
-  private String connectorId;
+public class SubscriptionConnectorInfo extends SerializableProperties
+    implements Comparable<SubscriptionConnectorInfo> {
+  private String connectorName;
+
+  private String type;
+
+  private String uri;
+
+  private String principalHref;
+
+  private String lastRefreshStatus;
+
+  public SubscriptionConnectorInfo() {
+  }
+
+  @Override
+  public void init(final Map vals) throws NoteException {
+    super.init(vals);
+
+    setConnectorName(must("connectorName"));
+    setType(must("type"));
+    setUri(must("uri"));
+    setPrincipalHref(must("principalHref"));
+    setLastRefreshStatus(may("lastRefreshStatus"));
+  }
 
   /**
    * @param val id
    */
-  public void setConnectorId(final String val) {
-    connectorId = val;
+  public void setConnectorName(final String val) {
+    connectorName = val;
   }
 
   /**
    * @return id
    */
-  public String getConnectorId() {
-    return connectorId;
+  public String getConnectorName() {
+    return connectorName;
+  }
+
+  /** Type of connector.
+   *
+   * @param val    String
+   * @throws NoteException
+   */
+  public void setType(final String val) throws NoteException {
+    type = val;
+  }
+
+  /** Type of connector.
+   *
+   * @return String
+   * @throws NoteException
+   */
+  public String getType() throws NoteException {
+    return type;
+  }
+
+  /** Path to the notifications source.
+   *
+   * @param val    String
+   * @throws NoteException
+   */
+  public void setUri(final String val) throws NoteException {
+    uri = val;
+  }
+
+  /** Path to the notifications source.
+   *
+   * @return String
+   * @throws NoteException
+   */
+  public String getUri() throws NoteException {
+    return uri;
+  }
+
+  /** Principal requesting service
+   *
+   * @param val    String
+   * @throws NoteException
+   */
+  public void setPrincipalHref(final String val) throws NoteException {
+    principalHref = val;
+  }
+
+  /** Principal requesting service
+   *
+   * @return String
+   * @throws NoteException
+   */
+  public String getPrincipalHref() throws NoteException {
+    return principalHref;
+  }
+
+  /** HTTP status or other appropriate value
+   * @param val
+   * @throws NoteException
+   */
+  public void setLastRefreshStatus(final String val) throws NoteException {
+    lastRefreshStatus = val;
+  }
+
+  /**
+   * @return String lastRefreshStatus
+   * @throws NoteException
+   */
+  public String getLastRefreshStatus() throws NoteException {
+    return lastRefreshStatus;
+  }
+
+  /* ====================================================================
+   *                   Deserialization methods
+   * ==================================================================== */
+
+  public static SubscriptionConnectorInfo getInfo(final String type,
+                                                  final Map vals) throws NoteException {
+    final NotifyRegistry.Info info = NotifyRegistry.getInfo(type);
+
+    if (info == null) {
+      throw new NoteException("Unhandled type " + type);
+    }
+
+    SubscriptionConnectorInfo connInfo;
+    try {
+      connInfo = info.getConnectorInfoClass().newInstance();
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    }
+
+    connInfo.init(vals);
+
+    return connInfo;
   }
 
   /* ====================================================================
@@ -52,7 +174,7 @@ public class SubscriptionConnectorInfo extends SerializableProperties<Subscripti
   @Override
   public int hashCode() {
     try {
-      return getConnectorId().hashCode() * super.hashCode();
+      return getConnectorName().hashCode() * super.hashCode();
     } catch (Throwable t) {
       throw new RuntimeException(t);
     }
@@ -65,12 +187,7 @@ public class SubscriptionConnectorInfo extends SerializableProperties<Subscripti
     }
 
     try {
-      int res = getConnectorId().compareTo(that.getConnectorId());
-      if (res != 0) {
-        return res;
-      }
-
-      return super.compareTo(that);
+      return getConnectorName().compareTo(that.getConnectorName());
     } catch (Throwable t) {
       throw new RuntimeException(t);
     }
@@ -79,15 +196,13 @@ public class SubscriptionConnectorInfo extends SerializableProperties<Subscripti
   @Override
   public String toString() {
     try {
-      StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append("{");
+      ToString ts = new ToString(this);
 
-      sb.append("connectorId= ");
-      sb.append(getConnectorId());
+      ts.append("connectorName", getConnectorName());
 
-      super.toStringSegment(sb, "  ");
+      //super.toStringSegment(ts);
 
-      sb.append("}");
-      return sb.toString();
+      return ts.toString();
     } catch (Throwable t) {
       throw new RuntimeException(t);
     }

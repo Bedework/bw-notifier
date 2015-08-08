@@ -18,9 +18,11 @@
 */
 package org.bedework.notifier.web;
 
+import org.bedework.notifier.JsonUtil;
 import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.exception.NoteException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
@@ -29,6 +31,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,7 +40,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 /** Base class for all webdav servlet methods.
  */
-public abstract class MethodBase {
+public abstract class MethodBase extends JsonUtil {
   protected boolean debug;
 
   protected boolean dumpContent;
@@ -46,6 +49,7 @@ public abstract class MethodBase {
 
   protected NotifyEngine notifier;
 
+  protected ObjectMapper om = new ObjectMapper();
   //private String resourceUri;
 
   // private String content;
@@ -260,6 +264,22 @@ public abstract class MethodBase {
     resp.addHeader("Allow", methods.toString());
     */
     resp.addHeader("Allow", "POST, GET");
+  }
+
+  protected Map<?, ?> getJson(final HttpServletRequest req,
+                              final HttpServletResponse resp)
+          throws NoteException {
+    int len = req.getContentLength();
+    if (len == 0) {
+      return null;
+    }
+
+    try {
+      return (Map<?, ?>)om.readValue(req.getInputStream(), Object.class);
+    } catch (Throwable t) {
+      resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      throw new NoteException(t);
+    }
   }
 
   /** Parse the request body, and return the DOM representation.

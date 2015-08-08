@@ -18,17 +18,14 @@
 */
 package org.bedework.notifier.db;
 
-import org.bedework.notifier.BaseSubscriptionInfo;
-import org.bedework.notifier.NotifyDefs.NotifyKind;
 import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.cnctrs.ConnectorInstance;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.util.misc.ToString;
 
-import net.fortuna.ical4j.model.DateTime;
-import net.fortuna.ical4j.model.property.DtStamp;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 /** Represents a subscription for the notification engine.
@@ -90,8 +87,6 @@ public class Subscription extends DbItem<Subscription> {
 
   /* Following not persisted */
 
-  private boolean deleted;
-
   private Connector sourceConn;
 
   private ConnectorInstance sourceConnInst;
@@ -100,18 +95,21 @@ public class Subscription extends DbItem<Subscription> {
    *
    */
   public Subscription() {
+    this.subscriptionId = UUID.randomUUID().toString();
   }
 
-  /** Constructor to create a new subscription.
-   *
-   * @param subscriptionId - null means generate one
-   */
-  public Subscription(final String subscriptionId) {
-    if (subscriptionId == null) {
-      this.subscriptionId = UUID.randomUUID().toString();
-    } else {
-      this.subscriptionId = subscriptionId;
-    }
+  public void init(final Map vals) throws NoteException {
+    super.init(vals);
+
+    setSubscriptionId(must("subscriptionId"));
+    setOwner(must("owner"));
+    setLastRefresh(may("lastRefresh"));
+    setErrorCt(mayInt("errorCt"));
+    setMissingTarget(mayBool("missingTarget"));
+
+    final Map connVals = getMap("sourceConnectorInfo");
+    final String type = must("type", connVals);
+    setSourceConnectorInfo(SubscriptionConnectorInfo.getInfo(type, connVals));
   }
 
   /** Our generated subscriptionId.
@@ -228,21 +226,6 @@ public class Subscription extends DbItem<Subscription> {
   }
 
   /**
-   *
-   * @param val True if subscription deleted
-   */
-  public void setDeleted(final boolean val) {
-    deleted = val;
-  }
-
-  /**
-   * @return True if deleted
-   */
-  public boolean getDeleted() {
-    return deleted;
-  }
-
-  /**
    * @param val a connection
    */
   public void setSourceConn(final Connector val) {
@@ -252,6 +235,7 @@ public class Subscription extends DbItem<Subscription> {
   /**
    * @return a connection or null
    */
+  @JsonIgnore
   public Connector getSourceConn() {
     return sourceConn;
   }
@@ -266,76 +250,28 @@ public class Subscription extends DbItem<Subscription> {
   /**
    * @return a connection instance or null
    */
+  @JsonIgnore
   public ConnectorInstance getSourceConnInst() {
     return sourceConnInst;
   }
 
-  /**
-   * @return true if any connector info changed
+  /** Fill this in from the serialized properties
+   *
+   * @param val json form
    */
-  public boolean changed() {
-    return getSourceConnectorInfo().getChanged();
+  public void setProperties(final String val) throws NoteException {
+    asMap(val);
+
+    init(vals);
   }
 
-  /**
-   * reset the changed flag.
-   */
-  public synchronized void resetChanged() {
-    if (!changed()) {
-      return;
-    }
-
-    getSourceConnectorInfo().resetChanged();
+  public String getProperties() throws NoteException {
+    return asString();
   }
 
   /* ====================================================================
    *                   Convenience methods
    * ==================================================================== */
-
-  /**
-   * @return true if this has to be put on a poll queue
-   */
-  public boolean polling() {
-    return getSourceConn().getKind() == NotifyKind.poll;
-  }
-
-  /**
-   * @return the delay in millisecs.
-   * @throws org.bedework.notifier.exception.NoteException
-   */
-  public long refreshDelay() throws NoteException {
-    String delay = "31536000000"; // About a year
-
-    delay = new BaseSubscriptionInfo(getSourceConnectorInfo()).getRefreshDelay();
-
-    return Long.valueOf(delay);
-  }
-
-  /** Set the lastRefresh from the current time
-   *
-   */
-  public void updateLastRefresh() {
-    setLastRefresh(new DtStamp(new DateTime(true)).getValue());
-  }
-
-  /** Get a next refresh date based on the last refresh value
-   *
-   * @return date value incremented by delay.
-   * @throws org.bedework.notifier.exception.NoteException
-   */
-  public Date nextRefresh() throws NoteException {
-    if (getLastRefresh() == null) {
-      return new Date();
-    }
-
-    try {
-      Date dt = new DtStamp(getLastRefresh()).getDate();
-
-      return new Date(dt.getTime() + ((getErrorCt() + 1) * refreshDelay()));
-    } catch (Throwable t) {
-      throw new NoteException(t);
-    }
-  }
 
   /** Add our stuff to the StringBuilder
    *

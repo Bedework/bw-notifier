@@ -18,6 +18,7 @@
 */
 package org.bedework.notifier.cnctrs;
 
+import org.bedework.notifier.JsonUtil;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.conf.ConnectorConfig;
@@ -41,13 +42,14 @@ import java.util.List;
 public abstract class AbstractConnector<T,
                                         TI extends AbstractConnectorInstance,
                                         TN extends Note,
-                                        Tconf extends ConnectorConfig> implements Connector<TI,
-                                                 TN> {
+                                        Tconf extends ConnectorConfig>
+        extends JsonUtil
+        implements Connector<TI, TN, Tconf> {
   protected Tconf config;
 
   protected String callbackUri;
 
-  private String connectorId;
+  private String connectorName;
 
   private transient Logger log;
 
@@ -62,16 +64,20 @@ public abstract class AbstractConnector<T,
   /**
    * @return the connector id
    */
-  public String getConnectorId() {
-    return connectorId;
+  public String getConnectorName() {
+    return connectorName;
   }
 
   @Override
-  public void start(final String connectorId,
-                    final ConnectorConfig conf,
-                    final String callbackUri,
+  public void init(final String name,
+                      final Tconf config) throws NoteException {
+    connectorName = name;
+    this.config = config;
+  }
+
+  @Override
+  public void start(final String callbackUri,
                     final NotifyEngine notifier) throws NoteException {
-    this.connectorId = connectorId;
     this.notifier = notifier;
     this.callbackUri = callbackUri;
 
@@ -118,7 +124,7 @@ public abstract class AbstractConnector<T,
 
   @Override
   public String getId() {
-    return connectorId;
+    return connectorName;
   }
 
   @Override

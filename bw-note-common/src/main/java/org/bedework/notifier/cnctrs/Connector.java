@@ -18,17 +18,19 @@
 */
 package org.bedework.notifier.cnctrs;
 
-import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.NotifyDefs.NotifyKind;
 import org.bedework.notifier.NotifyEngine;
+import org.bedework.notifier.NotifyRegistry;
 import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.notifier.notifications.Note;
 
 import org.oasis_open.docs.ws_calendar.ns.soap.StatusType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -50,28 +52,45 @@ import javax.servlet.http.HttpServletResponse;
  * @param <N>
  */
 public interface Connector<C extends ConnectorInstance,
-                           N extends Note> {
+                           N extends Note,
+                           Tconf extends ConnectorConfig> {
+
   /** Start the connector. A response of null means no synch available.
    *
-   * <p>The callback url is unique to the connector. It will be used as a path
+   * @param name - name for the connector
+   * @param conf configuration
+   * @throws NoteException
+   */
+  void init(String name,
+            Tconf conf) throws NoteException;
+
+  /** Start the connector. A response of null means no synch available.
+   *
+   * <p>The callback uri is unique to the connector. It will be used as a path
    * prefix to allow the callback service to locate the handler for incoming
    * callback requests.
    *
-   * <p>For example, if the callback context is /synchcb/ and the connector id
-   * is "bedework" then the callback uri might be /synchcb/bedework/. The
+   * <p>For example, if the callback context is /notecb/ and the connector id
+   * is "bedework" then the callback uri might be /notecb/bedework/. The
    * connector might append a uid to that path to allow it to locate the
    * active subscription for which the callback is intended.
    *
-   * @param connectorId - registered id for the connector
-   * @param conf
    * @param callbackUri
    * @param notifier
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
-  void start(String connectorId,
-             ConnectorConfig conf,
-             String callbackUri,
+  void start(String callbackUri,
              NotifyEngine notifier) throws NoteException;
+
+  NotifyRegistry.Info getInfo();
+
+  /**
+   *
+   * @param vals the parsed Json subscription message
+   * @return a filled in Subscription
+   * @throws NoteException
+   */
+  Subscription subscribe(Map<?, ?> vals) throws NoteException;
 
   /**
    * @return a useful status message

@@ -22,14 +22,14 @@ import org.bedework.util.misc.ToString;
 
 import java.io.Serializable;
 
-
 /** Simple base class for database entities
  *
  * @author Mike Douglass
  *
  * @param <T>
  */
-public class DbItem<T> implements Comparable<T>, Serializable {
+public class DbItem<T> extends SerializableProperties
+        implements Comparable<T>, Serializable {
   // hibernate
   private long id;
 
@@ -79,9 +79,9 @@ public class DbItem<T> implements Comparable<T>, Serializable {
     return seq;
   }
 
-  /* ====================================================================
+  /* ==============================================================
    *                   Convenience methods
-   * ==================================================================== */
+   * ============================================================== */
 
   /** Add our stuff to the ToString builder
    *

@@ -54,7 +54,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
   private final BedeworkConnector cnctr;
 
-  private final BedeworkSubscriptionInfo info;
+  private final BedeworkConnectorInfo info;
 
   private BasicHttpClient client;
 
@@ -67,7 +67,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
   BedeworkConnectorInstance(final BedeworkConnectorConfig config,
                             final BedeworkConnector cnctr,
                             final Subscription sub,
-                            final BedeworkSubscriptionInfo info) {
+                            final BedeworkConnectorInfo info) {
     super(sub);
     this.config = config;
     this.cnctr = cnctr;

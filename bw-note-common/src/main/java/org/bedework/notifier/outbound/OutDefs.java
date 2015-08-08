@@ -16,22 +16,15 @@
     specific language governing permissions and limitations
     under the License.
 */
-package org.bedework.notifier;
+package org.bedework.notifier.outbound;
 
-/** Some definitions for the notification service
+/** Common definitions for outbound processors.
  *
- *   @author Mike Douglass   douglm  rpi.edu
+ * @author Mike Douglass
+ *
  */
-public interface NotifyDefs {
-  /** and does it tell us when something changes or do we have to ask?
-   */
-  public enum NotifyKind {
-    /** we have to ask */
-    poll,
+public interface OutDefs {
+  public final static String outboundDummy = "dummy";
 
-    /** the other end will tell us via a callback */
-    notify
-  }
-
-  public static final String namespace = "oeg.bedework.namespace.notify";
+  public final static String outboundEmail = "email";
 }

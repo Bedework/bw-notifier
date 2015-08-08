@@ -31,6 +31,10 @@
     </dependency>
     <dependency>
       <groupId>org.bedework</groupId>
+      <artifactId>bw-util-hibernate</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.bedework</groupId>
       <artifactId>bw-util-http</artifactId>
     </dependency>
     <dependency>
@@ -103,6 +107,10 @@
 		  <version>1.6.1</version>
 		  <scope>provided</scope>
 		</dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+    </dependency>
 	</dependencies>
 
 </project>

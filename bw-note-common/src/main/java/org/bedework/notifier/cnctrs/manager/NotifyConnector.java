@@ -18,15 +18,19 @@
 */
 package org.bedework.notifier.cnctrs.manager;
 
-import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.NotifyDefs.NotifyKind;
 import org.bedework.notifier.NotifyEngine;
+import org.bedework.notifier.NotifyRegistry;
 import org.bedework.notifier.cnctrs.AbstractConnector;
 import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.notifier.db.Subscription;
+import org.bedework.notifier.db.SubscriptionConnectorInfo;
+import org.bedework.notifier.db.SubscriptionInfo;
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.notifier.notifications.Note;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,11 +41,21 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Mike Douglass
  */
-public class NotifyConnector
-        extends AbstractConnector<NotifyConnector,
-                                  NotifyConnectorInstance,
+public class NotifyConnector extends AbstractConnector<NotifyConnector,
+        NotifyConnectorInstance,
         Note,
-                                  ConnectorConfig> {
+        ConnectorConfig> {
+
+  private static class Authenticator implements NotifyRegistry.Authenticator {
+    ConnectorConfig conf;
+
+    @Override
+    public boolean authenticate(final String token)
+            throws NoteException {
+      return false;
+    }
+  }
+
   /**
    */
   public NotifyConnector() {
@@ -49,14 +63,30 @@ public class NotifyConnector
   }
 
   @Override
-  public void start(final String connectorId,
-                    final ConnectorConfig conf,
-                    final String callbackUri,
+  public void start(final String callbackUri,
                     final NotifyEngine syncher) throws NoteException {
-    super.start(connectorId, conf, callbackUri, syncher);
+    super.start(callbackUri, syncher);
 
     stopped = false;
     running = true;
+  }
+
+  @Override
+  public NotifyRegistry.Info getInfo() {
+    final Authenticator authenticator = new Authenticator();
+
+    authenticator.conf = config;
+
+    return new NotifyRegistry.Info(getConnectorName(),
+                                   SubscriptionConnectorInfo.class,
+                                   SubscriptionInfo.class,
+                                   authenticator);
+  }
+
+  @Override
+  public Subscription subscribe(final Map<?, ?> vals)
+          throws NoteException {
+    return null;
   }
 
   @Override

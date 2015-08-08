@@ -20,6 +20,10 @@ package org.bedework.notifier.db;
 
 import org.bedework.notifier.conf.NotifyConfig;
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.util.hibernate.HibException;
+import org.bedework.util.hibernate.HibSession;
+import org.bedework.util.hibernate.HibSessionFactory;
+import org.bedework.util.hibernate.HibSessionImpl;
 
 import org.apache.log4j.Logger;
 
@@ -50,6 +54,10 @@ public class NotifyDb implements Serializable {
   /** When we were created for debugging */
   protected Timestamp objTimestamp;
 
+  /** Current hibernate session - exists only across one user interaction
+   */
+  protected HibSession sess;
+
   /**
    * @param config
    *
@@ -62,13 +70,14 @@ public class NotifyDb implements Serializable {
 
   /**
    * @return true if we had to open it. False if already open
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public boolean open() throws NoteException {
     if (isOpen()) {
       return false;
     }
 
+    openSession();
     open = true;
     return true;
   }
@@ -84,23 +93,48 @@ public class NotifyDb implements Serializable {
    * @throws org.bedework.notifier.exception.NoteException
    */
   public void close() throws NoteException {
-    open = false;
+    try {
+      endTransaction();
+    } catch (final NoteException ne) {
+      try {
+        rollbackTransaction();
+      } catch (final NoteException ignored) {}
+      throw ne;
+    } finally {
+      try {
+        closeSession();
+      } catch (final NoteException ignored) {}
+      open = false;
+    }
   }
 
   /* ====================================================================
    *                   Subscription Object methods
    * ==================================================================== */
 
+  private static final String getAllQuery =
+          "from " + Subscription.class.getName();
+
   /**
    * @return list of subscriptions
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   @SuppressWarnings("unchecked")
   public List<Subscription> getAll() throws NoteException {
-    return null;
+    try {
+      sess.createQuery(getAllQuery);
+
+      return sess.getList();
+    } catch (final HibException he) {
+      throw new NoteException(he);
+    }
   }
 
-  /** The synch engine generates a unique subscription id
+  private static final String getSubQuery =
+          "from " + Subscription.class.getName() +
+                  " sub where sub.subscriptionId=:subid";
+
+  /** The notify engine generates a unique subscription id
    * for each subscription. This is used as a key for each subscription.
    *
    * @param id - unique id
@@ -108,13 +142,29 @@ public class NotifyDb implements Serializable {
    * @throws org.bedework.notifier.exception.NoteException
    */
   public Subscription get(final String id) throws NoteException {
-    return null;
+    try {
+      sess.createQuery(getSubQuery);
+      sess.setString("subid", id);
+
+      return (Subscription)sess.getUnique();
+    } catch (final HibException he) {
+      throw new NoteException(he);
+    }
   }
+
+  private static final String findSubQuery =
+          "from " + Subscription.class.getName() +
+                  " sub where sub.sourceConnectorInfo.connectorName=:connName" +
+                  " and sub.endAConnectorInfo.synchProperties=:aconnprops" +
+                  " and sub.endBConnectorInfo.connectorId=:bconnid" +
+                  " and sub.endBConnectorInfo.synchProperties=:bconnprops" +
+                  " and sub.direction=:dir" +
+                  " and sub.master=:mstr";
 
   /** Find any subscription that matches this one. There can only be one with
    * the same endpoints
    *
-   * @param sub
+   * @param sub subscription
    * @return matching subscriptions
    * @throws org.bedework.notifier.exception.NoteException
    */
@@ -153,6 +203,113 @@ public class NotifyDb implements Serializable {
   protected void checkOpen() throws NoteException {
     if (!isOpen()) {
       throw new NoteException("Session call when closed");
+    }
+  }
+
+  protected synchronized void openSession() throws NoteException {
+    if (isOpen()) {
+      throw new NoteException("Already open");
+    }
+
+    open = true;
+
+    if (sess != null) {
+      warn("Session is not null. Will close");
+      try {
+        close();
+      } catch (final Throwable ignored) {
+      }
+    }
+
+    if (sess == null) {
+      if (debug) {
+        trace("New hibernate session for " + objTimestamp);
+      }
+      sess = new HibSessionImpl();
+      try {
+        sess.init(HibSessionFactory.getSessionFactory(
+                config.getHibernateProperties()), getLogger());
+      } catch (HibException he) {
+        throw new NoteException(he);
+      }
+      trace("Open session for " + objTimestamp);
+    }
+
+    beginTransaction();
+  }
+
+  protected synchronized void closeSession() throws NoteException {
+    if (!isOpen()) {
+      if (debug) {
+        trace("Close for " + objTimestamp + " closed session");
+      }
+      return;
+    }
+
+    if (debug) {
+      trace("Close for " + objTimestamp);
+    }
+
+    try {
+      if (sess != null) {
+        if (sess.rolledback()) {
+          sess = null;
+          return;
+        }
+
+        if (sess.transactionStarted()) {
+          sess.rollback();
+        }
+//        sess.disconnect();
+        sess.close();
+        sess = null;
+      }
+    } catch (Throwable t) {
+      try {
+        sess.close();
+      } catch (Throwable t1) {}
+      sess = null; // Discard on error
+    } finally {
+      open = false;
+    }
+  }
+
+  protected void beginTransaction() throws NoteException {
+    checkOpen();
+
+    if (debug) {
+      trace("Begin transaction for " + objTimestamp);
+    }
+    try {
+      sess.beginTransaction();
+    } catch (HibException he) {
+      throw new NoteException(he);
+    }
+  }
+
+  protected void endTransaction() throws NoteException {
+    checkOpen();
+
+    if (debug) {
+      trace("End transaction for " + objTimestamp);
+    }
+
+    try {
+      if (!sess.rolledback()) {
+        sess.commit();
+      }
+    } catch (HibException he) {
+      throw new NoteException(he);
+    }
+  }
+
+  protected void rollbackTransaction() throws NoteException {
+    try {
+      checkOpen();
+      sess.rollback();
+    } catch (HibException he) {
+      throw new NoteException(he);
+    } finally {
     }
   }
 

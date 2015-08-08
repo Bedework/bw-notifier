@@ -18,10 +18,14 @@
 */
 package org.bedework.notifier.web;
 
+import org.bedework.notifier.NotifyEngine;
+import org.bedework.notifier.NotifyRegistry;
+import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.util.misc.Util;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -44,25 +48,107 @@ public class PostMethod extends MethodBase {
         throw new NoteException("Bad resource url - no connector specified");
       }
 
-      /* Find a connector to handle the incoming request.
-       */
-      //Connector conn = notifier.getConnector(resourceUri.get(0));
+      final String ruri = resourceUri.get(0);
 
-      //if (conn == null) {
-      //  throw new NoteException("Bad resource url - unknown connector specified");
-      //}
+      if ("notification".equals(ruri)) {
+        processNotification(req, resp, resourceUri);
+        return;
+      }
 
-      resourceUri.remove(0);
-//      NotificationBatch notes = conn.handleCallback(req, resp, resourceUri);
+      if ("subscribe".equals(ruri)) {
+        processSubscribe(req, resp, resourceUri);
+        return;
+      }
 
-  //    if (notes != null) {
-    //    notifier.handleNotifications(notes);
-      //  conn.respondCallback(resp, notes);
-      //}
-    } catch (NoteException se) {
+      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    } catch (final NoteException se) {
       throw se;
-    } catch(Throwable t) {
+    } catch(final Throwable t) {
       throw new NoteException(t);
+    }
+  }
+
+  private void processNotification(final HttpServletRequest req,
+                                   final HttpServletResponse resp,
+                                   final List<String> resourceUri) throws NoteException {
+    /* A system is telling us there are notifications we need to
+     * take care of.
+     *
+     * We get a message which defines the system, provides a token and
+     * an array of hrefs identifying the notification collections to
+     * be queried.
+     */
+
+    final Map vals = getJson(req, resp);
+
+    try {
+      final String system = must("system", vals);
+      final String token = must("token", vals);
+      @SuppressWarnings("unchecked")
+      final List<String> hrefs = mayList("hrefs", vals);
+
+      if (!NotifyEngine.authenticate(system, token)) {
+        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        return;
+      }
+
+      /* Queue the hrefs */
+
+      resp.setStatus(HttpServletResponse.SC_OK);
+
+      if (Util.isEmpty(hrefs)) {
+        return;
+      }
+
+      for (final String href: hrefs) {
+        NotifyEngine.addNotificationMsg(
+                new NotifyEngine.NotificationMsg(system, href));
+      }
+    } catch(final Throwable t) {
+      if (debug) {
+        error(t);
+      }
+      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    }
+  }
+
+  private void processSubscribe(final HttpServletRequest req,
+                                final HttpServletResponse resp,
+                                final List<String> resourceUri) throws NoteException {
+    /* We have a subscription message for a user.
+     * Eventually this will have information about which type of
+     * notifications and how they are to be sent. For the moment we
+     * just need a system name, a token and a user principal.
+     */
+
+    final Map vals = getJson(req, resp);
+
+    try {
+      final String system = must("system", vals);
+      final String token = must("token", vals);
+
+      if (!NotifyEngine.authenticate(system, token)) {
+        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        return;
+      }
+
+      Subscription sub = NotifyRegistry.getConnector(system).subscribe(vals);
+
+      if (sub == null) {
+        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        return;
+      }
+
+      // Add to the db
+      notifier.addSubscription(sub);
+
+      // Add to the list
+      notifier.add(sub);
+    } catch(final Throwable t) {
+      if (debug) {
+        error(t);
+      }
+      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
   }
 }

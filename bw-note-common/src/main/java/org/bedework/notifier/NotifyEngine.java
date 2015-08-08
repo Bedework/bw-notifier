@@ -18,7 +18,6 @@
 */
 package org.bedework.notifier;
 
-import org.bedework.notifier.Action.ActionType;
 import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.cnctrs.ConnectorInstance;
 import org.bedework.notifier.conf.NotifyConfig;
@@ -44,6 +43,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
 
 /** Notification processor.
  * <p>The notification processor manages the notification service.
@@ -87,8 +88,6 @@ public class NotifyEngine extends TzGetter {
 
   private NotelingPool notelingPool;
 
-  private ConnectorPool connectorPool;
-
   private AdaptorPool adaptorPool;
 
   private NotifyTimer notifyTimer;
@@ -107,6 +106,36 @@ public class NotifyEngine extends TzGetter {
    *
    */
   private static ActionQueue actionOutHandler;
+
+  public static class NotificationMsg {
+    private final String system;
+    private final String href;
+
+    public NotificationMsg(final String system,
+                           final String href) {
+      this.system = system;
+      this.href = href;
+    }
+
+    public String getSystem() {
+      return system;
+    }
+
+    public String getHref() {
+      return href;
+    }
+  }
+
+  private static final BlockingDeque<NotificationMsg> notificationMsgs =
+          new LinkedBlockingDeque<>();
+
+  public static void addNotificationMsg(final NotificationMsg val) throws NoteException {
+    try {
+      notificationMsgs.put(val);
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    }
+  }
 
   /** Constructor
    *
@@ -152,6 +181,14 @@ public class NotifyEngine extends TzGetter {
     }
 
     return cfgHolder.getConfig();
+  }
+
+  public static boolean authenticate(final String system,
+                              final String token) throws NoteException {
+    NotifyRegistry.Info info = NotifyRegistry.getInfo(system);
+
+    return info != null &&
+            info.getAuthenticator().authenticate(token);
   }
 
   /**
@@ -246,8 +283,9 @@ public class NotifyEngine extends TzGetter {
         System.setProperty("javax.net.ssl.trustStorePassword", "bedework");
       }
 
-      connectorPool = new ConnectorPool(this, 1000 * 60);
-      connectorPool.registerConnectors();
+      final NotifyRegistry registry = new NotifyRegistry();
+      registry.registerConnectors(getConfig());
+      registry.startConnectors(this);
 
       adaptorPool = new AdaptorPool(this, 1000 * 60);
       adaptorPool.registerAdaptors();
@@ -331,12 +369,14 @@ public class NotifyEngine extends TzGetter {
       trace("reschedule subscription " + sub);
     }
 
+    /*
     if (sub.polling()) {
       final Action action = new Action(ActionType.fetchItems, sub);
 
       notifyTimer.schedule(action, sub.nextRefresh());
       return;
     }
+    */
 
     // XXX start up the add to active subs
 
@@ -394,7 +434,7 @@ public class NotifyEngine extends TzGetter {
 
     /* Call stop on each connector
      */
-    for (final Connector conn: connectorPool.getConnectors()) {
+    for (final Connector conn: NotifyRegistry.getConnectors()) {
       info("Stopping connector " + conn.getId());
       try {
         conn.stop();
@@ -517,9 +557,9 @@ public class NotifyEngine extends TzGetter {
    * @throws NoteException
    */
   public void setConnectors(final Subscription sub) throws NoteException {
-    final String connectorId = sub.getSourceConnectorInfo().getConnectorId();
+    final String connectorId = sub.getSourceConnectorInfo().getConnectorName();
 
-    final Connector conn = connectorPool.getConnector(connectorId);
+    final Connector conn = NotifyRegistry.getConnector(connectorId);
     if (conn == null) {
       throw new NoteException("No connector for " + sub + "(");
     }
@@ -613,7 +653,6 @@ public class NotifyEngine extends TzGetter {
    */
   public void addSubscription(final Subscription sub) throws NoteException {
     db.add(sub);
-    sub.resetChanged();
   }
 
   /**
@@ -625,7 +664,6 @@ public class NotifyEngine extends TzGetter {
 
     try {
       db.update(sub);
-      sub.resetChanged();
     } finally {
       if (opened) {
         // It's a one-shot

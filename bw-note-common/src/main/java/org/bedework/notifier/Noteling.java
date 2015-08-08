@@ -106,7 +106,7 @@ public class Noteling {
           notifier.setConnectors(sub);
           fetchItems(sub);
         } finally {
-          sub.updateLastRefresh();
+          //sub.updateLastRefresh();
           notifier.reschedule(sub);
         }
         break;

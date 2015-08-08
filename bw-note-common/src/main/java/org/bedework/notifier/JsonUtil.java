@@ -18,20 +18,42 @@
 */
 package org.bedework.notifier;
 
-/** Some definitions for the notification service
- *
- *   @author Mike Douglass   douglm  rpi.edu
- */
-public interface NotifyDefs {
-  /** and does it tell us when something changes or do we have to ask?
-   */
-  public enum NotifyKind {
-    /** we have to ask */
-    poll,
+import org.bedework.notifier.exception.NoteException;
 
-    /** the other end will tell us via a callback */
-    notify
+import java.util.List;
+import java.util.Map;
+
+/** Useful Json stuff.
+ *
+ * @author douglm
+ *
+ */
+public class JsonUtil {
+  public String must(final String name,
+                     final Map theVals) throws NoteException {
+    Object val = theVals.get(name);
+
+    if (val == null) {
+      throw new NoteException("missing value: " + name);
+    }
+    try {
+      return (String)val;
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    }
   }
 
-  public static final String namespace = "oeg.bedework.namespace.notify";
+  public List mayList(final String name,
+                      final Map theVals) throws NoteException {
+    Object val = theVals.get(name);
+
+    if (val == null) {
+      return null;
+    }
+    try {
+      return (List)val;
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    }
+  }
 }

@@ -18,8 +18,7 @@
 */
 package org.bedework.notifier.cnctrs.bedework;
 
-import org.bedework.notifier.BaseSubscriptionInfo;
-import org.bedework.notifier.db.SubscriptionConnectorInfo;
+import org.bedework.notifier.db.SubscriptionInfo;
 import org.bedework.notifier.exception.NoteException;
 
 /** Stores information about one end of a subscription for connector.
@@ -27,12 +26,13 @@ import org.bedework.notifier.exception.NoteException;
  *
  * @author Mike Douglass
  */
-public class BedeworkSubscriptionInfo extends BaseSubscriptionInfo {
-  /**
-   * @param info
-   * @throws NoteException
+public class BedeworkSubscriptionInfo extends SubscriptionInfo {
+  /* Here we will specify what notifications the user is interested
+   * in and how they are to be delivered.
    */
-  public BedeworkSubscriptionInfo(final SubscriptionConnectorInfo info) throws NoteException {
-    super(info);
+
+  // For the moment send everything by email
+
+  public BedeworkSubscriptionInfo() throws NoteException {
   }
 }
