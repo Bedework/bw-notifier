@@ -87,6 +87,8 @@ public class Subscription extends DbItem<Subscription> {
 
   /* Following not persisted */
 
+  private boolean deleted;
+
   private Connector sourceConn;
 
   private ConnectorInstance sourceConnInst;
@@ -223,6 +225,15 @@ public class Subscription extends DbItem<Subscription> {
    */
   public SubscriptionInfo getInfo() {
     return info;
+  }
+
+  public void setDeleted(final boolean val) {
+    deleted = val;
+  }
+
+  @JsonIgnore
+  public boolean getDeleted() {
+    return deleted;
   }
 
   /**

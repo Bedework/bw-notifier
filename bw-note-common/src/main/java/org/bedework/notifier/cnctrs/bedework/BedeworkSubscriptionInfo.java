@@ -21,6 +21,10 @@ package org.bedework.notifier.cnctrs.bedework;
 import org.bedework.notifier.db.SubscriptionInfo;
 import org.bedework.notifier.exception.NoteException;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /** Stores information about one end of a subscription for connector.
  *
  *
@@ -32,7 +36,29 @@ public class BedeworkSubscriptionInfo extends SubscriptionInfo {
    */
 
   // For the moment send everything by email
+  List<String> emails = new ArrayList<>();
 
   public BedeworkSubscriptionInfo() throws NoteException {
+  }
+
+  @Override
+  public void init(final Map vals) throws NoteException {
+    super.init(vals);
+
+    setEmails(mustList("emails"));
+  }
+
+  public void setEmails(final List<String> val) {
+    emails = val;
+  }
+
+  public List<String> getEmails() {
+    return emails;
+  }
+
+  public void addEmail(final String val) {
+    if (!emails.contains(val)) {
+      emails.add(val);
+    }
   }
 }

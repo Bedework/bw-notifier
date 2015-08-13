@@ -23,6 +23,7 @@ import org.bedework.notifier.exception.NoteException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.StringWriter;
+import java.util.List;
 import java.util.Map;
 
 /** Serializable form of information.
@@ -70,8 +71,8 @@ public class SerializableProperties {
     return must(name, vals);
   }
 
-  protected String must(final String name,
-                        final Map theVals) throws NoteException {
+  public static String must(final String name,
+                            final Map theVals) throws NoteException {
     Object val = theVals.get(name);
 
     if (val == null) {
@@ -79,6 +80,38 @@ public class SerializableProperties {
     }
     try {
       return (String)val;
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    }
+  }
+
+  protected List<String> mustList(final String name) throws NoteException {
+    return mustList(name, vals);
+  }
+
+  public static List mustList(final String name,
+                              final Map theVals) throws NoteException {
+    Object val = theVals.get(name);
+
+    if (val == null) {
+      throw new NoteException("missing value: " + name);
+    }
+    try {
+      return (List)val;
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    }
+  }
+
+  public static List mayList(final String name,
+                             final Map theVals) throws NoteException {
+    Object val = theVals.get(name);
+
+    if (val == null) {
+      return null;
+    }
+    try {
+      return (List)val;
     } catch (final Throwable t) {
       throw new NoteException(t);
     }

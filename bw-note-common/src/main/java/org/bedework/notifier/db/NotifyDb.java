@@ -59,7 +59,7 @@ public class NotifyDb implements Serializable {
   protected HibSession sess;
 
   /**
-   * @param config
+   * @param config configuration
    *
    */
   public NotifyDb(final NotifyConfig config) {
@@ -90,7 +90,7 @@ public class NotifyDb implements Serializable {
   }
 
   /**
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public void close() throws NoteException {
     try {
@@ -139,7 +139,7 @@ public class NotifyDb implements Serializable {
    *
    * @param id - unique id
    * @return a matching subscription or null
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public Subscription get(final String id) throws NoteException {
     try {
@@ -155,45 +155,84 @@ public class NotifyDb implements Serializable {
   private static final String findSubQuery =
           "from " + Subscription.class.getName() +
                   " sub where sub.sourceConnectorInfo.connectorName=:connName" +
-                  " and sub.endAConnectorInfo.synchProperties=:aconnprops" +
-                  " and sub.endBConnectorInfo.connectorId=:bconnid" +
-                  " and sub.endBConnectorInfo.synchProperties=:bconnprops" +
-                  " and sub.direction=:dir" +
-                  " and sub.master=:mstr";
+                  " and sub.owner=:owner";
+
+  /** Find any subscription that matches this one. There can only be one with
+   * the same endpoints
+   *
+   * @param conName name of connector
+   * @param owner of subscription
+   * @return matching subscriptions
+   * @throws NoteException
+   */
+  public Subscription find(final String conName,
+                           final String owner) throws NoteException {
+    try {
+      sess.createQuery(findSubQuery);
+      sess.setString("connName", conName);
+      sess.setString("owner", owner);
+
+      return (Subscription)sess.getUnique();
+    } catch (final HibException he) {
+      throw new NoteException(he);
+    }
+  }
 
   /** Find any subscription that matches this one. There can only be one with
    * the same endpoints
    *
    * @param sub subscription
    * @return matching subscriptions
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
   public Subscription find(final Subscription sub) throws NoteException {
-    return null;
+    return find(sub.getSourceConnectorInfo().getConnectorName(),
+                sub.getOwner());
   }
 
   /** Add the subscription.
    *
-   * @param sub
-   * @throws org.bedework.notifier.exception.NoteException
+   * @param sub subscription
+   * @throws NoteException
    */
   public void add(final Subscription sub) throws NoteException {
+    try {
+      sess.save(sub);
+    } catch (final HibException he) {
+      throw new NoteException(he);
+    }
   }
 
   /** Update the persisted state of the subscription.
    *
-   * @param sub
-   * @throws org.bedework.notifier.exception.NoteException
+   * @param sub subscription
+   * @throws NoteException
    */
   public void update(final Subscription sub) throws NoteException {
+    try {
+      sess.update(sub);
+    } catch (final HibException he) {
+      throw new NoteException(he);
+    }
   }
 
   /** Delete the subscription.
    *
-   * @param sub
-   * @throws org.bedework.notifier.exception.NoteException
+   * @param sub subscription
+   * @throws NoteException
    */
   public void delete(final Subscription sub) throws NoteException {
+    final boolean opened = open();
+
+    try {
+      sess.delete(sub);
+    } catch (final HibException he) {
+      throw new NoteException(he);
+    } finally {
+      if (opened) {
+        close();
+      }
+    }
   }
 
   /* ====================================================================
@@ -264,10 +303,10 @@ public class NotifyDb implements Serializable {
         sess.close();
         sess = null;
       }
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       try {
         sess.close();
-      } catch (Throwable t1) {}
+      } catch (final Throwable ignored) {}
       sess = null; // Discard on error
     } finally {
       open = false;
@@ -309,7 +348,6 @@ public class NotifyDb implements Serializable {
       sess.rollback();
     } catch (HibException he) {
       throw new NoteException(he);
-    } finally {
     }
   }
 
@@ -325,21 +363,21 @@ public class NotifyDb implements Serializable {
   }
 
   /**
-   * @param t
+   * @param t the exception
    */
   protected void error(final Throwable t) {
     getLogger().error(this, t);
   }
 
   /**
-   * @param msg
+   * @param msg the message
    */
   protected void warn(final String msg) {
     getLogger().warn(msg);
   }
 
   /**
-   * @param msg
+   * @param msg the message
    */
   protected void trace(final String msg) {
     getLogger().debug(msg);

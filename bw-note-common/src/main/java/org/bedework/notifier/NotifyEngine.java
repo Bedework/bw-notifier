@@ -235,7 +235,9 @@ public class NotifyEngine extends TzGetter {
       subsList = new ArrayList<>();
     }
 
-    subsList.add(sub);
+    if (!subsList.contains(sub)) {
+      subsList.add(sub);
+    }
   }
 
   /** Start notify process.
@@ -648,6 +650,24 @@ public class NotifyEngine extends TzGetter {
   }
 
   /**
+   * @param id key
+   * @return subscription
+   * @throws NoteException
+   */
+  public Subscription getSubscriptionByOwner(final String id) throws NoteException {
+    final boolean opened = db.open();
+
+    try {
+      return db.get(id);
+    } finally {
+      if (opened) {
+        // It's a one-shot
+        db.close();
+      }
+    }
+  }
+
+  /**
    * @param sub a subscription
    * @throws NoteException
    */
@@ -678,6 +698,28 @@ public class NotifyEngine extends TzGetter {
    */
   public void deleteSubscription(final Subscription sub) throws NoteException {
     db.delete(sub);
+  }
+
+  /** Find any subscription that matches this one. There can only be one with
+   * the same endpoints
+   *
+   * @param conName name of connector
+   * @param owner of subscription
+   * @return matching subscriptions
+   * @throws org.bedework.notifier.exception.NoteException
+   */
+  public Subscription find(final String conName,
+                           final String owner) throws NoteException {
+    final boolean opened = db.open();
+
+    try {
+      return db.find(conName, owner);
+    } finally {
+      if (opened) {
+        // It's a one-shot
+        db.close();
+      }
+    }
   }
 
   /** Find any subscription that matches this one. There can only be one with

@@ -93,6 +93,14 @@ public interface Connector<C extends ConnectorInstance,
   Subscription subscribe(Map<?, ?> vals) throws NoteException;
 
   /**
+   *
+   * @param vals the parsed Json unsubscribe message
+   * @return cirrent subscription.
+   * @throws NoteException
+   */
+  Subscription unsubscribe(Map<?, ?> vals) throws NoteException;
+
+  /**
    * @return a useful status message
    */
   String getStatus();

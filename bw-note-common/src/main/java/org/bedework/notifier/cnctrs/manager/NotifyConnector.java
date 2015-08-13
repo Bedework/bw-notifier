@@ -90,6 +90,12 @@ public class NotifyConnector extends AbstractConnector<NotifyConnector,
   }
 
   @Override
+  public Subscription unsubscribe(final Map<?, ?> vals)
+          throws NoteException {
+    return null;
+  }
+
+  @Override
   public boolean isManager() {
     return true;
   }

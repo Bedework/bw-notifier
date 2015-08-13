@@ -139,11 +139,40 @@ public class PostMethod extends MethodBase {
         return;
       }
 
-      // Add to the db
-      notifier.addSubscription(sub);
+      resp.setStatus(HttpServletResponse.SC_OK);
+    } catch(final Throwable t) {
+      if (debug) {
+        error(t);
+      }
+      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    }
+  }
 
-      // Add to the list
-      notifier.add(sub);
+  private void processUnsubscribe(final HttpServletRequest req,
+                                  final HttpServletResponse resp,
+                                  final List<String> resourceUri) throws NoteException {
+    /* We have an unsubscribe message for a user.
+     */
+
+    final Map vals = getJson(req, resp);
+
+    try {
+      final String system = must("system", vals);
+      final String token = must("token", vals);
+
+      if (!NotifyEngine.authenticate(system, token)) {
+        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        return;
+      }
+
+      Subscription sub = NotifyRegistry.getConnector(system).unsubscribe(vals);
+
+      if (sub == null) {
+        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        return;
+      }
+
+      resp.setStatus(HttpServletResponse.SC_OK);
     } catch(final Throwable t) {
       if (debug) {
         error(t);

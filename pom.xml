@@ -27,6 +27,8 @@
 		<apache-http.version>4.2.2</apache-http.version>
 		<ehcache.version>1.6.2</ehcache.version>
     <hibernate.version>3.6.9.Final</hibernate.version>
+    <hibernate-ehcache.version>3.6.9.Final</hibernate-ehcache.version>
+    <hibernate-validator.version>3.1.0.GA</hibernate-validator.version>
 		<junit.version>4.8.2</junit.version>
 		<log4j.version>1.2.15</log4j.version>
 		<asm.version>3.2</asm.version>
@@ -198,6 +200,34 @@
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-core</artifactId>
         <version>${hibernate.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-ehcache</artifactId>
+        <version>${hibernate-ehcache.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-validator</artifactId>
+        <version>${hibernate-validator.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 		</dependencies>
 	</dependencyManagement>

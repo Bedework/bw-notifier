@@ -18,6 +18,7 @@
 */
 package org.bedework.notifier;
 
+import org.bedework.notifier.db.SerializableProperties;
 import org.bedework.notifier.exception.NoteException;
 
 import java.util.List;
@@ -43,17 +44,13 @@ public class JsonUtil {
     }
   }
 
+  public List mustList(final String name,
+                       final Map theVals) throws NoteException {
+    return SerializableProperties.mustList(name, theVals);
+  }
+
   public List mayList(final String name,
                       final Map theVals) throws NoteException {
-    Object val = theVals.get(name);
-
-    if (val == null) {
-      return null;
-    }
-    try {
-      return (List)val;
-    } catch (final Throwable t) {
-      throw new NoteException(t);
-    }
+    return SerializableProperties.mayList(name, theVals);
   }
 }

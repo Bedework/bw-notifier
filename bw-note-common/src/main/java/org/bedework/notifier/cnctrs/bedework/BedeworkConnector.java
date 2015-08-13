@@ -139,15 +139,78 @@ public class BedeworkConnector
   @Override
   public Subscription subscribe(final Map<?, ?> vals)
           throws NoteException {
+    /* We require an href - the principal owning the
+     * notifications.
+     *
+     * We also need at least one email address.
+     *
+     * There may already be a subscription for this principal.
+     * If so we add the email address. If not we create a new
+     * one.
+     */
     final String href = must("href", vals);
+    final List<String> emails = mustList("emails", vals);
 
-    final Subscription sub = new Subscription();
+    Subscription sub = notifier.find(getConnectorName(), href);
+    if (sub == null) {
+      sub = new Subscription();
 
-    final SubscriptionConnectorInfo subInfo = new BedeworkConnectorInfo();
-    sub.setSourceConnectorInfo(subInfo);
-    subInfo.setConnectorName(getConnectorName());
+      final SubscriptionConnectorInfo subInfo = new BedeworkConnectorInfo();
+      sub.setSourceConnectorInfo(subInfo);
+      subInfo.setConnectorName(getConnectorName());
 
-    subInfo.setUri(href);
+      subInfo.setUri(href);
+      notifier.addSubscription(sub);
+      return sub;
+    }
+
+    for (final String email: emails) {
+      ((BedeworkSubscriptionInfo)sub.getInfo()).addEmail(email);
+    }
+
+    notifier.updateSubscription(sub);
+
+    return sub;
+  }
+
+  @Override
+  public Subscription unsubscribe(final Map<?, ?> vals)
+          throws NoteException {
+    /* We require an href - the principal owning the
+     * notifications.
+     *
+     * There should be a subscription for this principal.
+     * If there are no email adresses we remove the subscription.
+     *
+     * Otherwise we remove the addresses. If there are none left we
+     * remove the subscription otherwise we update.
+     */
+    final String href = must("href", vals);
+    final List<String> emails = mayList("emails", vals);
+
+    Subscription sub = notifier.find(getConnectorName(), href);
+    if (sub == null) {
+      return null;
+    }
+
+    if (Util.isEmpty(emails)) {
+      notifier.deleteSubscription(sub);
+      sub.setDeleted(true);
+      return sub;
+    }
+
+    final BedeworkSubscriptionInfo bsub = (BedeworkSubscriptionInfo)sub.getInfo();
+    for (final String email: emails) {
+      bsub.getEmails().remove(email);
+    }
+
+    if (Util.isEmpty(bsub.getEmails())) {
+      notifier.deleteSubscription(sub);
+      sub.setDeleted(true);
+      return sub;
+    }
+
+    notifier.updateSubscription(sub);
 
     return sub;
   }
