@@ -11,6 +11,18 @@
 	<name>bw-note-common</name>
 
 	<dependencies>
+    <!-- Internal Project Dependencies -->
+    <dependency>
+      <groupId>org.bedework</groupId>
+      <artifactId>bw-note-db</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bedework</groupId>
+      <artifactId>bw-note-shared</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-ws-appleServer</artifactId>

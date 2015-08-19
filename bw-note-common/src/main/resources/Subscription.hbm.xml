@@ -18,7 +18,7 @@
     <param name="enumClassname">org.bedework.notifier.wsmessages.SynchMasterType</param>
   </typedef>
 
-  <class name="org.bedework.notifier.db.Subscription"
+  <class name="org.bedework.notifier.db.SubscriptionImpl"
          table="bwnote_subs" >
     <cache usage="read-write"/>
 
@@ -34,6 +34,9 @@
               unique="true"
               not-null="true"
               index="bwnoteidx_subid" />
+
+    <property name="transientSub" column="bwnote_trans"
+              type="true_false" not-null="true" />
 
     <property name="connectorName" column="bwnote_conname"
               type="string" length="100" />

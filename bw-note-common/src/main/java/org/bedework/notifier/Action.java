@@ -18,9 +18,13 @@
 */
 package org.bedework.notifier;
 
+import org.bedework.notifier.cnctrs.Connector;
+import org.bedework.notifier.cnctrs.ConnectorInstance;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.util.misc.ToString;
+
+import static org.bedework.notifier.NotifyEngine.NotificationMsg;
 
 /** Internal system action.
  *
@@ -31,6 +35,9 @@ import org.bedework.util.misc.ToString;
  */
 public class Action {
   public enum ActionType {
+    /** signal came in that href may need processing */
+    notificationMsg,
+
     /** (Re)fetch items - polling or a signal came in */
     fetchItems,
 
@@ -44,9 +51,23 @@ public class Action {
 
   private ActionType type;
 
-  private final Subscription sub;
+  private NotificationMsg msg;
 
-  private final Note note;
+  private Subscription sub;
+
+  private Note note;
+
+  private Connector sourceConn;
+
+  private ConnectorInstance sourceConnInst;
+
+  /** Create an action
+   */
+  public Action(final ActionType type,
+                final NotificationMsg msg) {
+    this.type = type;
+    this.msg = msg;
+  }
 
   /** Create an action
    */
@@ -80,6 +101,21 @@ public class Action {
   }
 
   /**
+   * @return msg for this action
+   */
+  public NotificationMsg getMsg() {
+    return msg;
+  }
+
+  /**
+   *
+   * @param val associated subscription
+   */
+  public void setSub(final Subscription val) {
+    sub = val;
+  }
+
+  /**
    * @return subscription for this action
    */
   public Subscription getSub() {
@@ -91,6 +127,34 @@ public class Action {
    */
   public Note getNote() {
     return note;
+  }
+
+  /**
+   * @param val a connection
+   */
+  public void setSourceConn(final Connector val) {
+    sourceConn = val;
+  }
+
+  /**
+   * @return a connection or null
+   */
+  public Connector getSourceConn() {
+    return sourceConn;
+  }
+
+  /**
+   * @param val a connection instance
+   */
+  public void setSourceConnInst(final ConnectorInstance val) {
+    sourceConnInst = val;
+  }
+
+  /**
+   * @return a connection instance or null
+   */
+  public ConnectorInstance getSourceConnInst() {
+    return sourceConnInst;
   }
 
   protected void toStringSegment(final ToString ts) {

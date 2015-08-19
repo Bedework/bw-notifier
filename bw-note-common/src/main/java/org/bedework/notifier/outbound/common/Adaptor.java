@@ -54,7 +54,7 @@ public interface Adaptor<Conf extends AdaptorConf> {
    *
    * @param note the notification to process
    * @return true if processed ok
-   * @throws NoteException
+   * @throws org.bedework.notifier.exception.NoteException
    */
   boolean process(Note note) throws NoteException;
 }

@@ -72,7 +72,7 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
   /**
    * @param note the notification to process
    * @return true if processed OK
-   * @throws NoteException
+   * @throws org.bedework.notifier.exception.NoteException
    */
 	public boolean process(final Note note) throws NoteException {
 		switch (note.getKind()) {
@@ -89,21 +89,21 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
   /**
    * @param note the notification
    * @return true if processed OK
-   * @throws NoteException
+   * @throws org.bedework.notifier.exception.NoteException
    */
 	public abstract boolean processSharingInvitation(final Note note) throws NoteException;
 
   /**
    * @param note the notification
    * @return true if processed OK
-   * @throws NoteException
+   * @throws org.bedework.notifier.exception.NoteException
    */
 	public abstract boolean processSubscribeInvitation(final Note note) throws NoteException;
 
   /**
    * @param note the notification
    * @return true if processed OK
-   * @throws NoteException
+   * @throws org.bedework.notifier.exception.NoteException
    */
 	public abstract boolean processResourceChange(final Note note) throws NoteException;
 

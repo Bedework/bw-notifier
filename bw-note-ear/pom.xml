@@ -12,60 +12,94 @@
 	<name>bw-note-ear</name>
 
 	<dependencies>
+
 		<!-- Project Dependencies -->
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-note-war</artifactId>
       <version>${project.version}</version>
       <type>war</type>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.bedework</groupId>
+      <artifactId>bw-note-db</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.bedework</groupId>
+      <artifactId>bw-note-shared</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.bedework</groupId>
+      <artifactId>bw-note-servlet</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.bedework</groupId>
+      <artifactId>bw-note-bwconnector</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.bedework</groupId>
+      <artifactId>bw-note-outbound</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>bw-note-common</artifactId>
 			<version>${project.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-context</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-beans</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>log4j</groupId>
-					<artifactId>log4j</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.struts</groupId>
-					<artifactId>struts-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.derby</groupId>
-					<artifactId>derbynet</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>jtidy</groupId>
-					<artifactId>jtidy</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.h2database</groupId>
-					<artifactId>h2</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.lucene</groupId>
-					<artifactId>lucene-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.lucene</groupId>
-					<artifactId>lucene-misc</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+      <exclusions>
+        <exclusion>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+        </exclusion>
+      </exclusions>
+      <!--
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    -->
+    </dependency>
 		<dependency>
 			<groupId>net.fortuna.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
@@ -146,7 +180,19 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
+    <dependency>
+      <groupId>org.bedework</groupId>
+      <artifactId>bw-util-calendar</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.bedework</groupId>
+      <artifactId>bw-util-hibernate</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.bedework</groupId>
+      <artifactId>bw-util-timezones</artifactId>
+    </dependency>
+    <dependency>
 			<groupId>org.bedework</groupId>
 			<artifactId>bw-util-servlet</artifactId>
 			<version>${bw-util.version}</version>
@@ -255,17 +301,14 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
-			<version>2.1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>2.1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -283,6 +326,20 @@
       <artifactId>javax.mail</artifactId>
       <version>1.5.2</version>
     </dependency>
+    <!--
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-ehcache</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-validator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-commons-annotations</artifactId>
+    </dependency>
+    -->
 	</dependencies>
 
 	<build>
@@ -307,10 +364,30 @@
               <artifactId>bw-note-war</artifactId>
               <contextRoot>/notify</contextRoot>
             </webModule>
+            <jarModule>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>bw-note-db</artifactId>
+            </jarModule>
+            <jarModule>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>bw-note-shared</artifactId>
+            </jarModule>
 						<jarModule>
 							<groupId>${project.groupId}</groupId>
 							<artifactId>bw-note-common</artifactId>
 						</jarModule>
+            <jarModule>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>bw-note-bwconnector</artifactId>
+            </jarModule>
+            <jarModule>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>bw-note-outbound</artifactId>
+            </jarModule>
+            <jarModule>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>bw-note-servlet</artifactId>
+            </jarModule>
 					</modules>
 				</configuration>
 			</plugin>

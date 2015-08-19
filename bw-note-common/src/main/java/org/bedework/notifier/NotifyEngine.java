@@ -43,8 +43,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
 
 /** Notification processor.
  * <p>The notification processor manages the notification service.
@@ -92,9 +90,6 @@ public class NotifyEngine extends TzGetter {
 
   private NotifyTimer notifyTimer;
 
-  /* Where we keep subscriptions that come in while we are starting */
-  private List<Subscription> subsList;
-
   private NotifyDb db;
 
   /** Queue and process inbound actions.
@@ -126,12 +121,17 @@ public class NotifyEngine extends TzGetter {
     }
   }
 
-  private static final BlockingDeque<NotificationMsg> notificationMsgs =
-          new LinkedBlockingDeque<>();
-
-  public static void addNotificationMsg(final NotificationMsg val) throws NoteException {
+  /**
+   *
+   * @param val add some messages to the queue
+   * @throws NoteException
+   */
+  public void addNotificationMsg(final NotificationMsg val) throws NoteException {
     try {
-      notificationMsgs.put(val);
+      Action action = new Action(Action.ActionType.notificationMsg,
+                                 val);
+
+      handleAction(action);
     } catch (final Throwable t) {
       throw new NoteException(t);
     }
@@ -227,19 +227,6 @@ public class NotifyEngine extends TzGetter {
      return getNotifier().timezones.getTimeZone(id);
    }
 
-  /**
-   * @param sub to add to the start list
-   */
-  public void add(final Subscription sub) {
-    if (subsList == null) {
-      subsList = new ArrayList<>();
-    }
-
-    if (!subsList.contains(sub)) {
-      subsList.add(sub);
-    }
-  }
-
   /** Start notify process.
    *
    * @throws NoteException
@@ -252,12 +239,13 @@ public class NotifyEngine extends TzGetter {
       }
 
       synchronized (this) {
-        subsList = null;
-
         starting = true;
       }
 
       db = new NotifyDb(getConfig());
+      db.open();
+      db.clearTransients();
+      db.close();
 
       timezones = new TimezonesImpl();
       timezones.init(getConfig().getTimezonesURI());
@@ -285,10 +273,12 @@ public class NotifyEngine extends TzGetter {
         System.setProperty("javax.net.ssl.trustStorePassword", "bedework");
       }
 
+      info("Register and start connectors");
       final NotifyRegistry registry = new NotifyRegistry();
       registry.registerConnectors(getConfig());
       registry.startConnectors(this);
 
+      info("Register and start adaptors");
       adaptorPool = new AdaptorPool(this, 1000 * 60);
       adaptorPool.registerAdaptors();
 
@@ -298,52 +288,9 @@ public class NotifyEngine extends TzGetter {
        * While starting, new subscribe requests get added to the list.
        */
 
+      info("Start action handlers");
       actionInHandler.start();
       actionOutHandler.start();
-
-      try {
-        db.open();
-        List<Subscription> startList = db.getAll();
-        db.close();
-
-        startup:
-        while (starting) {
-          if (startList == null) {
-            if (debug) {
-              trace("startList is null");
-            }
-          } else {
-            if (debug) {
-              trace("startList has " + startList.size() + " subscriptions");
-            }
-
-            for (final Subscription sub: startList) {
-              setConnectors(sub);
-
-              reschedule(sub);
-            }
-          }
-
-          synchronized (this) {
-            if (subsList == null) {
-              // Nothing came in as we started
-              starting = false;
-              if (stopping) {
-                break startup;
-              }
-              running = true;
-              break;
-            }
-
-            startList = subsList;
-            subsList = null;
-          }
-        }
-      } finally {
-        if ((db != null) && db.isOpen()) {
-          db.close();
-        }
-      }
 
       info("**************************************************");
       info("Notifier started");
@@ -360,6 +307,41 @@ public class NotifyEngine extends TzGetter {
       throw new NoteException(t);
     }
   }
+
+  /** Reschedule all subscriptions. This might blow things up at the
+   * moment. It should do a paged request and space them out.
+   *
+   * @throws NoteException
+   * /
+  public void reschedule() throws NoteException {
+    try {
+      db.open();
+      List<Subscription> rescheduleList = db.getAll();
+      db.close();
+
+
+      if (Util.isEmpty(rescheduleList)) {
+        if (debug) {
+          trace("rescheduleList is empty");
+        }
+        return;
+      }
+
+      if (debug) {
+        trace("rescheduleList has " + rescheduleList.size() + " subscriptions");
+      }
+
+      for (final Subscription sub: rescheduleList) {
+        setConnectors(sub);
+
+        reschedule(sub);
+      }
+    } finally {
+      if ((db != null) && db.isOpen()) {
+        db.close();
+      }
+    }
+  }*/
 
   /** Reschedule a subscription for updates.
    *
@@ -382,7 +364,7 @@ public class NotifyEngine extends TzGetter {
 
     // XXX start up the add to active subs
 
-    activeSubs.put(sub.getSubscriptionId(), sub);
+    //activeSubs.put(sub.getSubscriptionId(), sub);
   }
 
   /** Reschedule an action for retry.
@@ -471,7 +453,7 @@ public class NotifyEngine extends TzGetter {
    */
   public void handleAction(final Action action) throws NoteException {
     switch (action.getType()) {
-      case fetchItems:
+      case notificationMsg: fetchItems:
         actionInHandler.queueAction(action);
         break;
       default:
@@ -524,49 +506,50 @@ public class NotifyEngine extends TzGetter {
   }
 
   /** Gets an instance and implants it in the subscription object.
-   * @param sub a subscription
+   * @param action an action
    * @return ConnectorInstance or throws Exception
    * @throws NoteException
    */
-  public ConnectorInstance getConnectorInstance(final Subscription sub) throws NoteException {
+  public ConnectorInstance getConnectorInstance(final Action action) throws NoteException {
     ConnectorInstance cinst;
     final Connector conn;
 
-    cinst = sub.getSourceConnInst();
-    conn = sub.getSourceConn();
+    cinst = action.getSourceConnInst();
+    conn = action.getSourceConn();
 
     if (cinst != null) {
       return cinst;
     }
 
     if (conn == null) {
-      throw new NoteException("No connector for " + sub);
+      throw new NoteException("No connector for " + action);
     }
 
-    cinst = conn.getConnectorInstance(sub);
+    cinst = conn.getConnectorInstance(action.getSub());
     if (cinst == null) {
-      throw new NoteException("No connector instance for " + sub);
+      throw new NoteException("No connector instance for " + action);
     }
 
-    sub.setSourceConnInst(cinst);
+    action.setSourceConnInst(cinst);
 
     return cinst;
   }
 
   /** When we start up a new subscription we implant a Connector in the object.
    *
-   * @param sub a subscription
+   * @param action an action
    * @throws NoteException
    */
-  public void setConnectors(final Subscription sub) throws NoteException {
-    final String connectorName = sub.getConnectorName();
+  public void setConnectors(final Action action) throws NoteException {
+    final String connectorName = action.getSub().getConnectorName();
 
     final Connector conn = NotifyRegistry.getConnector(connectorName);
     if (conn == null) {
-      throw new NoteException("No connector for " + sub + "(");
+      throw new NoteException("No connector for " +
+                                      action.getSub() + "(");
     }
 
-    sub.setSourceConn(conn);
+    action.setSourceConn(conn);
   }
 
   /* * Processes a batch of notifications. This must be done in a timely manner
@@ -665,6 +648,11 @@ public class NotifyEngine extends TzGetter {
    */
   public void addSubscription(final Subscription sub) throws NoteException {
     db.add(sub);
+
+    /* Queue a message to process it */
+    addNotificationMsg(
+            new NotificationMsg(sub.getConnectorName(),
+                                sub.getPrincipalHref()));
   }
 
   /**

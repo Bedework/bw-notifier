@@ -32,6 +32,8 @@ import org.apache.log4j.Logger;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.bedework.notifier.NotifyEngine.*;
+
 /** The noteling handles the processing of a single notification
  *
  * <p>These will be multi-threaded as sending an invitation can be a
@@ -99,34 +101,62 @@ public class Noteling {
    * @throws NoteException
    */
   public StatusType handleAction(final Action action) throws NoteException {
-    switch (action.getType()) {
-      case fetchItems:
-        final Subscription sub = action.getSub();
-        try {
-          notifier.setConnectors(sub);
-          fetchItems(sub);
-        } finally {
-          //sub.updateLastRefresh();
-          notifier.reschedule(sub);
-        }
-        break;
+    try {
+      notifier.startTransaction();
 
-      case processOutbound:
-        return doOutBound(action);
+      switch (action.getType()) {
+        case notificationMsg:
+          handleNotificationMsg(action);
 
-      case processOutboundStatus:
-        return doOutBoundStatus(action);
+        case fetchItems:
+          final Subscription sub = action.getSub();
+          try {
+            notifier.setConnectors(action);
+            fetchItems(action);
+          } finally {
+            //sub.updateLastRefresh();
+            notifier.reschedule(sub);
+          }
+          break;
+
+        case processOutbound:
+          return doOutBound(action);
+
+        case processOutboundStatus:
+          return doOutBoundStatus(action);
+      }
+
+      return StatusType.OK;
+    } finally {
+      notifier.endTransaction();
     }
-
-    return StatusType.OK;
   }
 
   /* ====================================================================
    *                        private Notification methods
    * ==================================================================== */
 
-  private void fetchItems(final Subscription sub) throws NoteException {
-    final ConnectorInstance ci = notifier.getConnectorInstance(sub);
+  private void handleNotificationMsg(final Action action) throws NoteException {
+    final NotificationMsg msg = action.getMsg();
+
+    final Subscription sub = notifier.find(msg.getSystem(),
+                                           msg.getHref());
+
+    if (sub == null) {
+      // Not one of ours
+      return;
+    }
+
+    action.setSub(sub);
+
+    notifier.setConnectors(action);
+    fetchItems(action);
+  }
+
+  private void fetchItems(final Action action) throws NoteException {
+    final Subscription sub = action.getSub();
+
+    final ConnectorInstance ci = notifier.getConnectorInstance(action);
 
     final NotifyItemsInfo nii = ci.getItemsInfo();
 
@@ -194,7 +224,7 @@ public class Noteling {
 
   private StatusType doOutBoundStatus(final Action action) throws NoteException {
     final ConnectorInstance ci =
-            notifier.getConnectorInstance(action.getSub());
+            notifier.getConnectorInstance(action);
 
     ci.updateItem(action.getNote());
     return StatusType.OK;

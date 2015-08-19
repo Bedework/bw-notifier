@@ -77,7 +77,13 @@ public class ActionQueue extends Thread {
     try {
       while (!stopping) {
         if (actionQueue.offer(action, 5, TimeUnit.SECONDS)) {
+          if (debug) {
+            trace("Action accepted");
+          }
           break;
+        }
+        if (debug) {
+          trace("Action queue timedout: retrying");
         }
       }
     } catch (final InterruptedException ignored) {
@@ -125,6 +131,8 @@ public class ActionQueue extends Thread {
         Noteling noteling = null;
 
         try {
+          notifier.startTransaction();
+
             /* Get a noteling from the pool */
           while (true) {
             if (stopping) {
@@ -158,6 +166,7 @@ public class ActionQueue extends Thread {
           exceptions = 0; // somethings working
         } finally {
           notelingPool.add(noteling);
+          notifier.endTransaction();
         }
 
           /* If this is a poll kind then we should add it to a poll queue

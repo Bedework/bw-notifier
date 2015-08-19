@@ -27,8 +27,11 @@
 		<apache-http.version>4.2.2</apache-http.version>
 		<ehcache.version>1.6.2</ehcache.version>
     <hibernate.version>3.6.9.Final</hibernate.version>
+    <hibernate-annotations.version>3.5.6-Final</hibernate-annotations.version>
+    <hibernate-commons-annotations.version>3.2.0.Final</hibernate-commons-annotations.version>
     <hibernate-ehcache.version>3.6.9.Final</hibernate-ehcache.version>
     <hibernate-validator.version>3.1.0.GA</hibernate-validator.version>
+    <jackson.version>2.3.1</jackson.version>
 		<junit.version>4.8.2</junit.version>
 		<log4j.version>1.2.15</log4j.version>
 		<asm.version>3.2</asm.version>
@@ -63,7 +66,12 @@
 		<module>bw-note-common</module>
 		<module>bw-note-war</module>
 		<module>bw-note-ear</module>
-	</modules>
+    <module>bw-note-servlet</module>
+    <module>bw-note-bwconnector</module>
+    <module>bw-note-outbound</module>
+    <module>bw-note-shared</module>
+    <module>bw-note-db</module>
+  </modules>
 
 	<dependencyManagement>
 		<dependencies>
@@ -196,6 +204,19 @@
 				<version>${junit.version}</version>
 				<scope>test</scope>
 			</dependency>
+      <!--
+      <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-commons-annotations</artifactId>
+        <version>${hibernate-commons-annotations.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      -->
       <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-core</artifactId>
@@ -228,6 +249,21 @@
             <artifactId>slf4j-api</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
       </dependency>
 		</dependencies>
 	</dependencyManagement>

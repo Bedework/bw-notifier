@@ -18,7 +18,7 @@
 */
 package org.bedework.notifier.cnctrs;
 
-import org.bedework.notifier.JsonUtil;
+import org.bedework.notifier.db.JsonUtil;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.conf.ConnectorConfig;
