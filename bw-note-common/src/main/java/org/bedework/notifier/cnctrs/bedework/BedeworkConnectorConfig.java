@@ -30,7 +30,8 @@ import org.bedework.util.misc.ToString;
 public class BedeworkConnectorConfig extends ConnectorConfig {
   private String id;
   private String token;
-  private String notificationDirHref;
+  private String systemNotificationHref;
+  private String systemUrl;
 
   /** WSDL for remote service */
   private String bwWSDLURI;
@@ -42,17 +43,31 @@ public class BedeworkConnectorConfig extends ConnectorConfig {
   private int keepAliveInterval;
 
   /**
-   * @param val path to notifications directory
+   * @param val system notification principal
    */
-  public void setNotificationDirHref(final String val) {
-    notificationDirHref = val;
+  public void setSystemNotificationHref(final String val) {
+    systemNotificationHref = val;
   }
 
   /**
-   * @return path to notifications directory
+   * @return system notification principal
    */
-  public String getNotificationDirHref() {
-    return notificationDirHref;
+  public String getSystemNotificationHref() {
+    return systemNotificationHref;
+  }
+
+  /**
+   * @param val system url
+   */
+  public void setSystemUrl(final String val) {
+    systemUrl = val;
+  }
+
+  /**
+   * @return system url
+   */
+  public String getSystemUrl() {
+    return systemUrl;
   }
 
   /**
@@ -137,7 +152,8 @@ public class BedeworkConnectorConfig extends ConnectorConfig {
 
     ts.append("id", getId()).
             append("token", getToken()).
-            append("notificationDirHref", getNotificationDirHref()).
+            append("systemNotificationHref", getSystemNotificationHref()).
+            append("systemUrl", getSystemUrl()).
             append("bwWSDLURI", getBwWSDLURI()).
             append("retryInterval", getRetryInterval()).
             append("keepAliveInterval", getKeepAliveInterval());

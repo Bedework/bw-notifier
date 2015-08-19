@@ -26,7 +26,6 @@ import org.bedework.util.misc.ToString;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Map;
-import java.util.UUID;
 
 /** Represents a subscription for the notification engine.
  *
@@ -77,49 +76,32 @@ import java.util.UUID;
  * @author Mike Douglass
  */
 @SuppressWarnings("rawtypes")
-public class Subscription extends DbItem<Subscription> {
-  private String subscriptionId;
+public class SubscriptionWrapper extends Subscription {
+  private final Subscription subscription;
 
-  private String connectorName;
-
-  private String principalHref;
-
-  private String lastRefresh;
-
-  private String lastRefreshStatus;
-
-  private int errorCt;
-
-  private boolean missingTarget;
-
-  private String uri;
-
-  /* Following not persisted */
-
-  private boolean deleted;
-
-  private Connector sourceConn;
-
-  private ConnectorInstance sourceConnInst;
-
-  /** null constructor for hibernate
+  /** constructor
    *
    */
-  public Subscription() {
-    this.subscriptionId = UUID.randomUUID().toString();
+  public SubscriptionWrapper(final Subscription subscription) {
+    // Unwrap if wrapped.
+    Subscription theSub = subscription;
+    while (theSub instanceof SubscriptionWrapper) {
+      theSub = ((SubscriptionWrapper)theSub).getSubscription();
+    }
+
+    this.subscription = theSub;
+  }
+
+  /**
+   *
+   * @return String Our subscription.
+   */
+  public Subscription getSubscription() {
+    return subscription;
   }
 
   public void init(final Map vals) throws NoteException {
-    super.init(vals);
-
-    setSubscriptionId(must("subscriptionId"));
-    setConnectorName(must("connectorName"));
-    setPrincipalHref(must("principalHref"));
-    setLastRefresh(may("lastRefresh"));
-    setLastRefreshStatus(may("lastRefreshStatus"));
-    setErrorCt(mayInt("errorCt"));
-    setMissingTarget(mayBool("missingTarget"));
-    setUri(may("uri"));
+    getSubscription().init(vals);
   }
 
   /** Our generated subscriptionId.
@@ -127,7 +109,7 @@ public class Subscription extends DbItem<Subscription> {
    * @param val    String
    */
   public void setSubscriptionId(final String val) {
-    subscriptionId = val;
+    getSubscription().setSubscriptionId(val);
   }
 
   /**
@@ -135,21 +117,21 @@ public class Subscription extends DbItem<Subscription> {
    * @return String Our generated subscriptionId.
    */
   public String getSubscriptionId() {
-    return subscriptionId;
+    return getSubscription().getSubscriptionId();
   }
 
   /**
    * @param val id
    */
   public void setConnectorName(final String val) {
-    connectorName = val;
+    getSubscription().setConnectorName(val);
   }
 
   /**
    * @return id
    */
   public String getConnectorName() {
-    return connectorName;
+    return getSubscription().getConnectorName();
   }
 
   /** Principal requesting service
@@ -157,7 +139,7 @@ public class Subscription extends DbItem<Subscription> {
    * @param val    String
    */
   public void setPrincipalHref(final String val) {
-    principalHref = val;
+    getSubscription().setPrincipalHref(val);
   }
 
   /** Principal requesting service
@@ -165,7 +147,7 @@ public class Subscription extends DbItem<Subscription> {
    * @return String
    */
   public String getPrincipalHref() {
-    return principalHref;
+    return getSubscription().getPrincipalHref();
   }
 
   /**
@@ -173,28 +155,28 @@ public class Subscription extends DbItem<Subscription> {
    * @param val A UTC dtstamp value
    */
   public void setLastRefresh(final String val) {
-    lastRefresh = val;
+    getSubscription().setLastRefresh(val);
   }
 
   /**
    * @return String lastRefresh
    */
   public String getLastRefresh() {
-    return lastRefresh;
+    return getSubscription().getLastRefresh();
   }
 
   /** HTTP status or other appropriate value
    * @param val the status
    */
   public void setLastRefreshStatus(final String val) {
-    lastRefreshStatus = val;
+    getSubscription().setLastRefreshStatus(val);
   }
 
   /**
    * @return String lastRefreshStatus
    */
   public String getLastRefreshStatus() {
-    return lastRefreshStatus;
+    return getSubscription().getLastRefreshStatus();
   }
 
   /**
@@ -202,14 +184,14 @@ public class Subscription extends DbItem<Subscription> {
    * @param val int consecutive errors
    */
   public void setErrorCt(final int val) {
-    errorCt = val;
+    getSubscription().setErrorCt(val);
   }
 
   /**
    * @return int consecutive errors
    */
   public int getErrorCt() {
-    return errorCt;
+    return getSubscription().getErrorCt();
   }
 
   /**
@@ -217,14 +199,14 @@ public class Subscription extends DbItem<Subscription> {
    * @param val True if the target is missing
    */
   public void setMissingTarget(final boolean val) {
-    missingTarget = val;
+    getSubscription().setMissingTarget(val);
   }
 
   /**
    * @return True if either target is missing
    */
   public boolean getMissingTarget() {
-    return missingTarget;
+    return getSubscription().getMissingTarget();
   }
 
   /** Path to the notifications source - possibly located by probing
@@ -233,7 +215,7 @@ public class Subscription extends DbItem<Subscription> {
    * @param val    String
    */
   public void setUri(final String val) {
-    uri = val;
+    getSubscription().setUri(val);
   }
 
   /** Path to the notifications source.
@@ -241,23 +223,23 @@ public class Subscription extends DbItem<Subscription> {
    * @return String
    */
   public String getUri() {
-    return uri;
+    return getSubscription().getUri();
   }
 
   public void setDeleted(final boolean val) {
-    deleted = val;
+    getSubscription().setDeleted(val);
   }
 
   @JsonIgnore
   public boolean getDeleted() {
-    return deleted;
+    return getSubscription().getDeleted();
   }
 
   /**
    * @param val a connection
    */
   public void setSourceConn(final Connector val) {
-    sourceConn = val;
+    getSubscription().setSourceConn(val);
   }
 
   /**
@@ -265,14 +247,14 @@ public class Subscription extends DbItem<Subscription> {
    */
   @JsonIgnore
   public Connector getSourceConn() {
-    return sourceConn;
+    return getSubscription().getSourceConn();
   }
 
   /**
    * @param val a connection instance
    */
   public void setSourceConnInst(final ConnectorInstance val) {
-    sourceConnInst = val;
+    getSubscription().setSourceConnInst(val);
   }
 
   /**
@@ -280,7 +262,7 @@ public class Subscription extends DbItem<Subscription> {
    */
   @JsonIgnore
   public ConnectorInstance getSourceConnInst() {
-    return sourceConnInst;
+    return getSubscription().getSourceConnInst();
   }
 
   /* ====================================================================
@@ -293,19 +275,6 @@ public class Subscription extends DbItem<Subscription> {
    */
   protected void toStringSegment(final ToString ts) {
     super.toStringSegment(ts);
-
-    ts.newLine();
-    ts.append("subscriptionId", getSubscriptionId());
-    ts.append("connectorName", getConnectorName());
-    ts.append("principalHref", getPrincipalHref());
-
-    ts.append("lastRefresh", getLastRefresh());
-    ts.append("lastRefreshStatus", getLastRefreshStatus());
-
-    ts.newLine();
-    ts.append("errorCt", getErrorCt());
-    ts.append("missingTarget", getMissingTarget());
-    ts.append("uri", getUri());
   }
 
   /* ====================================================================
@@ -320,11 +289,7 @@ public class Subscription extends DbItem<Subscription> {
 
   @Override
   public int compareTo(final Subscription that) {
-    if (this == that) {
-      return 0;
-    }
-
-    return getSubscriptionId().compareTo(that.getSubscriptionId());
+    return super.compareTo(that);
   }
 
   @Override

@@ -42,6 +42,8 @@ public class PostMethod extends MethodBase {
   public void doMethod(final HttpServletRequest req,
                        final HttpServletResponse resp) throws NoteException {
     try {
+      getNotifier().startTransaction();
+
       List<String> resourceUri = getResourceUri(req);
 
       if (Util.isEmpty(resourceUri)) {
@@ -60,11 +62,17 @@ public class PostMethod extends MethodBase {
         return;
       }
 
+      if (debug) {
+        debugMsg("Unknown POST uri: " + ruri);
+      }
+
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     } catch (final NoteException se) {
       throw se;
     } catch(final Throwable t) {
       throw new NoteException(t);
+    } finally {
+      getNotifier().endTransaction();
     }
   }
 
@@ -128,6 +136,9 @@ public class PostMethod extends MethodBase {
       final String token = must("token", vals);
 
       if (!NotifyEngine.authenticate(system, token)) {
+        if (debug) {
+          debugMsg("Bad sys/token " + system + ", " + token);
+        }
         resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         return;
       }
@@ -135,6 +146,9 @@ public class PostMethod extends MethodBase {
       Subscription sub = NotifyRegistry.getConnector(system).subscribe(vals);
 
       if (sub == null) {
+        if (debug) {
+          debugMsg("Subscribe failed for " + system + ", " + token);
+        }
         resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         return;
       }

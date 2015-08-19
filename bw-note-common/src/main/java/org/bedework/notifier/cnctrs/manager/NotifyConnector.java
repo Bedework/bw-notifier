@@ -24,8 +24,7 @@ import org.bedework.notifier.NotifyRegistry;
 import org.bedework.notifier.cnctrs.AbstractConnector;
 import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.notifier.db.Subscription;
-import org.bedework.notifier.db.SubscriptionConnectorInfo;
-import org.bedework.notifier.db.SubscriptionInfo;
+import org.bedework.notifier.db.SubscriptionWrapper;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 
@@ -78,8 +77,7 @@ public class NotifyConnector extends AbstractConnector<NotifyConnector,
     authenticator.conf = config;
 
     return new NotifyRegistry.Info(getConnectorName(),
-                                   SubscriptionConnectorInfo.class,
-                                   SubscriptionInfo.class,
+                                   SubscriptionWrapper.class,
                                    authenticator);
   }
 

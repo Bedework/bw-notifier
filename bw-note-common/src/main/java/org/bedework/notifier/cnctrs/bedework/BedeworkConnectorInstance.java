@@ -32,16 +32,21 @@ import org.bedework.util.dav.DavUtil.DavChild;
 import org.bedework.util.dav.DavUtil.DavProp;
 import org.bedework.util.http.BasicHttpClient;
 import org.bedework.util.misc.Util;
+import org.bedework.util.xml.XmlUtil;
 import org.bedework.util.xml.tagdefs.AppleServerTags;
+import org.bedework.util.xml.tagdefs.WebdavTags;
 
 import org.apache.http.HttpException;
 import org.oasis_open.docs.ws_calendar.ns.soap.DeleteItemResponseType;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
 /** Handles bedework synch interactions.
@@ -54,9 +59,9 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
   private final BedeworkConnector cnctr;
 
-  private final BedeworkConnectorInfo info;
-
   private BasicHttpClient client;
+
+  private DavUtil dav;
 
   private static final Collection<QName> noteTypeProps =
           new ArrayList<>();
@@ -66,12 +71,10 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
   BedeworkConnectorInstance(final BedeworkConnectorConfig config,
                             final BedeworkConnector cnctr,
-                            final Subscription sub,
-                            final BedeworkConnectorInfo info) {
+                            final Subscription sub) {
     super(sub);
     this.config = config;
     this.cnctr = cnctr;
-    this.info = info;
   }
 
   @Override
@@ -79,9 +82,6 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     return cnctr;
   }
 
-  /* (non-Javadoc)
-   * @see org.bedework.synch.ConnectorInstance#changed()
-   */
   @Override
   public boolean changed() throws NoteException {
     /* This implementation needs to at least check the change token for the
@@ -102,8 +102,20 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     final BasicHttpClient cl = getClient();
 
     try {
-      final Collection<DavChild> chs = new DavUtil(cnctr.getAuthHeaders()).
-              getChildrenUrls(cl, info.getUri(), noteTypeProps);
+      /* The URI stored in the info is located by doing a PROPFIND on
+       * the user principal. If we already fetched it we'll use it.
+       *
+       * TODO We should allow for it changing
+       */
+
+      if (sub.getUri() == null) {
+        if (!getUri()) {
+          return null;
+        }
+      }
+
+      final Collection<DavChild> chs = getDav().
+              getChildrenUrls(cl, sub.getUri(), noteTypeProps);
 
       if (chs == null) {
         return null;
@@ -193,9 +205,6 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
     final List<Note> firs = new ArrayList<>();
 
-    /* Set the base uri here so it's only done once per batch */
-    getClient().setBaseURIValue(info.getUri());
-
     for (final ItemInfo item: items) {
       firs.add(fetchItem(item));
     }
@@ -238,6 +247,50 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
    *                   Private methods
    * ==================================================================== */
 
+  private static final Collection<QName> notificationURLProps =
+          Arrays.asList(WebdavTags.notificationURL,
+                        AppleServerTags.notificationURL);
+
+  private boolean getUri() throws NoteException {
+    final BasicHttpClient cl = getClient();
+
+    try {
+      cl.setBaseURI(new URI(config.getSystemUrl()));
+      DavChild dc = getDav().getProps(cl,
+                                      sub.getPrincipalHref(),
+                                      notificationURLProps);
+
+      DavProp dp = dc.findProp(WebdavTags.notificationURL);
+
+      if ((dp == null) || (dp.status != HttpServletResponse.SC_OK)) {
+        dp = dc.findProp(AppleServerTags.notificationURL);
+      }
+
+      if ((dp == null) || (dp.status != HttpServletResponse.SC_OK)) {
+        if (debug) {
+          trace("No notification collection");
+        }
+        // Could delete but might be dangerous - cnctr.getNotifier().deleteSubscription(sub);
+        return false;
+      }
+
+      sub.setUri(XmlUtil.getElementContent(dp.element));
+
+      try {
+        cl.setBaseURI(new URI(sub.getUri()));
+        return true;
+      } catch (final Throwable ignored) {
+        if (debug) {
+          trace("Bad uri returned: " + sub.getUri());
+        }
+        // Could delete but might be dangerous - cnctr.getNotifier().deleteSubscription(sub);
+        return false;
+      }
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    }
+  }
+
   private BasicHttpClient getClient() throws NoteException {
     if (client != null) {
       return client;
@@ -246,7 +299,23 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     try {
       client = new BasicHttpClient(30 * 1000,
                                    false);  // followRedirects
+      //client.setBaseURI(new URI(config.getSystemUrl()));
+      client.setBaseURI(new URI(sub.getUri()));
+
       return client;
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    }
+  }
+
+  private DavUtil getDav() throws NoteException {
+    if (dav != null) {
+      return dav;
+    }
+
+    try {
+      dav = new DavUtil(cnctr.getAuthHeaders());
+      return dav;
     } catch (final Throwable t) {
       throw new NoteException(t);
     }

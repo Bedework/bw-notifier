@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 /** This class manages the notification database.
@@ -124,7 +125,7 @@ public class NotifyDb implements Serializable {
     try {
       sess.createQuery(getAllQuery);
 
-      return sess.getList();
+      return wrap(sess.getList());
     } catch (final HibException he) {
       throw new NoteException(he);
     }
@@ -146,7 +147,7 @@ public class NotifyDb implements Serializable {
       sess.createQuery(getSubQuery);
       sess.setString("subid", id);
 
-      return (Subscription)sess.getUnique();
+      return wrap((Subscription)sess.getUnique());
     } catch (final HibException he) {
       throw new NoteException(he);
     }
@@ -154,25 +155,25 @@ public class NotifyDb implements Serializable {
 
   private static final String findSubQuery =
           "from " + Subscription.class.getName() +
-                  " sub where sub.sourceConnectorInfo.connectorName=:connName" +
-                  " and sub.owner=:owner";
+                  " sub where sub.connectorName=:connName" +
+                  " and sub.principalHref=:pref";
 
   /** Find any subscription that matches this one. There can only be one with
    * the same endpoints
    *
    * @param conName name of connector
-   * @param owner of subscription
+   * @param principalHref of subscription
    * @return matching subscriptions
    * @throws NoteException
    */
   public Subscription find(final String conName,
-                           final String owner) throws NoteException {
+                           final String principalHref) throws NoteException {
     try {
       sess.createQuery(findSubQuery);
       sess.setString("connName", conName);
-      sess.setString("owner", owner);
+      sess.setString("pref", principalHref);
 
-      return (Subscription)sess.getUnique();
+      return wrap((Subscription)sess.getUnique());
     } catch (final HibException he) {
       throw new NoteException(he);
     }
@@ -186,8 +187,8 @@ public class NotifyDb implements Serializable {
    * @throws NoteException
    */
   public Subscription find(final Subscription sub) throws NoteException {
-    return find(sub.getSourceConnectorInfo().getConnectorName(),
-                sub.getOwner());
+    return find(sub.getConnectorName(),
+                sub.getPrincipalHref());
   }
 
   /** Add the subscription.
@@ -197,7 +198,7 @@ public class NotifyDb implements Serializable {
    */
   public void add(final Subscription sub) throws NoteException {
     try {
-      sess.save(sub);
+      sess.save(unwrap(sub));
     } catch (final HibException he) {
       throw new NoteException(he);
     }
@@ -210,7 +211,7 @@ public class NotifyDb implements Serializable {
    */
   public void update(final Subscription sub) throws NoteException {
     try {
-      sess.update(sub);
+      sess.update(unwrap(sub));
     } catch (final HibException he) {
       throw new NoteException(he);
     }
@@ -222,16 +223,10 @@ public class NotifyDb implements Serializable {
    * @throws NoteException
    */
   public void delete(final Subscription sub) throws NoteException {
-    final boolean opened = open();
-
     try {
-      sess.delete(sub);
+      sess.delete(unwrap(sub));
     } catch (final HibException he) {
       throw new NoteException(he);
-    } finally {
-      if (opened) {
-        close();
-      }
     }
   }
 
@@ -387,4 +382,37 @@ public class NotifyDb implements Serializable {
    *                   private methods
    * ==================================================================== */
 
+  private Subscription unwrap(final Subscription val) {
+    if (val == null) {
+      return null;
+    }
+
+    if (val instanceof SubscriptionWrapper) {
+      return ((SubscriptionWrapper)val).getSubscription();
+    }
+
+    return val;
+  }
+
+  private Subscription wrap(final Subscription val) {
+    if (val == null) {
+      return null;
+    }
+
+    return new SubscriptionWrapper(val);
+  }
+
+  private List<Subscription> wrap(final List<Subscription> val) {
+    if (val == null) {
+      return null;
+    }
+
+    final List<Subscription> wrapped = new ArrayList<>();
+
+    for (final Subscription sub: val) {
+      wrapped.add(wrap(sub));
+    }
+
+    return wrapped;
+  }
 }

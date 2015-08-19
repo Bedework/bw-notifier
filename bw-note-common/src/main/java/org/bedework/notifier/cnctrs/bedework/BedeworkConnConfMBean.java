@@ -28,15 +28,25 @@ import org.bedework.util.jmx.MBeanInfo;
  */
 public interface BedeworkConnConfMBean extends NoteConnConfMBean {
   /**
-   * @param val path to notifications directory
+   * @param val system notification principal
    */
-  void setNotificationDirHref(final String val);
+  void setSystemNotificationHref(final String val);
 
   /**
-   * @return path to notifications directory
+   * @return system notification principal
    */
-  @MBeanInfo("Path to notifications directory")
-  String getNotificationDirHref();
+  @MBeanInfo("system notification principal")
+  String getSystemNotificationHref();
+
+  /**
+   * @param val system url
+   */
+  void setSystemUrl(final String val);
+
+  /**
+   * @return system notification principal
+   */
+  String getSystemUrl();
 
   /**
    * @param val id for authentication

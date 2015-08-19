@@ -559,9 +559,9 @@ public class NotifyEngine extends TzGetter {
    * @throws NoteException
    */
   public void setConnectors(final Subscription sub) throws NoteException {
-    final String connectorId = sub.getSourceConnectorInfo().getConnectorName();
+    final String connectorName = sub.getConnectorName();
 
-    final Connector conn = NotifyRegistry.getConnector(connectorId);
+    final Connector conn = NotifyRegistry.getConnector(connectorName);
     if (conn == null) {
       throw new NoteException("No connector for " + sub + "(");
     }
@@ -631,21 +631,13 @@ public class NotifyEngine extends TzGetter {
    *                        db methods
    * ==================================================================== */
 
-  /**
-   * @param id key
-   * @return subscription
-   * @throws NoteException
-   */
-  public Subscription getSubscription(final String id) throws NoteException {
-    final boolean opened = db.open();
+  public void startTransaction() throws NoteException {
+    db.open();
+  }
 
-    try {
-      return db.get(id);
-    } finally {
-      if (opened) {
-        // It's a one-shot
-        db.close();
-      }
+  public void endTransaction() throws NoteException {
+    if ((db != null) && db.isOpen()) {
+      db.close();
     }
   }
 
@@ -654,17 +646,17 @@ public class NotifyEngine extends TzGetter {
    * @return subscription
    * @throws NoteException
    */
-  public Subscription getSubscriptionByOwner(final String id) throws NoteException {
-    final boolean opened = db.open();
+  public Subscription getSubscription(final String id) throws NoteException {
+    return db.get(id);
+  }
 
-    try {
-      return db.get(id);
-    } finally {
-      if (opened) {
-        // It's a one-shot
-        db.close();
-      }
-    }
+  /**
+   * @param id key
+   * @return subscription
+   * @throws NoteException
+   */
+  public Subscription getSubscriptionByOwner(final String id) throws NoteException {
+    return db.get(id);
   }
 
   /**
@@ -680,16 +672,7 @@ public class NotifyEngine extends TzGetter {
    * @throws NoteException
    */
   public void updateSubscription(final Subscription sub) throws NoteException {
-    final boolean opened = db.open();
-
-    try {
-      db.update(sub);
-    } finally {
-      if (opened) {
-        // It's a one-shot
-        db.close();
-      }
-    }
+    db.update(sub);
   }
 
   /**
@@ -710,16 +693,7 @@ public class NotifyEngine extends TzGetter {
    */
   public Subscription find(final String conName,
                            final String owner) throws NoteException {
-    final boolean opened = db.open();
-
-    try {
-      return db.find(conName, owner);
-    } finally {
-      if (opened) {
-        // It's a one-shot
-        db.close();
-      }
-    }
+    return db.find(conName, owner);
   }
 
   /** Find any subscription that matches this one. There can only be one with
@@ -730,16 +704,7 @@ public class NotifyEngine extends TzGetter {
    * @throws NoteException
    */
   public Subscription find(final Subscription sub) throws NoteException {
-    final boolean opened = db.open();
-
-    try {
-      return db.find(sub);
-    } finally {
-      if (opened) {
-        // It's a one-shot
-        db.close();
-      }
-    }
+    return db.find(sub);
   }
 
   /* ====================================================================

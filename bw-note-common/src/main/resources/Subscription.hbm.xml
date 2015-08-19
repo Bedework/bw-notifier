@@ -19,34 +19,43 @@
   </typedef>
 
   <class name="org.bedework.notifier.db.Subscription"
-         table="bwsynch_subs" >
+         table="bwnote_subs" >
     <cache usage="read-write"/>
 
-    <id name="id" type="long" column="bwsyn_id">
+    <id name="id" type="long" column="bwnote_id">
       <generator class="native"/>
     </id>
 
     <!-- db entity properties -->
 
-    <version name="seq" column="bwsyn_seq" type="integer" />
+    <version name="seq" column="bwnote_seq" type="integer" />
 
-    <property name="subscriptionId" column="bwsyn_subid" type="string" length="250"
+    <property name="subscriptionId" column="bwnote_subid" type="string" length="250"
               unique="true"
               not-null="true"
-              index="bwsynidx_subid" />
+              index="bwnoteidx_subid" />
 
-    <property name="owner" column="bwsyn_owner" type="string" length="500"
+    <property name="connectorName" column="bwnote_conname"
+              type="string" length="100" />
+
+    <property name="principalHref" column="bwnote_phref" type="string" length="500"
               not-null="true"
-              index="bwsynidx_subowner" />
+              index="bwnoteidx_phref" />
 
-    <property name="lastRefresh" column="bwsyn_lrefresh" type="string" length="20" />
+    <property name="lastRefresh" column="bwnote_lrefresh" type="string" length="20" />
 
-    <property name="errorCt" column="bwsyn_errorct" type="integer" />
+    <property name="lastRefreshStatus" column="bwnote_lstatus"
+              type="string" length="100" />
 
-    <property name="missingTarget" column="bwsyn_missing"
+    <property name="errorCt" column="bwnote_errorct" type="integer" />
+
+    <property name="missingTarget" column="bwnote_missing"
               type="true_false" not-null="true" />
 
-    <property name="properties" column="bwsyn_props"
+    <property name="uri" column="bwnote_uri"
+              type="string" length="500" />
+
+    <property name="properties" column="bwnote_props"
               type="string" length="3000" />
   </class>
 </hibernate-mapping>

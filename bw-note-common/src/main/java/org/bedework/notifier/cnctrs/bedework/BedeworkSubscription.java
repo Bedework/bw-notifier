@@ -18,8 +18,10 @@
 */
 package org.bedework.notifier.cnctrs.bedework;
 
-import org.bedework.notifier.db.SubscriptionInfo;
+import org.bedework.notifier.db.Subscription;
+import org.bedework.notifier.db.SubscriptionWrapper;
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.util.misc.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,15 +32,20 @@ import java.util.Map;
  *
  * @author Mike Douglass
  */
-public class BedeworkSubscriptionInfo extends SubscriptionInfo {
+public class BedeworkSubscription extends SubscriptionWrapper {
   /* Here we will specify what notifications the user is interested
    * in and how they are to be delivered.
    */
 
   // For the moment send everything by email
-  List<String> emails = new ArrayList<>();
+  private List<String> emails = new ArrayList<>();
 
-  public BedeworkSubscriptionInfo() throws NoteException {
+  public BedeworkSubscription() throws NoteException {
+    super(new Subscription());
+  }
+
+  public BedeworkSubscription(final Subscription sub) throws NoteException {
+    super(sub);
   }
 
   @Override
@@ -60,5 +67,11 @@ public class BedeworkSubscriptionInfo extends SubscriptionInfo {
     if (!emails.contains(val)) {
       emails.add(val);
     }
+  }
+
+  protected void toStringSegment(final ToString ts) {
+    super.toStringSegment(ts);
+
+    ts.append("emails", getEmails());
   }
 }

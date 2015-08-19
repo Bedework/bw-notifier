@@ -33,13 +33,23 @@ public class BedeworkConnConf extends NoteConnConf<BedeworkConnectorConfig>
    * ======================================================================== */
 
   @Override
-  public void setNotificationDirHref(final String val) {
-    cfg.setNotificationDirHref(val);
+  public void setSystemNotificationHref(final String val) {
+    cfg.setSystemNotificationHref(val);
   }
 
   @Override
-  public String getNotificationDirHref() {
-    return cfg.getNotificationDirHref();
+  public String getSystemNotificationHref() {
+    return cfg.getSystemNotificationHref();
+  }
+
+  @Override
+  public void setSystemUrl(final String val) {
+    cfg.setSystemUrl(val);
+  }
+
+  @Override
+  public String getSystemUrl() {
+    return cfg.getSystemUrl();
   }
 
   @Override

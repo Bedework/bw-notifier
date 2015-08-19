@@ -20,6 +20,7 @@ package org.bedework.notifier.db;
 
 import org.bedework.notifier.exception.NoteException;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.StringWriter;
@@ -41,19 +42,49 @@ public class SerializableProperties {
     this.vals = vals;
   }
 
+  public void setProperties(final String val) throws NoteException {
+    if (val == null) {
+      vals = null;
+    } else {
+      vals = asMap(val);
+    }
+  }
+
+  /** This will be called to serialize the values for the db.
+   *
+   * @return json serialized value
+   * @throws NoteException
+   */
+  @JsonIgnore
+  public String getProperties() throws NoteException {
+    return asString();
+  }
+
   /* ==============================================================
    *                   Json methods
    * ============================================================== */
 
   protected Map<?, ?> asMap(final String val) throws NoteException {
     try {
-      vals = (Map)om.readValue(val, Object.class);
+      init((Map)om.readValue(val, Object.class));
       return vals;
     } catch (final Throwable t) {
       throw new NoteException(t);
     }
   }
 
+  protected String asString() throws NoteException {
+    StringWriter sw = new StringWriter();
+
+    try {
+      om.writeValue(sw, this);
+      return sw.toString();
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    }
+  }
+
+  @JsonIgnore
   protected Map<?, ?> getMap(final String name) throws NoteException {
     Object val = vals.get(name);
 
@@ -86,6 +117,7 @@ public class SerializableProperties {
   }
 
   protected List<String> mustList(final String name) throws NoteException {
+    //noinspection unchecked
     return mustList(name, vals);
   }
 
@@ -151,17 +183,6 @@ public class SerializableProperties {
     }
     try {
       return (Boolean)val;
-    } catch (final Throwable t) {
-      throw new NoteException(t);
-    }
-  }
-
-  protected String asString() throws NoteException {
-    StringWriter sw = new StringWriter();
-
-    try {
-      om.writeValue(sw, this);
-      return sw.toString();
     } catch (final Throwable t) {
       throw new NoteException(t);
     }

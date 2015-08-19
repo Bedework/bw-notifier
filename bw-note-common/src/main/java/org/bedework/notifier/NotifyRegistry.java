@@ -6,8 +6,7 @@ package org.bedework.notifier;
 import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.notifier.conf.NotifyConfig;
-import org.bedework.notifier.db.SubscriptionConnectorInfo;
-import org.bedework.notifier.db.SubscriptionInfo;
+import org.bedework.notifier.db.SubscriptionWrapper;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.service.NoteConnConf;
 
@@ -59,19 +58,15 @@ public class NotifyRegistry {
   public static class Info {
     private final String type;
 
-    private final Class<? extends SubscriptionConnectorInfo> connectorInfoClass;
-
-    private final Class<? extends SubscriptionInfo> subscriptionInfoClass;
+    private final Class<? extends SubscriptionWrapper> subscriptionClass;
 
     private final Authenticator authenticator;
 
     public Info(final String type,
-                final Class<? extends SubscriptionConnectorInfo> connectorInfoClass,
-                final Class<? extends SubscriptionInfo> subscriptionInfoClass,
+                final Class<? extends SubscriptionWrapper> subscriptionClass,
                 final Authenticator authenticator) {
       this.type = type;
-      this.connectorInfoClass = connectorInfoClass;
-      this.subscriptionInfoClass = subscriptionInfoClass;
+      this.subscriptionClass = subscriptionClass;
       this.authenticator = authenticator;
     }
 
@@ -79,12 +74,8 @@ public class NotifyRegistry {
       return type;
     }
 
-    public Class<? extends SubscriptionConnectorInfo> getConnectorInfoClass() {
-      return connectorInfoClass;
-    }
-
-    public Class<? extends SubscriptionInfo> getSubscriptionInfoClass() {
-      return subscriptionInfoClass;
+    public Class<? extends SubscriptionWrapper> getSubscriptionClass() {
+      return subscriptionClass;
     }
 
     public Authenticator getAuthenticator() {
@@ -95,7 +86,13 @@ public class NotifyRegistry {
   private static final Map<String, ConnectorEntry> registry = new HashMap<>();
 
   public static Info getInfo(final String type) {
-    return registry.get(type).getInfo();
+    final ConnectorEntry ce = registry.get(type);
+
+    if (ce == null) {
+      return null;
+    }
+
+    return ce.getInfo();
   }
 
   public static Connector getConnector(final String type) {
