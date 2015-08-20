@@ -22,6 +22,7 @@ import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.cnctrs.ConnectorInstance;
 import org.bedework.notifier.conf.NotifyConfig;
 import org.bedework.notifier.db.NotifyDb;
+import org.bedework.notifier.db.NotifyDbImpl;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
@@ -183,6 +184,10 @@ public class NotifyEngine extends TzGetter {
     return cfgHolder.getConfig();
   }
 
+  public static NotifyDb getNewDb() throws NoteException {
+    return new NotifyDbImpl(getConfig());
+  }
+
   public static boolean authenticate(final String system,
                               final String token) throws NoteException {
     NotifyRegistry.Info info = NotifyRegistry.getInfo(system);
@@ -242,10 +247,10 @@ public class NotifyEngine extends TzGetter {
         starting = true;
       }
 
-      db = new NotifyDb(getConfig());
-      db.open();
+      db = getNewDb();
+      db.startTransaction();
       db.clearTransients();
-      db.close();
+      db.endTransaction();
 
       timezones = new TimezonesImpl();
       timezones.init(getConfig().getTimezonesURI());
@@ -276,7 +281,7 @@ public class NotifyEngine extends TzGetter {
       info("Register and start connectors");
       final NotifyRegistry registry = new NotifyRegistry();
       registry.registerConnectors(getConfig());
-      registry.startConnectors(this);
+      registry.startConnectors(db, this);
 
       info("Register and start adaptors");
       adaptorPool = new AdaptorPool(this, 1000 * 60);
@@ -610,89 +615,17 @@ public class NotifyEngine extends TzGetter {
     }
   }
 
-  /* ====================================================================
-   *                        db methods
-   * ==================================================================== */
-
-  public void startTransaction() throws NoteException {
-    db.open();
-  }
-
-  public void endTransaction() throws NoteException {
-    if ((db != null) && db.isOpen()) {
-      db.close();
-    }
-  }
-
-  /**
-   * @param id key
-   * @return subscription
-   * @throws NoteException
-   */
-  public Subscription getSubscription(final String id) throws NoteException {
-    return db.get(id);
-  }
-
-  /**
-   * @param id key
-   * @return subscription
-   * @throws NoteException
-   */
-  public Subscription getSubscriptionByOwner(final String id) throws NoteException {
-    return db.get(id);
-  }
-
   /**
    * @param sub a subscription
    * @throws NoteException
    */
-  public void addSubscription(final Subscription sub) throws NoteException {
+  public void addNotificationMsg(final Subscription sub) throws NoteException {
     db.add(sub);
 
     /* Queue a message to process it */
     addNotificationMsg(
             new NotificationMsg(sub.getConnectorName(),
                                 sub.getPrincipalHref()));
-  }
-
-  /**
-   * @param sub a subscription
-   * @throws NoteException
-   */
-  public void updateSubscription(final Subscription sub) throws NoteException {
-    db.update(sub);
-  }
-
-  /**
-   * @param sub a subscription
-   * @throws NoteException
-   */
-  public void deleteSubscription(final Subscription sub) throws NoteException {
-    db.delete(sub);
-  }
-
-  /** Find any subscription that matches this one. There can only be one with
-   * the same endpoints
-   *
-   * @param conName name of connector
-   * @param owner of subscription
-   * @return matching subscriptions
-   * @throws org.bedework.notifier.exception.NoteException
-   */
-  public Subscription find(final String conName,
-                           final String owner) throws NoteException {
-    return db.find(conName, owner);
-  }
-
-  /** Find any subscription that matches this one. There can only be one with
-   * the same endpoints
-   *
-   * @param sub a subscription
-   * @return matching subscriptions
-   * @throws NoteException
-   */
-  public Subscription find(final Subscription sub) throws NoteException {
-    return db.find(sub);
   }
 
   /* ====================================================================

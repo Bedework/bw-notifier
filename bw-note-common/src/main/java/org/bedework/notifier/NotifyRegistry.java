@@ -6,6 +6,7 @@ package org.bedework.notifier;
 import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.notifier.conf.NotifyConfig;
+import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.SubscriptionWrapper;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.service.NoteConnConf;
@@ -125,13 +126,15 @@ public class NotifyRegistry {
     }
   }
 
-  public void startConnectors(final NotifyEngine notifier) throws NoteException {
+  public void startConnectors(final NotifyDb db,
+                              final NotifyEngine notifier) throws NoteException {
     final String callbackUriBase = config.getCallbackURI();
 
     for (final String id: registry.keySet()) {
       Connector conn = getConnector(id);
 
-      conn.start(callbackUriBase + id + "/",
+      conn.start(db,
+                 callbackUriBase + id + "/",
                  notifier);
 
       while (!conn.isStarted()) {

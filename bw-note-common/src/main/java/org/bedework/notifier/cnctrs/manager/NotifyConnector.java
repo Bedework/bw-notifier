@@ -23,6 +23,7 @@ import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.NotifyRegistry;
 import org.bedework.notifier.cnctrs.AbstractConnector;
 import org.bedework.notifier.conf.ConnectorConfig;
+import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.db.SubscriptionWrapper;
 import org.bedework.notifier.exception.NoteException;
@@ -62,9 +63,10 @@ public class NotifyConnector extends AbstractConnector<NotifyConnector,
   }
 
   @Override
-  public void start(final String callbackUri,
+  public void start(final NotifyDb db,
+                    final String callbackUri,
                     final NotifyEngine syncher) throws NoteException {
-    super.start(callbackUri, syncher);
+    super.start(db, callbackUri, syncher);
 
     stopped = false;
     running = true;
@@ -82,13 +84,15 @@ public class NotifyConnector extends AbstractConnector<NotifyConnector,
   }
 
   @Override
-  public Subscription subscribe(final Map<?, ?> vals)
+  public Subscription subscribe(final NotifyDb db,
+                                final Map<?, ?> vals)
           throws NoteException {
     return null;
   }
 
   @Override
-  public Subscription unsubscribe(final Map<?, ?> vals)
+  public Subscription unsubscribe(final NotifyDb db,
+                                  final Map<?, ?> vals)
           throws NoteException {
     return null;
   }

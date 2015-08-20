@@ -21,6 +21,7 @@ package org.bedework.notifier;
 import org.bedework.notifier.Action.ActionType;
 import org.bedework.notifier.cnctrs.ConnectorInstance;
 import org.bedework.notifier.cnctrs.ConnectorInstance.NotifyItemsInfo;
+import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
@@ -32,7 +33,7 @@ import org.apache.log4j.Logger;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.bedework.notifier.NotifyEngine.*;
+import static org.bedework.notifier.NotifyEngine.NotificationMsg;
 
 /** The noteling handles the processing of a single notification
  *
@@ -60,6 +61,8 @@ public class Noteling {
 
   private final NotifyEngine notifier;
 
+  private final NotifyDb db;
+
   public enum StatusType {
     OK,
 
@@ -77,6 +80,7 @@ public class Noteling {
     debug = getLogger().isDebugEnabled();
 
     this.notifier = notifier;
+    db = NotifyEngine.getNewDb();
 
     notelingId = lastNotelingid.getAndIncrement();
   }
@@ -102,11 +106,12 @@ public class Noteling {
    */
   public StatusType handleAction(final Action action) throws NoteException {
     try {
-      notifier.startTransaction();
+      db.startTransaction();
 
       switch (action.getType()) {
         case notificationMsg:
           handleNotificationMsg(action);
+          break;
 
         case fetchItems:
           final Subscription sub = action.getSub();
@@ -128,7 +133,7 @@ public class Noteling {
 
       return StatusType.OK;
     } finally {
-      notifier.endTransaction();
+      db.endTransaction();
     }
   }
 
@@ -139,8 +144,8 @@ public class Noteling {
   private void handleNotificationMsg(final Action action) throws NoteException {
     final NotificationMsg msg = action.getMsg();
 
-    final Subscription sub = notifier.find(msg.getSystem(),
-                                           msg.getHref());
+    final Subscription sub = db.find(msg.getSystem(),
+                                     msg.getHref());
 
     if (sub == null) {
       // Not one of ours

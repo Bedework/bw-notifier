@@ -19,6 +19,7 @@
 package org.bedework.notifier.cnctrs;
 
 import org.bedework.notifier.db.JsonUtil;
+import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.conf.ConnectorConfig;
@@ -76,7 +77,8 @@ public abstract class AbstractConnector<T,
   }
 
   @Override
-  public void start(final String callbackUri,
+  public void start(final NotifyDb db,
+                    final String callbackUri,
                     final NotifyEngine notifier) throws NoteException {
     this.notifier = notifier;
     this.callbackUri = callbackUri;

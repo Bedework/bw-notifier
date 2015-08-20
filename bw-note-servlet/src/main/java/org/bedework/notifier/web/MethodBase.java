@@ -18,8 +18,9 @@
 */
 package org.bedework.notifier.web;
 
-import org.bedework.notifier.db.JsonUtil;
 import org.bedework.notifier.NotifyEngine;
+import org.bedework.notifier.db.JsonUtil;
+import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.exception.NoteException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,6 +49,8 @@ public abstract class MethodBase extends JsonUtil {
   protected transient Logger log;
 
   protected NotifyEngine notifier;
+
+  private NotifyDb db;
 
   protected ObjectMapper om = new ObjectMapper();
   //private String resourceUri;
@@ -135,6 +138,20 @@ public abstract class MethodBase extends JsonUtil {
    */
   public NotifyEngine getNotifier() {
     return notifier;
+  }
+
+  /** Get notifier db
+   *
+   * @return NotifyDb
+   * @throws NoteException
+   */
+  public NotifyDb getDb() throws NoteException {
+    if (db != null) {
+      return db;
+    }
+
+    db = NotifyEngine.getNewDb();
+    return db;
   }
 
   /** Get the decoded and fixed resource URI. This calls getServletPath() to

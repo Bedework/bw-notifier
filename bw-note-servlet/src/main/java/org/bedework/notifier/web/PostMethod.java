@@ -42,7 +42,7 @@ public class PostMethod extends MethodBase {
   public void doMethod(final HttpServletRequest req,
                        final HttpServletResponse resp) throws NoteException {
     try {
-      getNotifier().startTransaction();
+      getDb().startTransaction();
 
       List<String> resourceUri = getResourceUri(req);
 
@@ -72,7 +72,7 @@ public class PostMethod extends MethodBase {
     } catch(final Throwable t) {
       throw new NoteException(t);
     } finally {
-      getNotifier().endTransaction();
+      getDb().endTransaction();
     }
   }
 
@@ -143,7 +143,8 @@ public class PostMethod extends MethodBase {
         return;
       }
 
-      Subscription sub = NotifyRegistry.getConnector(system).subscribe(vals);
+      Subscription sub = NotifyRegistry.
+              getConnector(system).subscribe(getDb(), vals);
 
       if (sub == null) {
         if (debug) {
@@ -179,7 +180,8 @@ public class PostMethod extends MethodBase {
         return;
       }
 
-      Subscription sub = NotifyRegistry.getConnector(system).unsubscribe(vals);
+      Subscription sub = NotifyRegistry.
+              getConnector(system).unsubscribe(getDb(), vals);
 
       if (sub == null) {
         resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);

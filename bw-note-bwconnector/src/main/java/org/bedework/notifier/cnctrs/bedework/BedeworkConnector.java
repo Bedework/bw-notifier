@@ -24,6 +24,7 @@ import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.NotifyRegistry;
 import org.bedework.notifier.cnctrs.AbstractConnector;
 import org.bedework.notifier.cnctrs.ConnectorInstanceMap;
+import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
@@ -75,11 +76,12 @@ public class BedeworkConnector
   }
 
   @Override
-  public void start(final String callbackUri,
+  public void start(final NotifyDb db,
+                    final String callbackUri,
                     final NotifyEngine notifier) throws NoteException {
-    super.start(callbackUri, notifier);
+    super.start(db, callbackUri, notifier);
 
-    initSpecialNotifications();
+    initSpecialNotifications(db);
 
     running = true;
   }
@@ -96,7 +98,8 @@ public class BedeworkConnector
   }
 
   @Override
-  public Subscription subscribe(final Map<?, ?> vals)
+  public Subscription subscribe(final NotifyDb db,
+                                final Map<?, ?> vals)
           throws NoteException {
     /* We require an href - the principal owning the
      * notifications.
@@ -112,7 +115,7 @@ public class BedeworkConnector
             .mustList("emailAddresses", vals);
 
     Subscription theSub =
-            notifier.find(getConnectorName(), href);
+            db.find(getConnectorName(), href);
     if (theSub == null) {
       if (debug) {
         trace("Adding subscription");
@@ -127,7 +130,8 @@ public class BedeworkConnector
         sub.addEmail(email);
       }
 
-      notifier.addSubscription(sub);
+      db.add(sub);
+      notifier.addNotificationMsg(sub);
       return sub;
     }
 
@@ -141,13 +145,14 @@ public class BedeworkConnector
       sub.addEmail(email);
     }
 
-    notifier.updateSubscription(sub);
+    db.update(sub);
 
     return sub;
   }
 
   @Override
-  public Subscription unsubscribe(final Map<?, ?> vals)
+  public Subscription unsubscribe(final NotifyDb db,
+                                  final Map<?, ?> vals)
           throws NoteException {
     /* We require an href - the principal owning the
      * notifications.
@@ -162,7 +167,7 @@ public class BedeworkConnector
     final List<String> emails = JsonUtil
             .mayList("emailAddresses", vals);
 
-    Subscription theSub = notifier.find(getConnectorName(), href);
+    Subscription theSub = db.find(getConnectorName(), href);
     if (theSub == null) {
       return null;
     }
@@ -170,7 +175,7 @@ public class BedeworkConnector
     final BedeworkSubscription sub = new BedeworkSubscription(theSub);
 
     if (Util.isEmpty(emails)) {
-      notifier.deleteSubscription(sub);
+      db.delete(sub);
       sub.setDeleted(true);
       return sub;
     }
@@ -180,12 +185,12 @@ public class BedeworkConnector
     }
 
     if (Util.isEmpty(sub.getEmails())) {
-      notifier.deleteSubscription(sub);
+      db.delete(sub);
       sub.setDeleted(true);
       return sub;
     }
 
-    notifier.updateSubscription(sub);
+    db.update(sub);
 
     return sub;
   }
@@ -280,7 +285,7 @@ public class BedeworkConnector
    *                   Private methods
    * ==================================================================== */
 
-  private void initSpecialNotifications() throws NoteException {
+  private void initSpecialNotifications(final NotifyDb db) throws NoteException {
     try {
       if (config.getSystemNotificationHref() == null) {
         return;
@@ -300,7 +305,8 @@ public class BedeworkConnector
       sub.setConnectorName(getConnectorName());
       sub.setPrincipalHref(config.getSystemNotificationHref());
 
-      notifier.addSubscription(sub);
+      db.add(sub);
+      notifier.addNotificationMsg(sub);
     } catch (final Throwable t) {
       throw new NoteException(t);
     }

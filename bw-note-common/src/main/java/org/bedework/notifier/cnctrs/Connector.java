@@ -22,6 +22,7 @@ import org.bedework.notifier.NotifyDefs.NotifyKind;
 import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.NotifyRegistry;
 import org.bedework.notifier.conf.ConnectorConfig;
+import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
@@ -75,30 +76,36 @@ public interface Connector<C extends ConnectorInstance,
    * connector might append a uid to that path to allow it to locate the
    * active subscription for which the callback is intended.
    *
+   * @param db for db interactions
    * @param callbackUri
    * @param notifier
    * @throws NoteException
    */
-  void start(String callbackUri,
+  void start(NotifyDb db,
+             String callbackUri,
              NotifyEngine notifier) throws NoteException;
 
   NotifyRegistry.Info getInfo();
 
   /**
    *
+   * @param db for db interactions
    * @param vals the parsed Json subscription message
    * @return a filled in Subscription
    * @throws NoteException
    */
-  Subscription subscribe(Map<?, ?> vals) throws NoteException;
+  Subscription subscribe(NotifyDb db,
+                         Map<?, ?> vals) throws NoteException;
 
   /**
    *
+   * @param db for db interactions
    * @param vals the parsed Json unsubscribe message
    * @return cirrent subscription.
    * @throws NoteException
    */
-  Subscription unsubscribe(Map<?, ?> vals) throws NoteException;
+  Subscription unsubscribe(NotifyDb db,
+                           Map<?, ?> vals) throws NoteException;
 
   /**
    * @return a useful status message

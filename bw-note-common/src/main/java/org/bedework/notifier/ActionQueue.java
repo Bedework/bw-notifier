@@ -131,8 +131,6 @@ public class ActionQueue extends Thread {
         Noteling noteling = null;
 
         try {
-          notifier.startTransaction();
-
             /* Get a noteling from the pool */
           while (true) {
             if (stopping) {
@@ -166,7 +164,6 @@ public class ActionQueue extends Thread {
           exceptions = 0; // somethings working
         } finally {
           notelingPool.add(noteling);
-          notifier.endTransaction();
         }
 
           /* If this is a poll kind then we should add it to a poll queue
