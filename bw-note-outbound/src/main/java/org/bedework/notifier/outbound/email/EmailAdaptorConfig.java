@@ -34,6 +34,7 @@ public class EmailAdaptorConfig extends AdaptorConfig
 	private String protocolClass;
 	private String serverUri;
 	private String serverPort;
+  private boolean starttls;
 	private String serverUsername;
 	private String serverPassword;
 	private String from;
@@ -82,6 +83,16 @@ public class EmailAdaptorConfig extends AdaptorConfig
 	public String getServerPort()  {
 		return serverPort;
 	}
+
+  @Override
+  public void setStarttls(final boolean val) {
+    starttls = val;
+  }
+
+  @Override
+  public boolean getStarttls() {
+    return starttls;
+  }
 
   @Override
   public void setServerUsername(final String val) {
@@ -134,6 +145,7 @@ public class EmailAdaptorConfig extends AdaptorConfig
 		ts.append("protocolClass", getProtocolClass());
 		ts.append("serverUri", getServerUri());
 		ts.append("serverPort", getServerPort());
+    ts.append("starttls", getStarttls());
 		ts.append("from", getFrom());
     ts.append("locale", getLocale());
 	}

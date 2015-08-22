@@ -18,14 +18,13 @@
 */
 package org.bedework.notifier.cnctrs.bedework;
 
-import org.bedework.notifier.db.JsonUtil;
 import org.bedework.notifier.NotifyDefs.NotifyKind;
 import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.NotifyRegistry;
 import org.bedework.notifier.cnctrs.AbstractConnector;
-import org.bedework.notifier.cnctrs.ConnectorInstanceMap;
 import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.Subscription;
+import org.bedework.notifier.db.SubscriptionWrapper;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.util.misc.Util;
@@ -56,9 +55,6 @@ public class BedeworkConnector
                                 BedeworkConnectorInstance,
                                 Note,
                                 BedeworkConnectorConfig> {
-  private final ConnectorInstanceMap<BedeworkConnectorInstance> cinstMap =
-      new ConnectorInstanceMap<>();
-
   private static class Authenticator implements NotifyRegistry.Authenticator {
     BedeworkConnectorConfig conf;
 
@@ -110,9 +106,10 @@ public class BedeworkConnector
      * If so we add the email address. If not we create a new
      * one.
      */
-    final String href = JsonUtil.must("href", vals);
-    final List<String> emails = JsonUtil
-            .mustList("emailAddresses", vals);
+    final String userToken = must("userToken", vals);
+    final String href = Util.buildPath(true,
+                                       must("href", vals));
+    final List<String> emails = mustList("emailAddresses", vals);
 
     Subscription theSub =
             db.find(getConnectorName(), href);
@@ -124,11 +121,10 @@ public class BedeworkConnector
 
       sub.setConnectorName(getConnectorName());
 
-      sub.setPrincipalHref(href);
-
-      for (final String email: emails) {
-        sub.addEmail(email);
-      }
+      // Normalize the href - ensure terminating "/"
+      sub.setPrincipalHref(Util.buildPath(true, href));
+      sub.setUserToken(userToken);
+      sub.setEmails(emails);
 
       db.add(sub);
       notifier.addNotificationMsg(sub);
@@ -163,9 +159,9 @@ public class BedeworkConnector
      * Otherwise we remove the addresses. If there are none left we
      * remove the subscription otherwise we update.
      */
-    final String href = JsonUtil.must("href", vals);
-    final List<String> emails = JsonUtil
-            .mayList("emailAddresses", vals);
+    final String href = Util.buildPath(true,
+                                       must("href", vals));
+    final List<String> emails = mayList("emailAddresses", vals);
 
     Subscription theSub = db.find(getConnectorName(), href);
     if (theSub == null) {
@@ -222,17 +218,20 @@ public class BedeworkConnector
       return null;
     }
 
-    BedeworkConnectorInstance inst = cinstMap.find(sub);
+    return new BedeworkConnectorInstance(config,
+                                         this, rewrap(sub));
+  }
 
-    if (inst != null) {
-      return inst;
+  private BedeworkSubscription rewrap(final Subscription sub) throws NoteException {
+    if (sub instanceof BedeworkSubscription) {
+      return (BedeworkSubscription)sub;
     }
 
-    inst = new BedeworkConnectorInstance(config,
-                                         this, sub);
-    cinstMap.add(sub, inst);
+    if (sub instanceof SubscriptionWrapper) {
+      return new BedeworkSubscription(((SubscriptionWrapper)sub).getSubscription());
+    }
 
-    return inst;
+    return new BedeworkSubscription(sub);
   }
 
   class BedeworkNotificationBatch extends NotificationBatch<Note> {
@@ -267,7 +266,7 @@ public class BedeworkConnector
       return authheaders;
     }
 
-    final String id = config.getId();
+    final String id = config.getName();
     final String token = config.getToken();
 
     if ((id == null) || (token == null)) {

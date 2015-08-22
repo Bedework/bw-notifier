@@ -110,7 +110,8 @@ public class PostMethod extends MethodBase {
 
       for (final String href: hrefs) {
         notifier.addNotificationMsg(
-                new NotifyEngine.NotificationMsg(system, href));
+                new NotifyEngine.NotificationMsg(system,
+                                                 Util.buildPath(true, href)));
       }
     } catch(final Throwable t) {
       if (debug) {

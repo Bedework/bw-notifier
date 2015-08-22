@@ -19,6 +19,7 @@
 package org.bedework.notifier.outbound.email;
 
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.util.misc.Logged;
 
 import java.util.Properties;
 
@@ -35,10 +36,11 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-public class Mailer {
+public class Mailer extends Logged {
 	EmailConf config;
 
   public Mailer(final EmailConf config) throws NoteException {
+    super();
     this.config = config;
   }
 
@@ -66,11 +68,27 @@ public class Mailer {
       }
       msg.setContent(multipart);
 
+      if (debug) {
+        debug("About to get transport");
+      }
 //      Transport.send(msg);
       Transport transport = session.getTransport(config.getProtocol());
       try {
+        if (debug) {
+          debug("About to connect");
+        }
+
         transport.connect(/*host, from, pass*/);
+
+        if (debug) {
+          debug("About to send message");
+        }
+
         transport.sendMessage(msg, msg.getAllRecipients());
+
+        if (debug) {
+          debug("Message sent");
+        }
       } finally {
         transport.close();
       }
@@ -91,6 +109,11 @@ public class Mailer {
       props.put("mail." + config.getProtocol() + ".port",
                 config.getServerPort());
     }
+
+    props.put("mail." + config.getProtocol() + ".starttls.enable",
+              String.valueOf(config.getStarttls()));
+    props.put("mail." + config.getProtocol() + ".connectiontimeout", 10000);
+    props.put("mail." + config.getProtocol() + "smtp.timeout", 10000);
 
     //  add handlers for main MIME types
     final MailcapCommandMap mc = (MailcapCommandMap)CommandMap.getDefaultCommandMap();
@@ -121,10 +144,10 @@ public class Mailer {
       final MailerAuthenticator authenticator =
               new MailerAuthenticator(username, pw);
       props.put("mail." + config.getProtocol() + ".auth", "true");
-      return Session.getInstance(props, authenticator);
+      return Session.getDefaultInstance(props, authenticator);
     }
 
-    return Session.getInstance(props);
+    return Session.getDefaultInstance(props);
   }
 
   private void setNonNull(final Properties props,

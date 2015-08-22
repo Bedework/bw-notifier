@@ -20,6 +20,7 @@ package org.bedework.notifier.outbound.common;
 
 import org.bedework.caldav.util.notifications.ProcessorType;
 import org.bedework.caldav.util.notifications.ProcessorsType;
+import org.bedework.notifier.Action;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.util.http.HttpUtil;
@@ -53,14 +54,17 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
     id = nextId.incrementAndGet();
 	}
 
+  @Override
 	public long getId() {
 		return id;
 	}
 
+  @Override
 	public void setConf(final Conf conf) {
 		this.conf = conf;
 	}
 
+  @Override
 	public Conf getConfig() {
 		return conf;
 	}
@@ -69,43 +73,39 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
 		return conf.getType();
 	}
 
-  /**
-   * @param note the notification to process
-   * @return true if processed OK
-   * @throws org.bedework.notifier.exception.NoteException
-   */
-	public boolean process(final Note note) throws NoteException {
-		switch (note.getKind()) {
+  @Override
+	public boolean process(final Action action) throws NoteException {
+		switch (action.getNote().getKind()) {
 		case sharingInvitation:
-			return processSharingInvitation(note);
+			return processSharingInvitation(action);
 		case subscribeInvitation:
-			return processSubscribeInvitation(note);
+			return processSubscribeInvitation(action);
 		case resourceChange:
-			return processResourceChange(note);
+			return processResourceChange(action);
 		}
 		return false;
 	}
 
   /**
-   * @param note the notification
+   * @param action containing the notification to process
    * @return true if processed OK
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
-	public abstract boolean processSharingInvitation(final Note note) throws NoteException;
+	public abstract boolean processSharingInvitation(final Action action) throws NoteException;
 
   /**
-   * @param note the notification
+   * @param action containing the notification to process
    * @return true if processed OK
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
-	public abstract boolean processSubscribeInvitation(final Note note) throws NoteException;
+	public abstract boolean processSubscribeInvitation(final Action action) throws NoteException;
 
   /**
-   * @param note the notification
+   * @param action containing the notification to process
    * @return true if processed OK
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException
    */
-	public abstract boolean processResourceChange(final Note note) throws NoteException;
+	public abstract boolean processResourceChange(final Action action) throws NoteException;
 
 	/* ====================================================================
 	 *                   Protected methods

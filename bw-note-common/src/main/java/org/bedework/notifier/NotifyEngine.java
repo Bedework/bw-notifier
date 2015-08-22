@@ -620,8 +620,6 @@ public class NotifyEngine extends TzGetter {
    * @throws NoteException
    */
   public void addNotificationMsg(final Subscription sub) throws NoteException {
-    db.add(sub);
-
     /* Queue a message to process it */
     addNotificationMsg(
             new NotificationMsg(sub.getConnectorName(),

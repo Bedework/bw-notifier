@@ -16,7 +16,7 @@
     specific language governing permissions and limitations
     under the License.
 */
-package org.bedework.notifier.cnctrs.bedework;
+package org.bedework.notifier.outbound.email;
 
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.db.SubscriptionImpl;
@@ -33,23 +33,32 @@ import java.util.Map;
  *
  * @author Mike Douglass
  */
-public class BedeworkSubscription extends SubscriptionWrapper {
-  /* Here we will specify what notifications the user is interested
-   * in and how they are to be delivered.
+public class EmailSubscription extends SubscriptionWrapper {
+  /* Provides access to the email information for a subscription.
    */
-
-  private String userToken;
 
   // For the moment send everything by email
   private List<String> emails = new ArrayList<>();
 
-  public BedeworkSubscription() throws NoteException {
+  public EmailSubscription() throws NoteException {
     super(SubscriptionImpl.make());
   }
 
-  public BedeworkSubscription(final Subscription sub) throws NoteException {
+  public EmailSubscription(final Subscription sub) throws NoteException {
     super(sub);
     init(getSubi().getVals());
+  }
+
+  public static EmailSubscription rewrap(final Subscription sub) throws NoteException {
+    if (sub instanceof EmailSubscription) {
+      return (EmailSubscription)sub;
+    }
+
+    if (sub instanceof SubscriptionWrapper) {
+      return new EmailSubscription(((SubscriptionWrapper)sub).getSubscription());
+    }
+
+    return new EmailSubscription(sub);
   }
 
   @Override
@@ -57,17 +66,7 @@ public class BedeworkSubscription extends SubscriptionWrapper {
     super.init(vals);
     SubscriptionImpl subi = getSubi();
 
-    setUserToken(subi.must("userToken"));
     setEmails(subi.mustList("emails"));
-  }
-
-  public void setUserToken(final String val) {
-    userToken = val;
-    getSubi().setString("userToken", userToken);
-  }
-
-  public String getUserToken() {
-    return userToken;
   }
 
   public void setEmails(final List<String> val) {
@@ -88,7 +87,6 @@ public class BedeworkSubscription extends SubscriptionWrapper {
   public void toStringSegment(final ToString ts) {
     super.toStringSegment(ts);
 
-    ts.append("userToken", getUserToken());
     ts.append("emails", getEmails());
   }
 }

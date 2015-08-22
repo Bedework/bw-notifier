@@ -20,6 +20,7 @@ package org.bedework.notifier.outbound.email;
 
 import org.bedework.caldav.util.notifications.ProcessorType;
 import org.bedework.caldav.util.sharing.InviteNotificationType;
+import org.bedework.notifier.Action;
 import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
@@ -49,7 +50,9 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
 	private Mailer mailer;
 
 	@Override
-	public boolean processSharingInvitation(final Note note) throws NoteException {
+	public boolean processSharingInvitation(final Action action) throws NoteException {
+    final Note note = action.getNote();
+    final EmailSubscription sub = EmailSubscription.rewrap(action.getSub());
     final ProcessorType pt = getProcessorStatus(note);
 
     if (processed(pt)) {
@@ -60,7 +63,10 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
 
     final EmailMessage email = new EmailMessage(stripMailTo(invite.getOrganizer().getHref()), null);
 
-		email.addTo(stripMailTo(invite.getHref()));
+    /* The subscription will define one or more recipients */
+    for (final String emailAddress: sub.getEmails()) {
+      email.addTo(stripMailTo(emailAddress));
+    }
 
     final ResourceBundle bundle = getResourceBundle();
 
@@ -105,14 +111,14 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
 	}
 
 	@Override
-	public boolean processSubscribeInvitation(final Note note) throws NoteException {
-		info("Call to processSubscribeInvitation: " + note);
+	public boolean processSubscribeInvitation(final Action action) throws NoteException {
+		info("Call to processSubscribeInvitation: " + action.getNote());
 		return false;
 	}
 
 	@Override
-	public boolean processResourceChange(final Note note) throws NoteException {
-		info("Call to processResourceChange: " + note);
+	public boolean processResourceChange(final Action action) throws NoteException {
+		info("Call to processResourceChange: " + action.getNote());
 		return false;
 	}
 

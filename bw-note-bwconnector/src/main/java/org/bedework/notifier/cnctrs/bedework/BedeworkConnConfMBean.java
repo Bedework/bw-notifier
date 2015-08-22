@@ -49,17 +49,6 @@ public interface BedeworkConnConfMBean extends NoteConnConfMBean {
   String getSystemUrl();
 
   /**
-   * @param val id for authentication
-   */
-  void setId(final String val);
-
-  /**
-   * @return id
-   */
-  @MBeanInfo("id for authentication")
-  String getId();
-
-  /**
    * @param val token for authentication
    */
   void setToken(final String val);
@@ -69,19 +58,6 @@ public interface BedeworkConnConfMBean extends NoteConnConfMBean {
    */
   @MBeanInfo("token for authentication")
   String getToken();
-
-  /** Min poll - seconds
-   *
-   * @param val    int seconds
-   */
-  void setBwWSDLURI(final String val);
-
-  /** Min poll - seconds
-   *
-   * @return int seconds
-   */
-  @MBeanInfo("WSDL for remote service")
-  String getBwWSDLURI();
 
   /** retryInterval - seconds
    *

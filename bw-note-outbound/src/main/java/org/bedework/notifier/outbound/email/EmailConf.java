@@ -74,7 +74,17 @@ public class EmailConf extends AdaptorConf<EmailAdaptorConfig> implements EmailC
 		return cfg.getServerPort();
 	}
 
-	@Override
+  @Override
+  public void setStarttls(final boolean val) {
+    cfg.setStarttls(val);
+  }
+
+  @Override
+  public boolean getStarttls() {
+    return cfg.getStarttls();
+  }
+
+  @Override
 	public void setServerUsername(final String val) {
 		cfg.setServerUsername(val);
 	}

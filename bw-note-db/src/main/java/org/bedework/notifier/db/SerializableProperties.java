@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,9 +32,9 @@ import java.util.Map;
  *
  */
 public class SerializableProperties {
-  private static ObjectMapper om = new ObjectMapper();
+  private static final ObjectMapper om = new ObjectMapper();
 
-  protected Map<?, ?> vals;
+  protected Map vals;
 
   protected SerializableProperties() {
   }
@@ -60,6 +61,19 @@ public class SerializableProperties {
     return asString();
   }
 
+  /**
+   *
+   * @return Map representing extra properties.
+   */
+  @JsonIgnore
+  public Map getVals() {
+    if (vals == null) {
+      vals = new HashMap();
+    }
+
+    return vals;
+  }
+
   /* ==============================================================
    *                   Json methods
    * ============================================================== */
@@ -74,10 +88,10 @@ public class SerializableProperties {
   }
 
   protected String asString() throws NoteException {
-    StringWriter sw = new StringWriter();
+    final StringWriter sw = new StringWriter();
 
     try {
-      om.writeValue(sw, this);
+      om.writeValue(sw, vals);
       return sw.toString();
     } catch (final Throwable t) {
       throw new NoteException(t);
@@ -86,7 +100,7 @@ public class SerializableProperties {
 
   @JsonIgnore
   protected Map<?, ?> getMap(final String name) throws NoteException {
-    Object val = vals.get(name);
+    final Object val = vals.get(name);
 
     if (val == null) {
       throw new NoteException("missing value: " + name);
@@ -98,7 +112,31 @@ public class SerializableProperties {
     }
   }
 
-  protected String must(final String name) throws NoteException {
+  /* ==============================================================
+   *                   set methods
+   * ============================================================== */
+
+  public void setBoolean(final String name, final Boolean val) {
+    getVals().put(name, val);
+  }
+
+  public void setInt(final String name, final Integer val) {
+    getVals().put(name, val);
+  }
+
+  public void setString(final String name, final String val) {
+    getVals().put(name, val);
+  }
+
+  public void setObject(final String name, final Object val) {
+    getVals().put(name, val);
+  }
+
+  /* ==============================================================
+   *                   get methods
+   * ============================================================== */
+
+  public String must(final String name) throws NoteException {
     return JsonUtil.must(name, vals);
   }
 
@@ -117,7 +155,7 @@ public class SerializableProperties {
   }
 
   protected int mayInt(final String name) throws NoteException {
-    Object val = vals.get(name);
+    final Object val = vals.get(name);
 
     if (val == null) {
       return 0;
@@ -130,7 +168,7 @@ public class SerializableProperties {
   }
 
   protected boolean mayBool(final String name) throws NoteException {
-    Object val = vals.get(name);
+    final Object val = vals.get(name);
 
     if (val == null) {
       return false;

@@ -211,7 +211,7 @@ public class Noteling {
 
     try {
       for (final Adaptor adaptor: adaptors) {
-        if (!adaptor.process(action.getNote())) {
+        if (!adaptor.process(action)) {
           allOk = false;
         }
       }

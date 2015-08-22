@@ -28,13 +28,9 @@ import org.bedework.util.misc.ToString;
  */
 @ConfInfo(elementName = "notify-connector")
 public class BedeworkConnectorConfig extends ConnectorConfig {
-  private String id;
   private String token;
   private String systemNotificationHref;
   private String systemUrl;
-
-  /** WSDL for remote service */
-  private String bwWSDLURI;
 
   /** seconds before retry on failure  */
   private int retryInterval;
@@ -71,20 +67,6 @@ public class BedeworkConnectorConfig extends ConnectorConfig {
   }
 
   /**
-   * @param val id for authentication
-   */
-  public void setId(final String val) {
-    id = val;
-  }
-
-  /**
-   * @return id
-   */
-  public String getId() {
-    return id;
-  }
-
-  /**
    * @param val token for authentication
    */
   public void setToken(final String val) {
@@ -96,22 +78,6 @@ public class BedeworkConnectorConfig extends ConnectorConfig {
    */
   public String getToken() {
     return token;
-  }
-
-  /** bedework web service WSDL uri
-   *
-   * @param val    String
-   */
-  public void setBwWSDLURI(final String val) {
-    bwWSDLURI = val;
-  }
-
-  /** Bedework web service WSDL uri
-   *
-   * @return String
-   */
-  public String getBwWSDLURI() {
-    return bwWSDLURI;
   }
 
   /** retryInterval - seconds
@@ -150,11 +116,9 @@ public class BedeworkConnectorConfig extends ConnectorConfig {
   public void toStringSegment(final ToString ts) {
     super.toStringSegment(ts);
 
-    ts.append("id", getId()).
-            append("token", getToken()).
+    ts.append("token", getToken()).
             append("systemNotificationHref", getSystemNotificationHref()).
             append("systemUrl", getSystemUrl()).
-            append("bwWSDLURI", getBwWSDLURI()).
             append("retryInterval", getRetryInterval()).
             append("keepAliveInterval", getKeepAliveInterval());
   }

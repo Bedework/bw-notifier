@@ -23,51 +23,14 @@ import org.bedework.util.misc.ToString;
 
 import java.util.Map;
 
-/** Represents a subscription for the notification engine.
+/** A subscription wrapper allows us to extend the data model without
+ * affecting the scheme.
  *
- * <p>A subscription will need to list the source and the manner(s) of
- * notification.
+ * <p>A basic set of properties are set in the subscription. All other
+ * properties are stored in the serializable set and accessed via the
+ * wrappers which extend the subscription interface.
  *
- * This object is the form of data stored in the db. A set of common
- * properties are represented in the usual pojo manner. All others are
- * stored as a serializable json string.
- *
- * The SubscriptionWrapper class extends this object and can be extended
- * by connectors to provide easy access to connector specific properties.
- *
- * <p>Each connection has a kind which is a name used to retrieve a connector
- * from the notification engine. The retrieved connector implements the Connector
- * interface. This connector object can then be used to retrieve a ConnectionInst
- * implementation which uses information stored in a serializable object to
- * obtain connection specific properties such as id and password.
- *
- * <p>These properties are obtained by presenting the user with a list of
- * required properties and then encrypting and storing the response. The
- * serialized result is stored as a field in the subscription.
- *
- * <p>Connections are either polling or notify. Polling means that
- * the host will be polled to see if anything has changed. Notify means that
- * the subscription will be activated when the system is notified of a change.
- *
- * <p>Connections are also resynch only - that is the far end does not support
- * fetching of individual items but must be completely resynched each time, or
- * the support the full synch feature set.
- *
- * <p>Resynch connections support relatively simple protocols or file synch.
- *
- * <p>The full feature connections are used for bedework, Exchange etc.
- *
- * <h1>Skip Lists</h1>
- * A skip list allows the diffing process to skip properties that are not to be
- * considered, for example lastmod. We create a skip list from 3 lists;<ul>
- * <li>one for each end of the subscription. This marks properties used
- * exclusively by that end, for example x-properties.</li>
- * <li> One for the middle which might skip properties we want to ignore such as
- * alarms</li>
- * </ul>
- *
- * <p>An empty list means exactly that, no skip properties. A null list means
- * the default diff skip list - probably more useful.
+ * <p>This class has no extra properties.
  *
  * @author Mike Douglass
  */
@@ -97,7 +60,6 @@ public class SubscriptionWrapper implements Subscription {
   }
 
   public void init(final Map vals) throws NoteException {
-    getSubscription().init(vals);
   }
 
   /** Our generated subscriptionId.
@@ -250,6 +212,10 @@ public class SubscriptionWrapper implements Subscription {
    */
   public void toStringSegment(final ToString ts) {
     getSubscription().toStringSegment(ts);
+  }
+
+  protected SubscriptionImpl getSubi() {
+    return (SubscriptionImpl)getSubscription();
   }
 
   /* ====================================================================

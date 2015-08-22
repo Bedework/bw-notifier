@@ -36,8 +36,11 @@ import org.bedework.util.xml.XmlUtil;
 import org.bedework.util.xml.tagdefs.AppleServerTags;
 import org.bedework.util.xml.tagdefs.WebdavTags;
 
+import org.apache.http.Header;
 import org.apache.http.HttpException;
+import org.apache.http.message.BasicHeader;
 import org.oasis_open.docs.ws_calendar.ns.soap.DeleteItemResponseType;
+import org.w3c.dom.Element;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -173,7 +176,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     try {
       final InputStream is = cl.get(item.href,
                                     "application/xml",
-                                    cnctr.getAuthHeaders());
+                                    getAuthHeaders());
 
       final NotificationType nt = Parser.fromXml(is);
 
@@ -255,10 +258,11 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     final BasicHttpClient cl = getClient();
 
     try {
-      cl.setBaseURI(new URI(config.getSystemUrl()));
-      DavChild dc = getDav().getProps(cl,
-                                      sub.getPrincipalHref(),
-                                      notificationURLProps);
+      //cl.setBaseURI(new URI(config.getSystemUrl()));
+      // Make the principal href relative
+      final DavChild dc = getDav().getProps(cl,
+                                            sub.getPrincipalHref().substring(1),
+                                            notificationURLProps);
 
       DavProp dp = dc.findProp(WebdavTags.notificationURL);
 
@@ -274,9 +278,10 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
         return false;
       }
 
-      sub.setUri(XmlUtil.getElementContent(dp.element));
+      final Element href = XmlUtil.getOnlyElement(dp.element);
+      sub.setUri(XmlUtil.getElementContent(href));
 
-      try {
+/*      try {
         cl.setBaseURI(new URI(sub.getUri()));
         return true;
       } catch (final Throwable ignored) {
@@ -285,7 +290,8 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
         }
         // Could delete but might be dangerous - cnctr.getNotifier().deleteSubscription(sub);
         return false;
-      }
+      }*/
+      return true;
     } catch (final Throwable t) {
       throw new NoteException(t);
     }
@@ -299,13 +305,35 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     try {
       client = new BasicHttpClient(30 * 1000,
                                    false);  // followRedirects
-      //client.setBaseURI(new URI(config.getSystemUrl()));
-      client.setBaseURI(new URI(sub.getUri()));
+      client.setBaseURI(new URI(config.getSystemUrl()));
+      //if (sub.getUri() != null) {
+      //  client.setBaseURI(new URI(sub.getUri()));
+      //}
 
       return client;
     } catch (final Throwable t) {
       throw new NoteException(t);
     }
+  }
+
+  private List<Header> authheaders;
+
+  List<Header> getAuthHeaders() {
+    if (authheaders != null) {
+      return authheaders;
+    }
+
+    final String userToken = ((BedeworkSubscription)sub).getUserToken();
+
+    if (userToken == null) {
+      return null;
+    }
+
+    authheaders = new ArrayList<>(cnctr.getAuthHeaders());
+    authheaders.add(new BasicHeader("X-BEDEWORK-NOTEPR", sub.getPrincipalHref()));
+    authheaders.add(new BasicHeader("X-BEDEWORK-PT", userToken));
+
+    return authheaders;
   }
 
   private DavUtil getDav() throws NoteException {
@@ -314,7 +342,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     }
 
     try {
-      dav = new DavUtil(cnctr.getAuthHeaders());
+      dav = new DavUtil(getAuthHeaders());
       return dav;
     } catch (final Throwable t) {
       throw new NoteException(t);

@@ -286,7 +286,7 @@ public abstract class MethodBase extends JsonUtil {
   protected Map<?, ?> getJson(final HttpServletRequest req,
                               final HttpServletResponse resp)
           throws NoteException {
-    int len = req.getContentLength();
+    final int len = req.getContentLength();
     if (len == 0) {
       return null;
     }

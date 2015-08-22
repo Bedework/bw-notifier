@@ -18,12 +18,10 @@
 */
 package org.bedework.notifier.db;
 
-import org.bedework.notifier.exception.NoteException;
 import org.bedework.util.misc.ToString;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.Map;
 import java.util.UUID;
 
 /** Represents a subscription for the notification engine.
@@ -103,21 +101,17 @@ public class SubscriptionImpl extends DbItem<Subscription>
    *
    */
   public SubscriptionImpl() {
-    this.subscriptionId = UUID.randomUUID().toString();
   }
 
-  public void init(final Map vals) throws NoteException {
-    super.init(vals);
+  /** Factory method
+   *
+   */
+  public static SubscriptionImpl make() {
+    SubscriptionImpl si = new SubscriptionImpl();
 
-    setSubscriptionId(must("subscriptionId"));
-    setTransientSub(mayBool("transientSub"));
-    setConnectorName(must("connectorName"));
-    setPrincipalHref(must("principalHref"));
-    setLastRefresh(may("lastRefresh"));
-    setLastRefreshStatus(may("lastRefreshStatus"));
-    setErrorCt(mayInt("errorCt"));
-    setMissingTarget(mayBool("missingTarget"));
-    setUri(may("uri"));
+    si.setSubscriptionId(UUID.randomUUID().toString());
+
+    return si;
   }
 
   /** Our generated subscriptionId.

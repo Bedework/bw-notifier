@@ -76,6 +76,17 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
 	String getServerPort();
 
   /**
+   * @param val start tls
+   */
+  void setStarttls(final boolean val);
+
+  /**
+   * @return flag
+   */
+  @MBeanInfo("Starttls?")
+  boolean getStarttls();
+
+  /**
    * @param val server Username
    */
   void setServerUsername(final String val);
