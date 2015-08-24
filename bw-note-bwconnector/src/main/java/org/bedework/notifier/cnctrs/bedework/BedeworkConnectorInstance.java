@@ -22,6 +22,7 @@ import org.bedework.caldav.util.notifications.NotificationType;
 import org.bedework.caldav.util.notifications.parse.Parser;
 import org.bedework.notifier.cnctrs.AbstractConnectorInstance;
 import org.bedework.notifier.cnctrs.Connector;
+import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.AppleNotification;
@@ -39,7 +40,6 @@ import org.bedework.util.xml.tagdefs.WebdavTags;
 import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.message.BasicHeader;
-import org.oasis_open.docs.ws_calendar.ns.soap.DeleteItemResponseType;
 import org.w3c.dom.Element;
 
 import java.io.InputStream;
@@ -94,8 +94,8 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
   }
 
   @Override
-  public NotifyItemsInfo getItemsInfo() throws NoteException {
-    /* Will do a query on the configured resource directory and return
+  public boolean check(final NotifyDb db) throws NoteException {
+    /* Will do a query on the configured resource directory and add
        a list of hrefs for notifications.
 
        This could be a filtered query to only return the resource types
@@ -113,36 +113,45 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
       if (sub.getUri() == null) {
         if (!getUri()) {
-          return null;
+          return false;
         }
       }
 
+      final String syncToken = getBwsub().getSynchToken();
+
       final Collection<DavChild> chs = getDav().
-              getChildrenUrls(cl, sub.getUri(), noteTypeProps);
-
-      if (chs == null) {
-        return null;
-      }
-
-      final NotifyItemsInfo nii = new NotifyItemsInfo();
-      nii.items = new ArrayList<>(chs.size());
+              syncReport(cl, sub.getUri(), syncToken, noteTypeProps);
 
       if (Util.isEmpty(chs)) {
-        return nii;
+        return false;
       }
 
+      boolean found = false;
+      String newSyncToken = null;
+
       for (final DavChild ch: chs) {
+        if ((ch.propVals.size() == 1) &&
+                ch.propVals.get(0).name.equals(WebdavTags.syncToken)) {
+          newSyncToken = XmlUtil.getElementContent(ch.propVals.get(0).element);
+          continue;
+        }
+
         DavProp dp = ch.findProp(AppleServerTags.notificationtype);
 
         if (dp == null) {
           continue;
         }
 
-        final ItemInfo ii = new ItemInfo(ch.uri, null);
-        nii.items.add(ii);
+        getBwsub().getNoteHrefs().add(ch.uri);
+        found = true;
       }
 
-      return nii;
+      if (newSyncToken != null) {
+        getBwsub().setSynchToken(newSyncToken);
+      }
+      db.update(sub);
+
+      return found;
     } catch (final NoteException ne ) {
       throw ne;
     } catch (final Throwable t) {
@@ -160,21 +169,21 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
   }
 
   @Override
-  public DeleteItemResponseType deleteItem(final ItemInfo item) throws NoteException {
+  public Note nextItem(final NotifyDb db) throws NoteException {
+    if (Util.isEmpty(getBwsub().getNoteHrefs())) {
+      return null;
+    }
 
-    return null;
-  }
+    final String noteHref = getBwsub().getNoteHrefs().get(0);
 
-  @Override
-  public Note fetchItem(final ItemInfo item) throws NoteException {
     if (debug) {
-      trace("Fetch item " + item.href);
+      trace("Fetch item " + noteHref);
     }
 
     final BasicHttpClient cl = getClient();
 
     try {
-      final InputStream is = cl.get(item.href,
+      final InputStream is = cl.get(noteHref,
                                     "application/xml",
                                     getAuthHeaders());
 
@@ -182,10 +191,22 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
       // TODO use nt.getDtstamp()?
 
+      ItemInfo item = new ItemInfo(noteHref, null);
       Note note = new AppleNotification(item, nt);
 
       // TODO temp - until we set this at the other end.
       note.setDeliveryMethod(DeliveryMethod.email);
+
+      /* TODO At this stage we should move the href to a pending list and a
+         later action will remove it from that list.
+
+         At restart we put the pending list back on the unprocessed list.
+
+         For the moment just remove it.
+       */
+
+      getBwsub().getNoteHrefs().remove(0);
+      db.update(sub);
 
       return note;
     } catch (final Throwable t) {
@@ -203,52 +224,56 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
   }
 
   @Override
-  public List<Note> fetchItems(final List<ItemInfo> items) throws NoteException {
-    // XXX this should be a search for multiple uids - need to reimplement caldav search
-
-    final List<Note> firs = new ArrayList<>();
-
-    for (final ItemInfo item: items) {
-      firs.add(fetchItem(item));
-    }
-
-    return firs;
-  }
-
-  @Override
-  public boolean updateItem(final Note note) throws NoteException {
+  public boolean completeItem(final NotifyDb db,
+                              final Note note) throws NoteException {
+    /* Because we do a sync-report on teh collection - we won't see the
+     * notification unless it changes.
+     *
+     * Sharing invites will be removed when processed.
+     *
+     * Sharing responses could be removed.
+     *
+     * Change notifications we might want to remove.
+     *
+     */
     final ItemInfo item = note.getItemInfo();
 
     final NotificationType notification = note.getNotification();
+    final QName noteType = notification.getNotification().getElementName();
 
-    notification.setDtstamp(getDtstamp());
+    if (noteType.equals(AppleServerTags.resourceChange)) {
 
-    final BasicHttpClient cl = getClient();
+      final BasicHttpClient cl = getClient();
 
-    try {
-      String s = notification.toXml(true);
+      try {
+        final int response = cl.delete(item.href,
+                                      getAuthHeaders());
 
-      cl.putObject(item.href, s,
-                   "application/xml");
-
-      return true;
-    } catch (final Throwable t) {
-      throw new NoteException(t);
-    } finally {
-      if (cl != null){
-        try {
-          cl.release();
-        } catch (final HttpException e) {
-          error(e);
+        return true;
+      } catch (final Throwable t) {
+        throw new NoteException(t);
+      } finally {
+        if (cl != null){
+          try {
+            cl.release();
+          } catch (final HttpException e) {
+            error(e);
+          }
+          cl.close();
         }
-        cl.close();
       }
     }
+
+    return true;
   }
 
   /* ====================================================================
    *                   Private methods
    * ==================================================================== */
+
+  private BedeworkSubscription getBwsub() {
+    return (BedeworkSubscription)sub;
+  }
 
   private static final Collection<QName> notificationURLProps =
           Arrays.asList(WebdavTags.notificationURL,
@@ -316,20 +341,14 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     }
   }
 
-  private List<Header> authheaders;
-
   List<Header> getAuthHeaders() {
-    if (authheaders != null) {
-      return authheaders;
-    }
-
-    final String userToken = ((BedeworkSubscription)sub).getUserToken();
+    final String userToken = getBwsub().getUserToken();
 
     if (userToken == null) {
-      return null;
+      return cnctr.getAuthHeaders();
     }
 
-    authheaders = new ArrayList<>(cnctr.getAuthHeaders());
+    final List<Header> authheaders = new ArrayList<>(cnctr.getAuthHeaders());
     authheaders.add(new BasicHeader("X-BEDEWORK-NOTEPR", sub.getPrincipalHref()));
     authheaders.add(new BasicHeader("X-BEDEWORK-PT", userToken));
 

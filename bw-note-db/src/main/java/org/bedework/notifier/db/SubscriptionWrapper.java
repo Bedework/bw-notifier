@@ -194,6 +194,21 @@ public class SubscriptionWrapper implements Subscription {
     return getSubscription().getUri();
   }
 
+  @Override
+  public boolean reserved() {
+    return getSubscription().reserved();
+  }
+
+  @Override
+  public void reserve() {
+    getSubscription().reserve();
+  }
+
+  @Override
+  public void release() {
+    getSubscription().release();
+  }
+
   public void setDeleted(final boolean val) {
     getSubscription().setDeleted(val);
   }

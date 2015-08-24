@@ -118,7 +118,8 @@ public class NotifyConnector extends AbstractConnector<NotifyConnector,
   }
 
   @Override
-  public NotifyConnectorInstance getConnectorInstance(final Subscription sub) throws NoteException {
+  public NotifyConnectorInstance getConnectorInstance(final NotifyDb db,
+                                                      final Subscription sub) throws NoteException {
     return null;
   }
 

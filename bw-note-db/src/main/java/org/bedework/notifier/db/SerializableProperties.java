@@ -125,11 +125,19 @@ public class SerializableProperties {
   }
 
   public void setString(final String name, final String val) {
-    getVals().put(name, val);
+    if (val == null) {
+      getVals().remove(name);
+    } else {
+      getVals().put(name, val);
+    }
   }
 
   public void setObject(final String name, final Object val) {
-    getVals().put(name, val);
+    if (val == null) {
+      getVals().remove(name);
+    } else {
+      getVals().put(name, val);
+    }
   }
 
   /* ==============================================================
@@ -145,8 +153,12 @@ public class SerializableProperties {
     return JsonUtil.mustList(name, vals);
   }
 
-  protected String may(final String name) throws NoteException {
+  public String may(final String name) throws NoteException {
     return JsonUtil.may(name, vals);
+  }
+
+  public List mayList(final String name) throws NoteException {
+    return JsonUtil.mayList(name, vals);
   }
 
   public List mayList(final String name,

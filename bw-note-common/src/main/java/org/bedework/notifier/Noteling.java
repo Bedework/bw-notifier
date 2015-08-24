@@ -20,12 +20,12 @@ package org.bedework.notifier;
 
 import org.bedework.notifier.Action.ActionType;
 import org.bedework.notifier.cnctrs.ConnectorInstance;
-import org.bedework.notifier.cnctrs.ConnectorInstance.NotifyItemsInfo;
 import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.outbound.common.Adaptor;
+import org.bedework.util.misc.Logged;
 import org.bedework.util.misc.Util;
 
 import org.apache.log4j.Logger;
@@ -44,13 +44,13 @@ import static org.bedework.notifier.NotifyEngine.NotificationMsg;
  * and will be signalled by the noteling when it has done it's job.
  * </p>.
  *
- * <p>A single noteling will have it's own queue of outbound
+ * <p>A single noteling may have it's own queue of outbound
  * notifications - possibly to the same destination or to a subset
  * of destinations</p>
  *
  * @author Mike Douglass
  */
-public class Noteling {
+public class Noteling extends Logged {
   private final boolean debug;
 
   protected transient Logger log;
@@ -113,22 +113,16 @@ public class Noteling {
           handleNotificationMsg(action);
           break;
 
-        case fetchItems:
-          final Subscription sub = action.getSub();
-          try {
-            notifier.setConnectors(action);
-            fetchItems(action);
-          } finally {
-            //sub.updateLastRefresh();
-            notifier.reschedule(sub);
-          }
+        case checkItems:
+          handleCheck(action);
+          break;
+
+        case processItem:
+          handleProcessItem(action);
           break;
 
         case processOutbound:
           return doOutBound(action);
-
-        case processOutboundStatus:
-          return doOutBoundStatus(action);
       }
 
       return StatusType.OK;
@@ -153,37 +147,60 @@ public class Noteling {
     }
 
     action.setSub(sub);
-
     notifier.setConnectors(action);
-    fetchItems(action);
+    action.setType(ActionType.checkItems);
+
+    notifier.handleAction(action);
   }
 
-  private void fetchItems(final Action action) throws NoteException {
-    final Subscription sub = action.getSub();
+  private void handleCheck(final Action action) throws NoteException {
+    try {
+      final ConnectorInstance ci = notifier.reserveInstance(db,
+                                                            action);
+      if (ci == null) {
+        // Been queued
+        return;
+      }
 
-    final ConnectorInstance ci = notifier.getConnectorInstance(action);
+      if (!ci.check(db)) {
+        // No new notifications
+        return;
+      }
 
-    final NotifyItemsInfo nii = ci.getItemsInfo();
-
-    if ((nii == null) || nii.items.isEmpty()) {
-      return;
+      action.setType(ActionType.processItem);
+      notifier.handleAction(action);
+    } finally {
+      notifier.release(action.getSub());
     }
+  }
 
-    final List<Note> notes = ci.fetchItems(nii.items);
+  private void handleProcessItem(final Action action) throws NoteException {
+    try {
+      final ConnectorInstance ci = notifier.reserveInstance(db,
+                                                            action);
 
-    if (Util.isEmpty(notes)) {
-      return;
-    }
+      final Subscription sub = action.getSub();
 
-    for (final Note note: notes) {
+      final Note note = ci.nextItem(db);
+
+      if (note == null) {
+        // We're done.
+        return;
+      }
+
       if (debug) {
-        trace("Got notification " + note);
+        debug("Got notification " + note);
       }
 
       final Action act = new Action(ActionType.processOutbound,
-                              sub, note);
+                                    sub, note);
 
       notifier.handleAction(act);
+
+      // Requeue ourself for the next item
+      notifier.handleAction(action);
+    } finally {
+      notifier.release(action.getSub());
     }
   }
 
@@ -223,47 +240,15 @@ public class Noteling {
       return StatusType.Reprocess;
     }
 
-    action.setType(ActionType.processOutboundStatus);
-    return StatusType.OK;
-  }
+    try {
+      final ConnectorInstance ci = notifier.reserveInstance(db,
+                                                            action);
 
-  private StatusType doOutBoundStatus(final Action action) throws NoteException {
-    final ConnectorInstance ci =
-            notifier.getConnectorInstance(action);
-
-    ci.updateItem(action.getNote());
-    return StatusType.OK;
-  }
-
-  /* ====================================================================
-   *                        private methods
-   * ==================================================================== */
-
-
-  private Logger getLogger() {
-    if (log == null) {
-      log = Logger.getLogger(this.getClass());
+      ci.completeItem(action.getNote());
+    } finally {
+      notifier.release(action.getSub());
     }
 
-    return log;
-  }
-
-  private void trace(final String msg) {
-    getLogger().debug(msg);
-  }
-
-  @SuppressWarnings("unused")
-  private void warn(final String msg) {
-    getLogger().warn(msg);
-  }
-
-  @SuppressWarnings("unused")
-  private void error(final Throwable t) {
-    getLogger().error(this, t);
-  }
-
-  @SuppressWarnings("unused")
-  private void info(final String msg) {
-    getLogger().info(msg);
+    return StatusType.OK;
   }
 }

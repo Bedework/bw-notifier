@@ -185,6 +185,22 @@ public interface Subscription extends Comparable<Subscription> {
    */
   String getUri();
 
+  /**
+   *
+   * @return true if this subscription is reserved
+   */
+  boolean reserved();
+
+  /** Reserve this instance
+   *
+   */
+  void reserve();
+
+  /** Release this instance
+   *
+   */
+  void release();
+
   void setDeleted(boolean val);
 
   @JsonIgnore

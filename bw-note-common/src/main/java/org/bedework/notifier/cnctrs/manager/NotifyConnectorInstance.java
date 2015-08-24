@@ -20,13 +20,11 @@ package org.bedework.notifier.cnctrs.manager;
 
 import org.bedework.notifier.cnctrs.AbstractConnectorInstance;
 import org.bedework.notifier.cnctrs.Connector;
+import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 
 import org.oasis_open.docs.ws_calendar.ns.soap.BaseResponseType;
-import org.oasis_open.docs.ws_calendar.ns.soap.DeleteItemResponseType;
-
-import java.util.List;
 
 /** A null connector instance
  *
@@ -57,27 +55,18 @@ public class NotifyConnectorInstance extends AbstractConnectorInstance {
   }
 
   @Override
-  public NotifyItemsInfo getItemsInfo() throws NoteException {
+  public boolean check(final NotifyDb db) throws NoteException {
     throw new NoteException("Uncallable");
   }
 
   @Override
-  public DeleteItemResponseType deleteItem(final ItemInfo item) throws NoteException {
+  public Note nextItem(final NotifyDb db) throws NoteException {
     throw new NoteException("Uncallable");
   }
 
   @Override
-  public Note fetchItem(final ItemInfo item) throws NoteException {
-    throw new NoteException("Uncallable");
-  }
-
-  @Override
-  public List<Note> fetchItems(final List<ItemInfo> items) throws NoteException {
-    return null;
-  }
-
-  @Override
-  public boolean updateItem(final Note item) throws NoteException {
+  public boolean completeItem(final NotifyDb db,
+                              final Note item) throws NoteException {
     throw new NoteException("Uncallable");
   }
 }

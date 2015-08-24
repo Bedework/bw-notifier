@@ -59,7 +59,7 @@
               type="string" length="500" />
 
     <property name="properties" column="bwnote_props"
-              type="string" length="3000" />
+              type="text" length="30000" />
   </class>
 </hibernate-mapping>
 

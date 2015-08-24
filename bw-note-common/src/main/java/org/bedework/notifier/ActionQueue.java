@@ -29,11 +29,10 @@ import java.util.concurrent.TimeUnit;
 
 import static org.bedework.notifier.Noteling.StatusType;
 
-/** Subscriptions which are waiting for a period before resynching. These are
- * generally the polled kind but other subscriptions may be made to wait before
- * retrying failed operations.
+/** Handle processing of actions. These are messages indicating new
+ * notificatiosn and the resulting actions.
  *
- *   @author Mike Douglass   douglm   bedework.edu
+ *   @author Mike Douglass   douglm   bedework.org
  */
 public class ActionQueue extends Thread {
   protected transient Logger log;

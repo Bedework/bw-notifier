@@ -43,6 +43,10 @@ public class BedeworkSubscription extends SubscriptionWrapper {
   // For the moment send everything by email
   private List<String> emails = new ArrayList<>();
 
+  private String synchToken;
+
+  private List<String> noteHrefs;
+
   public BedeworkSubscription() throws NoteException {
     super(SubscriptionImpl.make());
   }
@@ -59,23 +63,44 @@ public class BedeworkSubscription extends SubscriptionWrapper {
 
     setUserToken(subi.must("userToken"));
     setEmails(subi.mustList("emails"));
+    setSynchToken(subi.may("synchToken"));
+    setNoteHrefs(subi.mayList("noteHrefs"));
   }
 
+  /**
+   *
+   * @param val token for authentication
+   */
   public void setUserToken(final String val) {
     userToken = val;
     getSubi().setString("userToken", userToken);
   }
 
+  /**
+   *
+   * @return token for authentication
+   */
   public String getUserToken() {
     return userToken;
   }
 
+  /**
+   *
+   * @param val list of email addresses to which we send notifications
+   */
   public void setEmails(final List<String> val) {
     emails = val;
     getSubi().setObject("emails", emails);
   }
 
+  /**
+   *
+   * @return list of email addresses to which we send notifications
+   */
   public List<String> getEmails() {
+    if (emails == null) {
+      emails = new ArrayList<>();
+    }
     return emails;
   }
 
@@ -85,10 +110,49 @@ public class BedeworkSubscription extends SubscriptionWrapper {
     }
   }
 
+  /**
+   *
+   * @param val token for synchronization
+   */
+  public void setSynchToken(final String val) {
+    synchToken = val;
+    getSubi().setString("synchToken", synchToken);
+  }
+
+  /**
+   *
+   * @return token for synchronization
+   */
+  public String getSynchToken() {
+    return synchToken;
+  }
+
+  /**
+   *
+   * @param val list of notification hrefs
+   */
+  public void setNoteHrefs(final List<String> val) {
+    noteHrefs = val;
+    getSubi().setObject("noteHrefs", noteHrefs);
+  }
+
+  /**
+   *
+   * @return list of notification hrefs
+   */
+  public List<String> getNoteHrefs() {
+    if (noteHrefs == null) {
+      noteHrefs = new ArrayList<>();
+    }
+    return noteHrefs;
+  }
+
   public void toStringSegment(final ToString ts) {
     super.toStringSegment(ts);
 
     ts.append("userToken", getUserToken());
     ts.append("emails", getEmails());
+    ts.append("synchToken", getSynchToken());
+    ts.append("noteHrefs", getNoteHrefs());
   }
 }

@@ -18,16 +18,13 @@
 */
 package org.bedework.notifier.cnctrs;
 
+import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.util.misc.ToString;
 
 import org.apache.http.HttpStatus;
 import org.oasis_open.docs.ws_calendar.ns.soap.BaseResponseType;
-import org.oasis_open.docs.ws_calendar.ns.soap.DeleteItemResponseType;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /** The interface implemented by connectors. A connector instance is obtained
  * from a connector to handle a specific end of a specific subscription - items of
@@ -99,51 +96,30 @@ public interface ConnectorInstance {
     }
   }
 
-  /**
-   */
-  public class NotifyItemsInfo extends BaseResponseType {
-    /** the items.
-     */
-    public List<ItemInfo> items = new ArrayList<>();
-  }
-
-  /** Get all notifications..
+  /** Check for notifications.
    *
-   * @return List of items - never null, maybe empty.
+   * @param db to allow updates
+   * @return false if nothing to do.
    * @throws NoteException
    */
-  NotifyItemsInfo getItemsInfo() throws NoteException;
+  boolean check(NotifyDb db) throws NoteException;
 
-  /** Delete a resource.
+  /** Fetch the next resource - return null if none.
    *
-   * @param item the resource
+   * @param db to allow updates
    * @return response
    * @throws NoteException
    */
-  DeleteItemResponseType deleteItem(ItemInfo item) throws NoteException;
+  Note nextItem(NotifyDb db) throws NoteException;
 
-  /** Fetch a resource.
+  /** Finished processing of an item. Do whatever is required - e.g.
+   * set an update date or delete the notification.
    *
-   * @param item the resource
-   * @return response
-   * @throws NoteException
-   */
-  Note fetchItem(ItemInfo item) throws NoteException;
-
-  /** Fetch a batch of resources. The number and order of the result
-   * set must match that of the parameter uids.
-   *
-   * @param items the resources
-   * @return responses
-   * @throws NoteException
-   */
-  List<Note> fetchItems(List<ItemInfo> items) throws NoteException;
-
-  /** Update a notification.
-   *
+   * @param db to allow updates
    * @param note - specifyng the item to be updated
    * @return true OK -false check status
    * @throws NoteException
    */
-  boolean updateItem(Note note) throws NoteException;
+  boolean completeItem(NotifyDb db,
+                       Note note) throws NoteException;
 }

@@ -141,6 +141,11 @@ public class BedeworkConnector
       sub.addEmail(email);
     }
 
+    // Replace the user token
+    sub.setUserToken(userToken);
+    // Wipe out the synch token
+    sub.setSynchToken(null);
+
     db.update(sub);
 
     return sub;
@@ -213,7 +218,8 @@ public class BedeworkConnector
   }
 
   @Override
-  public BedeworkConnectorInstance getConnectorInstance(final Subscription sub) throws NoteException {
+  public BedeworkConnectorInstance getConnectorInstance(final NotifyDb db,
+                                                        final Subscription sub) throws NoteException {
     if (!running) {
       return null;
     }

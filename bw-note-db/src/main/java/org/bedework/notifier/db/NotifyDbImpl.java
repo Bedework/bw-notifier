@@ -27,9 +27,9 @@ import org.bedework.util.hibernate.HibSessionImpl;
 
 import org.apache.log4j.Logger;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /** This class manages the notification database.
  * Not clear what would go in here. Presumably a user could ask
@@ -51,8 +51,10 @@ public class NotifyDbImpl implements NotifyDb {
   /** */
   protected boolean open;
 
-  /** When we were created for debugging */
-  protected Timestamp objTimestamp;
+  /** Incremented we were created for debugging */
+  private static AtomicLong globalSessionCt = new AtomicLong();
+
+  private long sessionCt;
 
   /** Current hibernate session - exists only across one user interaction
    */
@@ -90,7 +92,7 @@ public class NotifyDbImpl implements NotifyDb {
       checkOpen();
 
       if (debug) {
-        trace("End transaction for " + objTimestamp);
+        trace("End transaction for " + sessionCt);
       }
 
       try {
@@ -240,9 +242,11 @@ public class NotifyDbImpl implements NotifyDb {
       }
     }
 
+    sessionCt = globalSessionCt.incrementAndGet();
+
     if (sess == null) {
       if (debug) {
-        trace("New hibernate session for " + objTimestamp);
+        trace("New hibernate session for " + sessionCt);
       }
       sess = new HibSessionImpl();
       try {
@@ -251,7 +255,7 @@ public class NotifyDbImpl implements NotifyDb {
       } catch (HibException he) {
         throw new NoteException(he);
       }
-      trace("Open session for " + objTimestamp);
+      trace("Open session for " + sessionCt);
     }
 
     beginTransaction();
@@ -260,13 +264,13 @@ public class NotifyDbImpl implements NotifyDb {
   protected synchronized void closeSession() throws NoteException {
     if (!isOpen()) {
       if (debug) {
-        trace("Close for " + objTimestamp + " closed session");
+        trace("Close for " + sessionCt + " closed session");
       }
       return;
     }
 
     if (debug) {
-      trace("Close for " + objTimestamp);
+      trace("Close for " + sessionCt);
     }
 
     try {
@@ -297,7 +301,7 @@ public class NotifyDbImpl implements NotifyDb {
     checkOpen();
 
     if (debug) {
-      trace("Begin transaction for " + objTimestamp);
+      trace("Begin transaction for " + sessionCt);
     }
     try {
       sess.beginTransaction();

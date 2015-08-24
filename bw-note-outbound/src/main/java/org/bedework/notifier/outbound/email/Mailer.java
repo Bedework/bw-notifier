@@ -144,7 +144,7 @@ public class Mailer extends Logged {
       final MailerAuthenticator authenticator =
               new MailerAuthenticator(username, pw);
       props.put("mail." + config.getProtocol() + ".auth", "true");
-      return Session.getDefaultInstance(props, authenticator);
+      return Session.getInstance(props, authenticator);
     }
 
     return Session.getDefaultInstance(props);

@@ -95,6 +95,8 @@ public class SubscriptionImpl extends DbItem<Subscription>
 
   /* Following not persisted */
 
+  private boolean reserved;
+
   private boolean deleted;
 
   /** null constructor for hibernate
@@ -254,6 +256,21 @@ public class SubscriptionImpl extends DbItem<Subscription>
     return uri;
   }
 
+  @Override
+  public boolean reserved() {
+    return reserved;
+  }
+
+  @Override
+  public void reserve() {
+    reserved = true;
+  }
+
+  @Override
+  public void release() {
+    reserved = false;
+  }
+
   public void setDeleted(final boolean val) {
     deleted = val;
   }
@@ -273,6 +290,7 @@ public class SubscriptionImpl extends DbItem<Subscription>
    */
   public void toStringSegment(final ToString ts) {
     super.toStringSegment(ts);
+    ts.append("reserved", reserved());
 
     ts.newLine();
     ts.append("subscriptionId", getSubscriptionId());

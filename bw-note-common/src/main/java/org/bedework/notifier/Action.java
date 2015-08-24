@@ -38,15 +38,14 @@ public class Action {
     /** signal came in that href may need processing */
     notificationMsg,
 
-    /** (Re)fetch items - polling or a signal came in */
-    fetchItems,
+    /** check for new items - polling or a signal came in */
+    checkItems,
+
+    /** Process an item */
+    processItem,
 
     /** Process a single outbound notification */
-    processOutbound,
-
-    /** Process outbound notification response -
-     * We did the processOutbound - now echo back any status */
-    processOutboundStatus
+    processOutbound
   }
 
   private ActionType type;
@@ -132,28 +131,28 @@ public class Action {
   /**
    * @param val a connection
    */
-  public void setSourceConn(final Connector val) {
+  public void setConn(final Connector val) {
     sourceConn = val;
   }
 
   /**
    * @return a connection or null
    */
-  public Connector getSourceConn() {
+  public Connector getConn() {
     return sourceConn;
   }
 
   /**
    * @param val a connection instance
    */
-  public void setSourceConnInst(final ConnectorInstance val) {
+  public void setConnInst(final ConnectorInstance val) {
     sourceConnInst = val;
   }
 
   /**
    * @return a connection instance or null
    */
-  public ConnectorInstance getSourceConnInst() {
+  public ConnectorInstance getConnInst() {
     return sourceConnInst;
   }
 

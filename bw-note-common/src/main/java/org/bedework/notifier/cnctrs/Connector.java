@@ -176,7 +176,8 @@ public interface Connector<C extends ConnectorInstance,
    * @return null for none else a connector instance.
    * @throws org.bedework.notifier.exception.NoteException
    */
-  C getConnectorInstance(Subscription sub) throws NoteException;
+  C getConnectorInstance(NotifyDb db,
+                         Subscription sub) throws NoteException;
 
   /** Far end may send a batch of notifications. These should not be batched
    * arbitrarily. One batch per message and response.

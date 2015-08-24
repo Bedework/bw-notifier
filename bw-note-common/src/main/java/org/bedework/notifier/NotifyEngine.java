@@ -41,9 +41,7 @@ import net.fortuna.ical4j.model.TimeZone;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /** Notification processor.
  * <p>The notification processor manages the notification service.
@@ -64,11 +62,7 @@ public class NotifyEngine extends TzGetter {
 
   private transient PwEncryptionIntf pwEncrypt;
 
-  /* Map of currently active notification subscriptions. These are subscriptions
-   * for which we get change messages from the remote system(s).
-   */
-  private final Map<String, Subscription> activeSubs = new HashMap<>();
-
+  private final ActionWaiter waitingActions = new ActionWaiter();
   private boolean starting;
 
   private boolean running;
@@ -348,30 +342,6 @@ public class NotifyEngine extends TzGetter {
     }
   }*/
 
-  /** Reschedule a subscription for updates.
-   *
-   * @param sub the subscription
-   * @throws NoteException
-   */
-  public void reschedule(final Subscription sub) throws NoteException {
-    if (debug) {
-      trace("reschedule subscription " + sub);
-    }
-
-    /*
-    if (sub.polling()) {
-      final Action action = new Action(ActionType.fetchItems, sub);
-
-      notifyTimer.schedule(action, sub.nextRefresh());
-      return;
-    }
-    */
-
-    // XXX start up the add to active subs
-
-    //activeSubs.put(sub.getSubscriptionId(), sub);
-  }
-
   /** Reschedule an action for retry.
    *
    * @param act the action
@@ -457,6 +427,7 @@ public class NotifyEngine extends TzGetter {
    * @throws NoteException
    */
   public void handleAction(final Action action) throws NoteException {
+    setConnectors(action);
     switch (action.getType()) {
       case notificationMsg: fetchItems:
         actionInHandler.queueAction(action);
@@ -511,16 +482,29 @@ public class NotifyEngine extends TzGetter {
   }
 
   /** Gets an instance and implants it in the subscription object.
+   * This method serializes use of a subscription. Once a
+   * subscription is in use any further actions will be queued and
+   * released when the release method is called.
+   *
+   * @param db - for db interactions
    * @param action an action
    * @return ConnectorInstance or throws Exception
    * @throws NoteException
    */
-  public ConnectorInstance getConnectorInstance(final Action action) throws NoteException {
+  public synchronized ConnectorInstance reserveInstance(final NotifyDb db,
+                                                        final Action action) throws NoteException {
     ConnectorInstance cinst;
     final Connector conn;
 
-    cinst = action.getSourceConnInst();
-    conn = action.getSourceConn();
+    if (action.getSub().reserved()) {
+      waitingActions.add(action);
+      return null;
+    }
+
+    action.getSub().reserve();
+
+    cinst = action.getConnInst();
+    conn = action.getConn();
 
     if (cinst != null) {
       return cinst;
@@ -530,14 +514,34 @@ public class NotifyEngine extends TzGetter {
       throw new NoteException("No connector for " + action);
     }
 
-    cinst = conn.getConnectorInstance(action.getSub());
+    cinst = conn.getConnectorInstance(db,
+                                      action.getSub());
     if (cinst == null) {
       throw new NoteException("No connector instance for " + action);
     }
 
-    action.setSourceConnInst(cinst);
+    action.setConnInst(cinst);
 
     return cinst;
+  }
+
+  /** Release a subscription after handling a notification.
+   *
+   * @param sub the subscription
+   * @throws NoteException
+   */
+  public synchronized void release(final Subscription sub) throws NoteException {
+    if (debug) {
+      trace("release subscription " + sub);
+    }
+
+    sub.release();
+
+    final Action action = waitingActions.get(sub);
+
+    if (action != null) {
+      handleAction(action);
+    }
   }
 
   /** When we start up a new subscription we implant a Connector in the object.
@@ -554,7 +558,7 @@ public class NotifyEngine extends TzGetter {
                                       action.getSub() + "(");
     }
 
-    action.setSourceConn(conn);
+    action.setConn(conn);
   }
 
   /* * Processes a batch of notifications. This must be done in a timely manner
