@@ -19,6 +19,7 @@
 package org.bedework.notifier.outbound.common;
 
 import org.bedework.notifier.Action;
+import org.bedework.notifier.conf.NotifyConfig;
 import org.bedework.notifier.exception.NoteException;
 
 /** The interface implemented by destination adaptors. A destination
@@ -34,9 +35,11 @@ public interface Adaptor<Conf extends AdaptorConf> {
   long getId();
 
   /**
+   * @param globalConfig the notifier engine config
    * @param conf the configuration
    */
-  void setConf(Conf conf);
+  void setConf(NotifyConfig globalConfig,
+               Conf conf) throws NoteException;
 
   /**
    * @return the configuration

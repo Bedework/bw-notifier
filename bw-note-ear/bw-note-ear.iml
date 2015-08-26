@@ -53,6 +53,8 @@
     <orderEntry type="library" name="Maven: org.hibernate:hibernate-ehcache:3.6.9.Final" level="project" />
     <orderEntry type="library" name="Maven: net.sf.ehcache:ehcache-core:2.4.3" level="project" />
     <orderEntry type="library" name="Maven: org.hibernate:hibernate-validator:3.1.0.GA" level="project" />
+    <orderEntry type="library" name="Maven: org.freemarker:freemarker:2.3.23" level="project" />
+    <orderEntry type="library" name="Maven: jaxen:jaxen:1.1.6" level="project" />
     <orderEntry type="library" name="Maven: net.fortuna.ical4j:ical4j:1.1-BW-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.2.2" level="project" />
     <orderEntry type="library" name="Maven: asm:asm:3.2" level="project" />

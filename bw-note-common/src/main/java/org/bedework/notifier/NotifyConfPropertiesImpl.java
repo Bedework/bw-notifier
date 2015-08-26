@@ -43,6 +43,8 @@ public class NotifyConfPropertiesImpl extends HibernateConfigBase<NotifyConfProp
   /* Timezone server location */
   private String timezonesURI;
 
+  private String templatesPath;
+
   /* Path to keystore - null for use default */
   private String keystore;
 
@@ -51,125 +53,92 @@ public class NotifyConfPropertiesImpl extends HibernateConfigBase<NotifyConfProp
   /* Path to keystores  */
   private String pubKeys;
 
-  /**
-   * @param val current size of noteling pool
-   */
+  @Override
   public void setNotelingPoolSize(final int val) {
     notelingPoolSize = val;
   }
 
-  /**
-   * @return current size of noteling pool
-   */
+  @Override
   public int getNotelingPoolSize() {
     return notelingPoolSize;
   }
 
-  /**
-   * @param val timeout in millisecs
-   */
+  @Override
   public void setNotelingPoolTimeout(final long val) {
     notelingPoolTimeout = val;
   }
 
-  /**
-   * @return timeout in millisecs
-   */
+  @Override
   public long getNotelingPoolTimeout() {
     return notelingPoolTimeout;
   }
 
-  /** How often we retry when a target is missing
-   *
-   * @param val number of retries
-   */
+  @Override
   public void setMissingTargetRetries(final int val) {
     missingTargetRetries = val;
   }
 
-  /**
-   * @return How often we retry when a target is missing
-   */
+  @Override
   public int getMissingTargetRetries() {
     return missingTargetRetries;
   }
 
-  /** web service push callback uri - null for no service
-   *
-   * @param val    String
-   */
+  @Override
   public void setCallbackURI(final String val) {
     callbackURI = val;
   }
 
-  /** web service push callback uri - null for no service
-   *
-   * @return String
-   */
+  @Override
   public String getCallbackURI() {
     return callbackURI;
   }
 
-  /** Timezone server location
-   *
-   * @param val    String
-   */
+  @Override
   public void setTimezonesURI(final String val) {
     timezonesURI = val;
   }
 
-  /** Timezone server location
-   *
-   * @return String
-   */
+  @Override
   public String getTimezonesURI() {
     return timezonesURI;
   }
 
-  /** Path to keystore - null for use default
-   *
-   * @param val    String
-   */
+  @Override
+  public void setTemplatesPath(final String val) {
+    templatesPath = val;
+  }
+
+  @Override
+  public String getTemplatesPath() {
+    return templatesPath;
+  }
+
+  @Override
   public void setKeystore(final String val) {
     keystore = val;
   }
 
-  /** Path to keystore - null for use default
-   *
-   * @return String
-   */
+  @Override
   public String getKeystore() {
     return keystore;
   }
 
-  /**
-   *
-   * @param val    String
-   */
+  @Override
   public void setPrivKeys(final String val) {
     privKeys = val;
   }
 
-  /**
-   *
-   * @return String
-   */
+  @Override
   public String getPrivKeys() {
     return privKeys;
   }
 
-  /**
-   *
-   * @param val    String
-   */
+  @Override
   public void setPubKeys(final String val) {
     pubKeys = val;
   }
 
-  /**
-   *
-   * @return String
-   */
+  @Override
   public String getPubKeys() {
     return pubKeys;
   }

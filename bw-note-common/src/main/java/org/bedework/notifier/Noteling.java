@@ -206,7 +206,7 @@ public class Noteling extends Logged {
 
   private StatusType doOutBound(final Action action) throws NoteException {
     final List<Adaptor> adaptors =
-            notifier.getAdaptors(action.getNote());
+            notifier.getAdaptors(action);
 
     if (Util.isEmpty(adaptors)) {
       warn("No adaptor for " + action);
@@ -244,7 +244,8 @@ public class Noteling extends Logged {
       final ConnectorInstance ci = notifier.reserveInstance(db,
                                                             action);
 
-      ci.completeItem(action.getNote());
+      ci.completeItem(db,
+                      action.getNote());
     } finally {
       notifier.release(action.getSub());
     }

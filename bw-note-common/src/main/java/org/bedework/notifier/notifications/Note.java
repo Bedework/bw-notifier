@@ -23,6 +23,9 @@ import org.bedework.caldav.util.notifications.NotificationType;
 import org.bedework.notifier.cnctrs.ConnectorInstance.ItemInfo;
 import org.bedework.util.misc.ToString;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /** Notification from external system. We extract some of the system specific
  * information and represent it as generic fields in this object.
  *
@@ -37,37 +40,19 @@ import org.bedework.util.misc.ToString;
  *
  * @author douglm
  *
- * @param <T>
  */
-public abstract class Note<T extends BaseNotificationType> {
+public class Note {
   private final ItemInfo itemInfo;
 
   private final NotificationType notification;
 
-  public static enum NotificationKind {
-    /** The owner of a collection is inviting the recipient to share
-     * the collection
-     */
-    sharingInvitation,
-
-    /** The sender - not necessarily the owner - suggests the recipient
-     * subscribe to an available collection.
-     */
-    subscribeInvitation,
-
-    /** A resource in a collection to which the recipient is
-     * subscribed or a sharee, has changed.
-     */
-    resourceChange
-  }
-
-  public static enum DeliveryMethod {
+  public enum DeliveryMethod {
     email,
 
     sms
   }
 
-  private DeliveryMethod deliveryMethod;
+  private final List<DeliveryMethod> deliveryMethods = new ArrayList<>();
 
   /** Create a notification
    *
@@ -79,18 +64,6 @@ public abstract class Note<T extends BaseNotificationType> {
     this.itemInfo = itemInfo;
     this.notification = notification;
   }
-
-  /** This allows us to determine if the recipient is a registered
-   * user of the system, an unregistered user or unknown.
-   *
-   * @return true/false or null for unknown.
-   */
-  public abstract Boolean isRegisteredRecipient();
-
-  /**
-   * @return null for unknown.
-   */
-  public abstract NotificationKind getKind();
 
   /**
    * @return info about where it came from
@@ -109,29 +82,26 @@ public abstract class Note<T extends BaseNotificationType> {
   /**
    * @return the wrapped notification content
    */
-  @SuppressWarnings("unchecked")
-  public T getNotificationContent() {
-    return (T)notification.getNotification();
+  public BaseNotificationType getNotificationContent() {
+    return notification.getNotification();
   }
 
   /**
-   * @param deliveryMethod - email etc
+   * @param val - email etc
    */
-  public void setDeliveryMethod(final DeliveryMethod deliveryMethod) {
-    this.deliveryMethod = deliveryMethod;
+  public void addDeliveryMethod(final DeliveryMethod val) {
+    getDeliveryMethods().add(val);
   }
 
   /**
    * @return the delivery method - email etc
    */
-  public DeliveryMethod getDeliveryMethod() {
-    return deliveryMethod;
+  public List<DeliveryMethod> getDeliveryMethods() {
+    return deliveryMethods;
   }
 
   protected void toStringSegment(final ToString ts) {
-    ts.append("registeredRecipient", isRegisteredRecipient());
-    ts.append("kind", getKind());
-    ts.append("deliveryMethod", getDeliveryMethod());
+    ts.append("deliveryMethods", getDeliveryMethods());
     ts.append("notification", getNotification());
   }
 

@@ -31,20 +31,8 @@ import org.bedework.notifier.outbound.common.AbstractAdaptor;
 public class DummyAdaptor extends AbstractAdaptor<DummyConf> {
 
 	@Override
-	public boolean processSharingInvitation(final Action action) throws NoteException {
-		info("Call to processSharingInvitation: " + action.getNote());
-		return false;
-	}
-
-	@Override
-	public boolean processSubscribeInvitation(final Action action) throws NoteException {
-		info("Call to processSubscribeInvitation: " + action.getNote());
-		return false;
-	}
-
-	@Override
-	public boolean processResourceChange(final Action action) throws NoteException {
-		info("Call to processResourceChange: " + action.getNote());
+	public boolean process(final Action action) throws NoteException {
+		info("Call to process: " + action.getNote());
 		return false;
 	}
 }

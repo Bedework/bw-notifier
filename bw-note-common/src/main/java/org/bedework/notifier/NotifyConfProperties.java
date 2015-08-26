@@ -53,9 +53,9 @@ public interface NotifyConfProperties {
   @MBeanInfo("timeout in millisecs.")
   long getNotelingPoolTimeout();
 
-  /** How often we retry when a target is missing
+  /**
    *
-   * @param val
+   * @param val How often we retry when a target is missing
    */
   void setMissingTargetRetries(final int val);
 
@@ -78,9 +78,9 @@ public interface NotifyConfProperties {
   @MBeanInfo("web service push callback uri - null for no service.")
   String getCallbackURI();
 
-  /** Timezone server location
+  /**
    *
-   * @param val    String
+   * @param val Timezone server location
    */
   void setTimezonesURI(final String val);
 
@@ -90,6 +90,19 @@ public interface NotifyConfProperties {
    */
   @MBeanInfo("Timezone server location.")
   String getTimezonesURI();
+
+  /**
+   *
+   * @param val path to templates
+   */
+  void setTemplatesPath(final String val);
+
+  /**
+   *
+   * @return path to templates
+   */
+  @MBeanInfo("Path to templates.")
+  String getTemplatesPath();
 
   /** Path to keystore - null for use default
    *

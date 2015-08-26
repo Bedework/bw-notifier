@@ -45,16 +45,6 @@ public class EmailConf extends AdaptorConf<EmailAdaptorConfig> implements EmailC
 	}
 
 	@Override
-	public void setProtocolClass(final String val) {
-		cfg.setProtocolClass(val);
-	}
-
-	@Override
-	public String getProtocolClass() {
-		return cfg.getProtocolClass();
-	}
-
-	@Override
 	public void setServerUri(final String val) {
 		cfg.setServerUri(val);
 	}

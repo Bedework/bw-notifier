@@ -550,6 +550,10 @@ public class NotifyEngine extends TzGetter {
    * @throws NoteException
    */
   public void setConnectors(final Action action) throws NoteException {
+    if ((action.getSub() == null) || (action.getConn() != null)) {
+      return;
+    }
+
     final String connectorName = action.getSub().getConnectorName();
 
     final Connector conn = NotifyRegistry.getConnector(connectorName);
@@ -591,20 +595,24 @@ public class NotifyEngine extends TzGetter {
   }*/
 
   /**
-   * @param note a notifier that needs adaptors
+   * @param action an action that needs outbound adaptors
    * @return list of adaptors
    * @throws NoteException
    */
-  public List<Adaptor> getAdaptors(final Note note) throws NoteException {
-    final Adaptor a = adaptorPool.getAdaptor(note.getDeliveryMethod().toString());
-
-    if (a == null) {
-      return null;
-    }
-
+  public List<Adaptor> getAdaptors(final Action action) throws NoteException {
+    final Note note = action.getNote();
     final List<Adaptor> as = new ArrayList<>();
+    final List<Note.DeliveryMethod> dms = note.getDeliveryMethods();
 
-    as.add(a);
+    for (final Note.DeliveryMethod dm: dms) {
+      final Adaptor a = adaptorPool.getAdaptor(dm.toString());
+
+      if (a == null) {
+        continue;
+      }
+
+      as.add(a);
+    }
 
     return as;
   }

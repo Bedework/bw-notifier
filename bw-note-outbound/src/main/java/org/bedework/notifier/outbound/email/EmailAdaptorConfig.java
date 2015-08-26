@@ -31,7 +31,6 @@ import org.bedework.util.misc.ToString;
 public class EmailAdaptorConfig extends AdaptorConfig
         implements EmailAdaptorConfigI {
 	private String protocol;
-	private String protocolClass;
 	private String serverUri;
 	private String serverPort;
   private boolean starttls;
@@ -49,17 +48,6 @@ public class EmailAdaptorConfig extends AdaptorConfig
 	@MBeanInfo("valid protocol for which an implementation exists, e.g \"imap\", \"smtp\".")
 	public String getProtocol()  {
 		return protocol;
-	}
-
-  @Override
-	public void setProtocolClass(final String val)  {
-		protocolClass  = val;
-	}
-
-  @Override
-	@MBeanInfo("Implementation for the selected protocol.")
-	public String getProtocolClass()  {
-		return protocolClass;
 	}
 
   @Override
@@ -142,7 +130,6 @@ public class EmailAdaptorConfig extends AdaptorConfig
 		super.toStringSegment(ts);
 
 		ts.append("protocol", getProtocol());
-		ts.append("protocolClass", getProtocolClass());
 		ts.append("serverUri", getServerUri());
 		ts.append("serverPort", getServerPort());
     ts.append("starttls", getStarttls());

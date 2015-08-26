@@ -18,19 +18,34 @@
  */
 package org.bedework.notifier.outbound.common;
 
+import org.bedework.caldav.util.notifications.NotificationType;
 import org.bedework.caldav.util.notifications.ProcessorType;
 import org.bedework.caldav.util.notifications.ProcessorsType;
 import org.bedework.notifier.Action;
+import org.bedework.notifier.conf.NotifyConfig;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.util.http.HttpUtil;
+import org.bedework.util.misc.Util;
+import org.bedework.util.xml.NsContext;
+import org.bedework.util.xml.XmlUtil;
 
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateExceptionHandler;
 import net.fortuna.ical4j.model.property.DtStamp;
 import org.apache.log4j.Logger;
+import org.w3c.dom.Element;
 
+import java.io.File;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.namespace.QName;
 
 /** Some useful methods..
  *
@@ -47,7 +62,13 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
 
 	private final Long id;
 
+  protected NotifyConfig globalConfig;
+
 	protected Conf conf;
+
+  private Configuration fmConfig;
+
+  private NsContext nsContext = new NsContext(null);
 
 	protected AbstractAdaptor() {
 		debug = getLogger().isDebugEnabled();
@@ -60,9 +81,65 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
 	}
 
   @Override
-	public void setConf(final Conf conf) {
+	public void setConf(final NotifyConfig globalConfig,
+                      final Conf conf) throws NoteException {
+    this.globalConfig = globalConfig;
 		this.conf = conf;
+
+    try {
+      // Init freemarker
+      fmConfig = new Configuration();
+      fmConfig.setTemplateExceptionHandler(
+              TemplateExceptionHandler.RETHROW_HANDLER);
+      fmConfig.setDefaultEncoding("UTF-8");
+
+      File templateDir = new File(globalConfig.getTemplatesPath());
+      fmConfig.setDirectoryForTemplateLoading(templateDir);
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    }
 	}
+
+  public String applyTemplate(final QName noteType,
+                              final Note.DeliveryMethod handlerType,
+                              final NotificationType note) throws NoteException {
+    try {
+      String prefix = nsContext.getPrefix(noteType.getNamespaceURI());
+
+      if (prefix == null) {
+        prefix = "default";
+      }
+
+      final String abstractPath = Util.buildPath(false,
+                                                 handlerType
+                                                         .toString(),
+                                                 "/",
+                                                 prefix,
+                                                 "/",
+                                                 noteType.getLocalPart() + ".ftl");
+
+//      Element el = parsedNote.getDocumentElement();
+//      NodeModel.simplify(parsedNote);
+//      NodeModel nm = NodeModel.wrap(parsedNote);
+//       String xml = note.toXml(true);
+
+//      NodeModel.useJaxenXPathSupport();
+//      final NodeModel nm = NodeModel.parse(new InputSource(new StringReader(xml)));
+      Map root = new HashMap();
+
+      toMap(note.getParsed().getDocumentElement(), root);
+//      root.put("notification", nm);
+
+      Template template = fmConfig.getTemplate(abstractPath);
+
+      Writer out = new StringWriter();
+      template.process(root, out);
+
+      return out.toString();
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    }
+  }
 
   @Override
 	public Conf getConfig() {
@@ -74,38 +151,7 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
 	}
 
   @Override
-	public boolean process(final Action action) throws NoteException {
-		switch (action.getNote().getKind()) {
-		case sharingInvitation:
-			return processSharingInvitation(action);
-		case subscribeInvitation:
-			return processSubscribeInvitation(action);
-		case resourceChange:
-			return processResourceChange(action);
-		}
-		return false;
-	}
-
-  /**
-   * @param action containing the notification to process
-   * @return true if processed OK
-   * @throws NoteException
-   */
-	public abstract boolean processSharingInvitation(final Action action) throws NoteException;
-
-  /**
-   * @param action containing the notification to process
-   * @return true if processed OK
-   * @throws NoteException
-   */
-	public abstract boolean processSubscribeInvitation(final Action action) throws NoteException;
-
-  /**
-   * @param action containing the notification to process
-   * @return true if processed OK
-   * @throws NoteException
-   */
-	public abstract boolean processResourceChange(final Action action) throws NoteException;
+	public abstract boolean process(final Action action) throws NoteException;
 
 	/* ====================================================================
 	 *                   Protected methods
@@ -193,4 +239,28 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
 
 		return log;
 	}
+
+  private void toMap(final Element el,
+                     final Map map) throws NoteException {
+    try {
+      final String name = el.getLocalName();
+
+      try {
+        if (!XmlUtil.hasChildren(el) && XmlUtil.hasContent(el)) {
+          map.put(name, XmlUtil.getElementContent(el));
+          return;
+        }
+      } catch (final Throwable ignored) {}
+
+      Map childMap = new HashMap();
+
+      map.put(name, childMap);
+
+      for (final Element ch: XmlUtil.getElements(el)) {
+        toMap(ch, childMap);
+      }
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    }
+  }
 }

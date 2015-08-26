@@ -282,6 +282,16 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
     return getConfig().getTimezonesURI();
   }
 
+  @Override
+  public void setTemplatesPath(final String val) {
+    getConfig().setTemplatesPath(val);
+  }
+
+  @Override
+  public String getTemplatesPath() {
+    return getConfig().getTemplatesPath();
+  }
+
   /** Path to keystore - null for use default
    *
    * @param val    String
@@ -562,7 +572,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
   }
 
   /**
-   * @param val
+   * @param val to convert
    * @return 2 digit val
    */
   private static String twoDigits(final long val) {

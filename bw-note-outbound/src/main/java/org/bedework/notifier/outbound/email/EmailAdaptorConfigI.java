@@ -40,18 +40,6 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
 	@MBeanInfo("valid protocol for which an implementation exists, e.g \"imap\", \"smtp\".")
 	String getProtocol();
 
-	/** Implementation for the selected protocol
-	 *
-	 * @param val class
-	 */
-	void setProtocolClass(final String val);
-
-	/**
-	 * @return String
-	 */
-	@MBeanInfo("Implementation for the selected protocol.")
-	String getProtocolClass();
-
 	/** Where we send it.
 	 *
 	 * @param val uri

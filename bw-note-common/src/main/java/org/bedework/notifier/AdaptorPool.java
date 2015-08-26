@@ -101,7 +101,8 @@ public class AdaptorPool {
 
         a = (Adaptor)cl.newInstance();
 
-        a.setConf(as.conf);
+        a.setConf(NotifyEngine.getConfig(),
+                  as.conf);
 
         return a;
       }

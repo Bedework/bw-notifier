@@ -25,7 +25,6 @@ import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
-import org.bedework.notifier.notifications.AppleNotification;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.notifications.Note.DeliveryMethod;
 import org.bedework.util.dav.DavUtil;
@@ -192,10 +191,10 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
       // TODO use nt.getDtstamp()?
 
       ItemInfo item = new ItemInfo(noteHref, null);
-      Note note = new AppleNotification(item, nt);
+      Note note = new Note(item, nt);
 
       // TODO temp - until we set this at the other end.
-      note.setDeliveryMethod(DeliveryMethod.email);
+      note.addDeliveryMethod(DeliveryMethod.email);
 
       /* TODO At this stage we should move the href to a pending list and a
          later action will remove it from that list.
