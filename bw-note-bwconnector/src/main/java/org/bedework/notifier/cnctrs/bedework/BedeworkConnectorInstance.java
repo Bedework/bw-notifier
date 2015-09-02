@@ -19,7 +19,9 @@
 package org.bedework.notifier.cnctrs.bedework;
 
 import org.bedework.caldav.util.notifications.NotificationType;
+import org.bedework.caldav.util.notifications.eventreg.EventregParsers;
 import org.bedework.caldav.util.notifications.parse.Parser;
+import org.bedework.caldav.util.notifications.suggest.SuggestParsers;
 import org.bedework.notifier.cnctrs.AbstractConnectorInstance;
 import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.db.NotifyDb;
@@ -35,6 +37,7 @@ import org.bedework.util.misc.Util;
 import org.bedework.util.xml.XmlUtil;
 import org.bedework.util.xml.tagdefs.AppleServerTags;
 import org.bedework.util.xml.tagdefs.WebdavTags;
+import org.bedework.webdav.servlet.shared.UrlHandler;
 
 import org.apache.http.Header;
 import org.apache.http.HttpException;
@@ -43,6 +46,7 @@ import org.w3c.dom.Element;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -69,6 +73,10 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
           new ArrayList<>();
   static {
     noteTypeProps.add(AppleServerTags.notificationtype);
+
+    // Force registration of parsers
+    new SuggestParsers();
+    new EventregParsers();
   }
 
   BedeworkConnectorInstance(final BedeworkConnectorConfig config,
@@ -182,11 +190,32 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     final BasicHttpClient cl = getClient();
 
     try {
+      final URL sysUrl = new URL(config.getSystemUrl());
+      final String context = sysUrl.getPath();
+      String urlPrefix = sysUrl.toString();
+      if (context != null) {
+        urlPrefix = urlPrefix.substring(0,
+                                        urlPrefix.length() - context
+                                                .length());
+      }
+
+      final UrlHandler urlHandler = new UrlHandler(urlPrefix, context, false);
+
       final InputStream is = cl.get(noteHref,
                                     "application/xml",
                                     getAuthHeaders());
 
-      final NotificationType nt = Parser.fromXml(is);
+      NotificationType nt = Parser.fromXml(is);
+
+      nt.getNotification().unprefixHrefs(urlHandler);
+
+      /* TODO try not to have to do this...
+         Save it as XML and reparse it
+       */
+
+      final String strNote = nt.toXml(true);
+
+      nt = Parser.fromXml(strNote);
 
       // TODO use nt.getDtstamp()?
 

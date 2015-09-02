@@ -39,14 +39,14 @@ public class BedeworkConnectorConfig extends ConnectorConfig {
   private int keepAliveInterval;
 
   /**
-   * @param val system notification principal
+   * @param val system notifications principal
    */
   public void setSystemNotificationHref(final String val) {
     systemNotificationHref = val;
   }
 
   /**
-   * @return system notification principal
+   * @return system notifications principal
    */
   public String getSystemNotificationHref() {
     return systemNotificationHref;

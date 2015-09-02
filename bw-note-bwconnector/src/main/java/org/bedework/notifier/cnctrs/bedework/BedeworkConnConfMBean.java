@@ -46,6 +46,7 @@ public interface BedeworkConnConfMBean extends NoteConnConfMBean {
   /**
    * @return system notification principal
    */
+  @MBeanInfo("system notification principal")
   String getSystemUrl();
 
   /**
