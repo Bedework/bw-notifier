@@ -19,6 +19,7 @@
 package org.bedework.notifier.cnctrs.bedework;
 
 import org.bedework.caldav.util.notifications.NotificationType;
+import org.bedework.caldav.util.notifications.admin.AdminNoteParsers;
 import org.bedework.caldav.util.notifications.eventreg.EventregParsers;
 import org.bedework.caldav.util.notifications.parse.Parser;
 import org.bedework.caldav.util.notifications.suggest.SuggestParsers;
@@ -77,6 +78,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     // Force registration of parsers
     new SuggestParsers();
     new EventregParsers();
+    new AdminNoteParsers();
   }
 
   BedeworkConnectorInstance(final BedeworkConnectorConfig config,

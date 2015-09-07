@@ -11,6 +11,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="caldav" />
     <orderEntry type="library" name="Maven: org.bedework:bw-note-common:4.0.0-SNAPSHOT" level="project" />
     <orderEntry type="module" module-name="bw-note-db" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.3.1" level="project" />
@@ -80,6 +81,5 @@
     <orderEntry type="library" name="Maven: jaxen:jaxen:1.1.6" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-jmx:4.0.1-SNAPSHOT" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: javax.servlet:servlet-api:2.5" level="project" />
-    <orderEntry type="module" module-name="caldav" />
   </component>
 </module>
