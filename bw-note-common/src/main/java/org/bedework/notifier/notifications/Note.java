@@ -25,6 +25,7 @@ import org.bedework.util.misc.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /** Notification from external system. We extract some of the system specific
  * information and represent it as generic fields in this object.
@@ -45,6 +46,8 @@ public class Note {
   private final ItemInfo itemInfo;
 
   private final NotificationType notification;
+
+  private Map extraValues;
 
   public enum DeliveryMethod {
     email,
@@ -98,6 +101,21 @@ public class Note {
    */
   public List<DeliveryMethod> getDeliveryMethods() {
     return deliveryMethods;
+  }
+
+  /**
+   *
+   * @param val extra template values
+   */
+  public void setExtraValues(final Map val) {
+    extraValues = val;
+  }
+
+  /**
+   * @return extra template values
+   */
+  public Map getExtraValues() {
+    return extraValues;
   }
 
   protected void toStringSegment(final ToString ts) {

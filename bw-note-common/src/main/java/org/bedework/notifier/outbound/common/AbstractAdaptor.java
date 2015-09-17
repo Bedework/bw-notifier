@@ -29,12 +29,14 @@ import org.bedework.util.http.HttpUtil;
 import org.bedework.util.misc.Util;
 import org.bedework.util.xml.NsContext;
 import org.bedework.util.xml.XmlUtil;
+import org.bedework.util.xml.tagdefs.BedeworkServerTags;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 import net.fortuna.ical4j.model.property.DtStamp;
 import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.File;
@@ -42,6 +44,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.servlet.http.HttpServletResponse;
@@ -68,7 +71,7 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
 
   private Configuration fmConfig;
 
-  private NsContext nsContext = new NsContext(null);
+  protected NsContext nsContext = new NsContext(null);
 
 	protected AbstractAdaptor() {
 		debug = getLogger().isDebugEnabled();
@@ -102,7 +105,8 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
 
   public String applyTemplate(final QName noteType,
                               final Note.DeliveryMethod handlerType,
-                              final NotificationType note) throws NoteException {
+                              final NotificationType note,
+                              final Map extraValues) throws NoteException {
     try {
       String prefix = nsContext.getPrefix(noteType.getNamespaceURI());
 
@@ -125,10 +129,32 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
 
 //      NodeModel.useJaxenXPathSupport();
 //      final NodeModel nm = NodeModel.parse(new InputSource(new StringReader(xml)));
-      Map root = new HashMap();
+      Map<String, Object> root = new HashMap();
 
       toMap(note.getParsed().getDocumentElement(), root);
 //      root.put("notification", nm);
+      if (extraValues != null) {
+        prefix = nsContext.getPrefix(BedeworkServerTags.notifyValues.getNamespaceURI());
+        if (prefix == null) {
+          prefix = "";
+        }
+
+        Set<String> keys = extraValues.keySet();
+        for (final String key: keys) {
+          Object val = extraValues.get(key);
+
+          if (val instanceof Document) {
+            /* Convert the value to a map */
+            Map docMap = new HashMap();
+            toMap(((Document)val).getDocumentElement(),
+                  docMap);
+            extraValues.put(key, docMap);
+          }
+        }
+
+        root.put(prefix + BedeworkServerTags.notifyValues.getLocalPart(),
+                 extraValues);
+      }
 
       Template template = fmConfig.getTemplate(abstractPath);
 
@@ -161,14 +187,22 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
     return new DtStamp().getValue();
   }
 
-  protected ProcessorType getProcessorStatus(final Note note) {
+  /** Get the processor status information from the notification. If
+   * one does not exist for the given type we add one.
+   *
+   * @param note the notification
+   * @param processor type
+   * @return
+   */
+  protected ProcessorType getProcessorStatus(final Note note,
+                                             final String processor) {
     ProcessorsType pst = note.getNotification().getProcessors();
     ProcessorType pt = null;
 
     if (pst != null) {
       for (final ProcessorType notePt: pst.getProcessor()) {
         // TODO Define standard types?
-        if (notePt.getType().equals("email")) {
+        if (notePt.getType().equals(processor)) {
           pt = notePt;
           break;
         }
@@ -184,7 +218,7 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
       note.getNotification().setProcessors(pst);
     }
     pt = new ProcessorType();
-    pt.setType("email");
+    pt.setType(processor);
 
     pst.getProcessor().add(pt);
 
@@ -243,7 +277,14 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
   private void toMap(final Element el,
                      final Map map) throws NoteException {
     try {
-      final String name = el.getLocalName();
+      String prefix = nsContext.getPrefix(el.getNamespaceURI());
+
+      final String name;
+      if (prefix == null) {
+        name = el.getLocalName();
+      } else {
+        name = prefix + el.getLocalName();
+      }
 
       try {
         if (!XmlUtil.hasChildren(el) && XmlUtil.hasContent(el)) {

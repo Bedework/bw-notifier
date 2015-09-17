@@ -20,6 +20,8 @@ package org.bedework.notifier.outbound.email;
 
 import org.bedework.notifier.outbound.common.AdaptorConf;
 
+import java.util.List;
+
 /** This configuration mbean is registered at startup by the main
  * configuration bean NotifyConf.
  *
@@ -113,6 +115,46 @@ public class EmailConf extends AdaptorConf<EmailAdaptorConfig> implements EmailC
 	public String getLocale() {
 		return cfg.getLocale();
 	}
+
+  @Override
+  public void setDefaultSubject(final String val) {
+    getConfig().setDefaultSubject(val);
+  }
+
+  @Override
+  public String getDefaultSubject() {
+    return getConfig().getDefaultSubject();
+  }
+
+  @Override
+  public void setSubjects(final List<String> val) {
+    getConfig().setSubjects(val);
+  }
+
+  @Override
+  public List<String> getSubjects() {
+    return getConfig().getSubjects();
+  }
+
+  @Override
+  public void addSubject(final String name, final String val) {
+    getConfig().addSubject(name, val);
+  }
+
+  @Override
+  public String getSubject(final String name) {
+    return getConfig().getSubject(name);
+  }
+
+  @Override
+  public void removeSubject(final String name) {
+    getConfig().removeSubject(name);
+  }
+
+  @Override
+  public void setSubject(final String name, final String val) {
+    getConfig().setSubject(name, val);
+  }
 
   @Override
   public void setTransientUsername(final String val) {

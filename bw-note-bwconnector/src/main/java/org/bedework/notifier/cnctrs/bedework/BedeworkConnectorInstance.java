@@ -18,10 +18,14 @@
 */
 package org.bedework.notifier.cnctrs.bedework;
 
+import org.bedework.caldav.util.notifications.BaseNotificationType;
 import org.bedework.caldav.util.notifications.NotificationType;
 import org.bedework.caldav.util.notifications.admin.AdminNoteParsers;
+import org.bedework.caldav.util.notifications.admin.AdminNotificationType;
+import org.bedework.caldav.util.notifications.eventreg.EventregBaseNotificationType;
 import org.bedework.caldav.util.notifications.eventreg.EventregParsers;
 import org.bedework.caldav.util.notifications.parse.Parser;
+import org.bedework.caldav.util.notifications.suggest.SuggestBaseNotificationType;
 import org.bedework.caldav.util.notifications.suggest.SuggestParsers;
 import org.bedework.notifier.cnctrs.AbstractConnectorInstance;
 import org.bedework.notifier.cnctrs.Connector;
@@ -35,11 +39,21 @@ import org.bedework.util.dav.DavUtil.DavChild;
 import org.bedework.util.dav.DavUtil.DavProp;
 import org.bedework.util.http.BasicHttpClient;
 import org.bedework.util.misc.Util;
+import org.bedework.util.timezones.Timezones;
+import org.bedework.util.timezones.TimezonesImpl;
 import org.bedework.util.xml.XmlUtil;
 import org.bedework.util.xml.tagdefs.AppleServerTags;
 import org.bedework.util.xml.tagdefs.WebdavTags;
 import org.bedework.webdav.servlet.shared.UrlHandler;
 
+import net.fortuna.ical4j.data.CalendarBuilder;
+import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.Component;
+import net.fortuna.ical4j.model.Property;
+import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.property.DtEnd;
+import net.fortuna.ical4j.model.property.DtStart;
+import net.fortuna.ical4j.model.property.Summary;
 import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.message.BasicHeader;
@@ -51,7 +65,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
@@ -79,6 +95,16 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     new SuggestParsers();
     new EventregParsers();
     new AdminNoteParsers();
+  }
+
+  protected static Timezones timezones = new TimezonesImpl();
+
+  static {
+    try {
+      timezones.initTimezones("http://localhost:8080/tzsvr");
+    } catch (final Throwable t) {
+      throw new RuntimeException(t);
+    }
   }
 
   BedeworkConnectorInstance(final BedeworkConnectorConfig config,
@@ -209,6 +235,8 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
       NotificationType nt = Parser.fromXml(is);
 
+      Map extraValues = checkExtraValues(cl, nt);
+
       nt.getNotification().unprefixHrefs(urlHandler);
 
       /* TODO try not to have to do this...
@@ -223,6 +251,8 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
       ItemInfo item = new ItemInfo(noteHref, null);
       Note note = new Note(item, nt);
+
+      note.setExtraValues(extraValues);
 
       // TODO temp - until we set this at the other end.
       note.addDeliveryMethod(DeliveryMethod.email);
@@ -266,32 +296,13 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
      * Change notifications we might want to remove.
      *
      */
-    final ItemInfo item = note.getItemInfo();
-
     final NotificationType notification = note.getNotification();
     final QName noteType = notification.getNotification().getElementName();
 
     if (noteType.equals(AppleServerTags.resourceChange)) {
-
-      final BasicHttpClient cl = getClient();
-
-      try {
-        final int response = cl.delete(item.href,
-                                      getAuthHeaders());
-
-        return true;
-      } catch (final Throwable t) {
-        throw new NoteException(t);
-      } finally {
-        if (cl != null){
-          try {
-            cl.release();
-          } catch (final HttpException e) {
-            error(e);
-          }
-          cl.close();
-        }
-      }
+      deleteItem(note);
+    } else {
+      replaceItem(note);
     }
 
     return true;
@@ -300,6 +311,167 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
   /* ====================================================================
    *                   Private methods
    * ==================================================================== */
+
+  private Map checkExtraValues(final BasicHttpClient cl,
+                               final NotificationType nt) throws NoteException {
+    BaseNotificationType bnt = nt.getNotification();
+
+    String href = null;
+
+    getHref:
+    {
+      if (bnt instanceof SuggestBaseNotificationType) {
+        final SuggestBaseNotificationType sbnt = (SuggestBaseNotificationType)bnt;
+
+        href = sbnt.getHref();
+        break getHref;
+      }
+
+      if (bnt instanceof AdminNotificationType) {
+        final AdminNotificationType adnt = (AdminNotificationType)bnt;
+
+        href = adnt.getHref();
+        break getHref;
+      }
+
+      if (bnt instanceof EventregBaseNotificationType) {
+        final EventregBaseNotificationType ebnt = (EventregBaseNotificationType)bnt;
+
+        href = ebnt.getHref();
+        break getHref;
+      }
+
+      /*
+      if (bnt instanceof ResourceChangeType) {
+        final ResourceChangeType rct = (ResourceChangeType)bnt;
+
+        if (rct.getCreated() != null) {
+          final ResourceInfo ri = new ResourceInfo(rct.getCreated().getHref());
+          ri.created = true;
+          resourcesInfo.add(ri);
+        } else if (rct.getDeleted() != null) {
+          final ResourceInfo ri = new ResourceInfo(rct.getDeleted().getHref());
+          ri.deleted = true;
+
+          if (rct.getDeleted().getDeletedDetails() != null) {
+            ri.summary = rct.getDeleted().getDeletedDetails()
+                            .getDeletedSummary();
+          }
+          resourcesInfo.add(ri);
+        } else if (!Util.isEmpty(rct.getUpdated())) {
+          for (final UpdatedType ut: rct.getUpdated()) {
+            resourcesInfo.add(new ResourceInfo(ut.getHref()));
+          }
+        }
+        break getHref;
+      }
+        */
+    }
+
+    if (href == null) {
+      // No event(s).
+      return null;
+    }
+
+    try {
+      List<Header> headers = getAuthHeaders();
+
+      headers.add(new BasicHeader("ACCEPT", "text/calendar"));
+      final InputStream is = cl.get(href,
+                                    null,
+                                    headers);
+
+      CalendarBuilder cb = new CalendarBuilder(Timezones.getTzRegistry());
+
+      Calendar cal = cb.build(is);
+
+      Component comp = cal.getComponent(VEvent.VEVENT);
+
+      if (comp == null) {
+        return null;
+      }
+
+      final Map extraValues = new HashMap();
+
+      extraValues.put("event", comp);
+
+      DtStart dtstart = (DtStart)comp.getProperty(Property.DTSTART);
+
+      if (dtstart != null) {
+        extraValues.put("dtstart", dtstart.getDate());
+      }
+
+      DtEnd dtend = (DtEnd)comp.getProperty(Property.DTEND);
+
+      if (dtend != null) {
+        extraValues.put("dtend", dtend.getDate());
+      }
+
+      Summary summary = (Summary)comp.getProperty(Property.SUMMARY);
+
+      if (summary != null) {
+        extraValues.put("summary", summary.getValue());
+      }
+
+      return extraValues;
+    } catch (final Throwable t) {
+      error(t);
+      return null;
+    }
+  }
+
+  public boolean deleteItem(final Note note) throws NoteException {
+    final ItemInfo item = note.getItemInfo();
+
+    final BasicHttpClient cl = getClient();
+
+    try {
+      final int response = cl.delete(item.href,
+                                     getAuthHeaders());
+
+      return true;
+    } catch (final Throwable t) {
+      error(t);
+      return false;
+    } finally {
+      if (cl != null){
+        try {
+          cl.release();
+        } catch (final HttpException e) {
+          error(e);
+        }
+        cl.close();
+      }
+    }
+  }
+
+  public boolean replaceItem(final Note note) throws NoteException {
+    final BasicHttpClient cl = getClient();
+
+    try {
+      final ItemInfo item = note.getItemInfo();
+
+      final String xml = note.getNotification().toXml(true);
+
+      final int response = cl.putObject(item.href,
+                                        getAuthHeaders(),
+                                        xml);
+
+      return true;
+    } catch (final Throwable t) {
+      error(t);
+      return false;
+    } finally {
+      if (cl != null){
+        try {
+          cl.release();
+        } catch (final HttpException e) {
+          error(e);
+        }
+        cl.close();
+      }
+    }
+  }
 
   private BedeworkSubscription getBwsub() {
     return (BedeworkSubscription)sub;
@@ -374,11 +546,10 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
   List<Header> getAuthHeaders() {
     final String userToken = getBwsub().getUserToken();
 
-    if (userToken == null) {
-      return cnctr.getAuthHeaders();
-    }
-
     final List<Header> authheaders = new ArrayList<>(cnctr.getAuthHeaders());
+    if (userToken == null) {
+      return authheaders;
+    }
     authheaders.add(new BasicHeader("X-BEDEWORK-NOTEPR", sub.getPrincipalHref()));
     authheaders.add(new BasicHeader("X-BEDEWORK-PT", userToken));
 

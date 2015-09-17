@@ -26,6 +26,8 @@ import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.outbound.common.AbstractAdaptor;
 import org.bedework.util.http.HttpUtil;
 
+import javax.xml.namespace.QName;
+
 /** The interface implemented by destination adaptors. A destination
  * may be an email address or sms.
  * <?xml version="1.0" encoding="UTF-8" ?>
@@ -70,6 +72,8 @@ import org.bedework.util.http.HttpUtil;
  *
  */
 public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
+  final static String processorType = "email";
+
 	private Mailer mailer;
 
 	@Override
@@ -77,7 +81,7 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
     final Note note = action.getNote();
     final NotificationType nt = note.getNotification();
     final EmailSubscription sub = EmailSubscription.rewrap(action.getSub());
-    final ProcessorType pt = getProcessorStatus(note);
+    final ProcessorType pt = getProcessorStatus(note, processorType);
 
     if (processed(pt)) {
       return true;
@@ -95,12 +99,25 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
     //   do one thing
     // ? else { ... }
 
-    email.setSubject("Needs to be manufactured");
+    final QName elementName =  nt.getNotification().getElementName();
+    String prefix = nsContext.getPrefix(elementName.getNamespaceURI());
+
+    if (prefix == null) {
+      prefix = "default";
+    }
+
+    String subject = getConfig().getSubject(prefix + "-" +
+                                                    elementName.getLocalPart());
+    if (subject == null) {
+      subject = getConfig().getDefaultSubject();
+    }
+    email.setSubject(subject);
 
     email.addBody(EmailMessage.CONTENT_TYPE_PLAIN,
-                  applyTemplate(nt.getNotification().getElementName(),
+                  applyTemplate(elementName,
                                 Note.DeliveryMethod.email,
-                                nt));
+                                nt,
+                                note.getExtraValues()));
 
     try {
       getMailer().send(email);
@@ -124,36 +141,4 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
 		}
 		return mailer;
 	}
-
-  /* Not sure if this can work now we have updates
-	public static void main(final String[] args) {
-    final InviteNotificationType invite = new InviteNotificationType();
-		invite.setHref("mailto:gallen@mycalet.com");
-    final OrganizerType organizer = new OrganizerType();
-		organizer.setHref("mailto:support@mycalet.com");
-		invite.setOrganizer(organizer);
-
-    final EmailAdaptorConfig config = new EmailAdaptorConfig();
-		config.setLocale("en_US");
-		config.setProtocol("smtp");
-		config.setServerPassword("c@lend@r");
-		config.setServerPort("587");
-		config.setServerUri("mail.mycalet.com");
-		config.setServerUsername("root");
-		config.setProtocolClass("com.sun.mail.smtp.SMTPTransport");
-
-    final NotificationType notification = new NotificationType();
-    notification.setNotification(invite);
-
-    final AppleNotification note = new AppleNotification(notification);
-    final EmailAdaptor adapter = new EmailAdaptor();
-		try {
-			adapter.setConf(config);
-			adapter.process(note);
-		} catch (final NoteException e) {
-			//  Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	*/
 }

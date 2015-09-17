@@ -23,6 +23,8 @@ import org.bedework.util.config.ConfInfo;
 import org.bedework.util.jmx.MBeanInfo;
 import org.bedework.util.misc.ToString;
 
+import java.util.List;
+
 /** Bedework dummy adaptor config
  *
  * @author douglm
@@ -38,6 +40,8 @@ public class EmailAdaptorConfig extends AdaptorConfig
 	private String serverPassword;
 	private String from;
 	private String locale;
+  private String defaultSubject;
+  private List<String> subjects;
 
   @Override
 	public void setProtocol(final String val)  {
@@ -125,6 +129,54 @@ public class EmailAdaptorConfig extends AdaptorConfig
 		return locale;
 	}
 
+  @Override
+  public void setDefaultSubject(final String val) {
+    defaultSubject = val;
+  }
+
+  @Override
+  public String getDefaultSubject() {
+    return defaultSubject;
+  }
+
+  @Override
+  public void setSubjects(final List<String> val) {
+    subjects = val;
+  }
+
+  @Override
+  @ConfInfo(collectionElementName = "subject",
+          elementType = "java.lang.String")
+  public List<String> getSubjects() {
+    return subjects;
+  }
+
+  @Override
+  public void addSubject(final String name,
+                                   final String val) {
+    setSubjects(addListProperty(getSubjects(),
+                                name, val));
+  }
+
+  @Override
+  @ConfInfo(dontSave = true)
+  public String getSubject(final String name) {
+    return getProperty(getSubjects(), name);
+  }
+
+  @Override
+  public void removeSubject(final String name) {
+    removeProperty(getSubjects(), name);
+  }
+
+  @Override
+  @ConfInfo(dontSave = true)
+  public void setSubject(final String name,
+                                   final String val) {
+    setSubjects(setListProperty(getSubjects(),
+                                name, val));
+  }
+
 	@Override
 	public void toStringSegment(final ToString ts) {
 		super.toStringSegment(ts);
@@ -135,5 +187,7 @@ public class EmailAdaptorConfig extends AdaptorConfig
     ts.append("starttls", getStarttls());
 		ts.append("from", getFrom());
     ts.append("locale", getLocale());
+    ts.append("defaultSubject", getDefaultSubject());
+    ts.append("subjects", getSubjects());
 	}
 }
