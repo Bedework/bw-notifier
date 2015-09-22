@@ -455,7 +455,8 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
       final int response = cl.putObject(item.href,
                                         getAuthHeaders(),
-                                        xml);
+                                        xml,
+                                        "application/xml");
 
       return true;
     } catch (final Throwable t) {

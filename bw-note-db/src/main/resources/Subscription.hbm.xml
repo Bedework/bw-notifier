@@ -8,16 +8,6 @@
      =================================================================== -->
 
 <hibernate-mapping>
-  <typedef class="org.bedework.util.hibernate.GenericEnumUserType"
-           name="direction">
-    <param name="enumClassname">org.bedework.notifier.wsmessages.SynchDirectionType</param>
-  </typedef>
-
-  <typedef class="org.bedework.util.hibernate.GenericEnumUserType"
-           name="master">
-    <param name="enumClassname">org.bedework.notifier.wsmessages.SynchMasterType</param>
-  </typedef>
-
   <class name="org.bedework.notifier.db.SubscriptionImpl"
          table="bwnote_subs" >
     <cache usage="read-write"/>

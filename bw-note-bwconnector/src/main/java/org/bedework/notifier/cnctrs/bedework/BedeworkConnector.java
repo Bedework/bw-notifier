@@ -143,8 +143,6 @@ public class BedeworkConnector
 
     // Replace the user token
     sub.setUserToken(userToken);
-    // Wipe out the synch token
-    sub.setSynchToken(null);
 
     db.update(sub);
 
