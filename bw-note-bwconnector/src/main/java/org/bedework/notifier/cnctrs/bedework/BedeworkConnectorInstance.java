@@ -492,6 +492,14 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
                                             sub.getPrincipalHref().substring(1),
                                             notificationURLProps);
 
+      if (dc == null) {
+        if (debug) {
+          trace("No response getting notification collection");
+        }
+        // Could delete but might be dangerous - cnctr.getNotifier().deleteSubscription(sub);
+        return false;
+      }
+
       DavProp dp = dc.findProp(WebdavTags.notificationURL);
 
       if ((dp == null) || (dp.status != HttpServletResponse.SC_OK)) {
