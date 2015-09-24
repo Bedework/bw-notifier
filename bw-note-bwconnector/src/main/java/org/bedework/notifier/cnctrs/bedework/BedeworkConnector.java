@@ -127,7 +127,13 @@ public class BedeworkConnector
       sub.setEmails(emails);
 
       db.add(sub);
-      notifier.addNotificationMsg(sub);
+
+      /* At this point I called the method below to trigger off a
+         check for outstanding notifications. This causes a race
+         condition when the subscribe is followed by something else,
+         e.g. an event registration
+       */
+      //notifier.addNotificationMsg(sub);
       return sub;
     }
 

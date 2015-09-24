@@ -487,7 +487,12 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
     try {
       //cl.setBaseURI(new URI(config.getSystemUrl()));
+
       // Make the principal href relative
+      /* We're doing this because we have a base uri that we reolve against.
+         If the uri were absolute we would lose the path part of
+         the base uri. Everything has to be relative to that.
+       */
       final DavChild dc = getDav().getProps(cl,
                                             sub.getPrincipalHref().substring(1),
                                             notificationURLProps);
