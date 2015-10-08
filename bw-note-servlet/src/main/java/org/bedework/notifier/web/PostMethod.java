@@ -60,6 +60,9 @@ public class PostMethod extends MethodBase {
       if ("subscribe".equals(ruri)) {
         processSubscribe(req, resp, resourceUri);
         return;
+      } else if ("unsubscribe".equals(ruri)) {
+        processUnsubscribe(req, resp, resourceUri);
+        return;
       }
 
       if (debug) {
