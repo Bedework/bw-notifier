@@ -165,6 +165,11 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
       String newSyncToken = null;
 
       for (final DavChild ch: chs) {
+        if (ch.status != HttpServletResponse.SC_OK) {
+          // Notification deleted. Don't think we care.
+          continue;
+        }
+
         if ((ch.propVals.size() == 1) &&
                 ch.propVals.get(0).name.equals(WebdavTags.syncToken)) {
           newSyncToken = XmlUtil.getElementContent(ch.propVals.get(0).element);
