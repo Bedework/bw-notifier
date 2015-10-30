@@ -61,7 +61,7 @@ public abstract class MethodBase extends JsonUtil {
 
   /** Called at each request
    *
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public abstract void init() throws NoteException;
 
@@ -69,9 +69,9 @@ public abstract class MethodBase extends JsonUtil {
       new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss ");
 
   /**
-   * @param req
-   * @param resp
-   * @throws NoteException
+   * @param req http request
+   * @param resp http response
+   * @throws NoteException on error
    */
   public abstract void doMethod(HttpServletRequest req,
                                 HttpServletResponse resp)
@@ -85,8 +85,8 @@ public abstract class MethodBase extends JsonUtil {
     private boolean requiresAuth;
 
     /**
-     * @param methodClass
-     * @param requiresAuth
+     * @param methodClass class
+     * @param requiresAuth true if this methd requires auth
      */
     public MethodInfo(final Class<? extends MethodBase> methodClass,
                       final boolean requiresAuth) {
@@ -114,9 +114,9 @@ public abstract class MethodBase extends JsonUtil {
 
   /** Called at each request
    *
-   * @param notifier
-   * @param dumpContent
-   * @throws NoteException
+   * @param notifier the engine
+   * @param dumpContent should we dump content for trace
+   * @throws NoteException on error
    */
   public void init(final NotifyEngine notifier,
                    final boolean dumpContent) throws NoteException {
@@ -143,7 +143,7 @@ public abstract class MethodBase extends JsonUtil {
   /** Get notifier db
    *
    * @return NotifyDb
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public NotifyDb getDb() throws NoteException {
     if (db != null) {
@@ -156,16 +156,16 @@ public abstract class MethodBase extends JsonUtil {
 
   /** Get the decoded and fixed resource URI. This calls getServletPath() to
    * obtain the path information. The description of that method is a little
-   * obscure in it's meaning. In a request of this form:<br/><br/>
-   * "GET /ucaldav/user/douglm/calendar/1302064354993-g.ics HTTP/1.1[\r][\n]"<br/><br/>
-   * getServletPath() will return <br/><br/>
-   * /user/douglm/calendar/1302064354993-g.ics<br/><br/>
+   * obscure in it's meaning. In a request of this form:<br><br>
+   * "GET /ucaldav/user/douglm/calendar/1302064354993-g.ics HTTP/1.1[\r][\n]"<br><br>
+   * getServletPath() will return <br><br>
+   * /user/douglm/calendar/1302064354993-g.ics<br><br>
    * that is the context has been removed. In addition this method will URL
    * decode the path. getRequestUrl() does neither.
    *
    * @param req      Servlet request object
    * @return List    Path elements of fixed up uri
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public List<String> getResourceUri(final HttpServletRequest req)
       throws NoteException {
@@ -186,7 +186,7 @@ public abstract class MethodBase extends JsonUtil {
    *
    * @param path      String path to be fixed
    * @return String[]   fixed path broken into elements
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public static List<String> fixPath(final String path) throws NoteException {
     if (path == null) {

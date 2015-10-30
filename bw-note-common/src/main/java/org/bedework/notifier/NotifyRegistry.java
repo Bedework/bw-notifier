@@ -31,7 +31,7 @@ public class NotifyRegistry {
      *
      * @param token an opaque token
      * @return true for ok
-     * @throws NoteException
+     * @throws NoteException on error
      */
     boolean authenticate(final String token) throws NoteException;
   }

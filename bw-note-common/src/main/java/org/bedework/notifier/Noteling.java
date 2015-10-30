@@ -74,7 +74,7 @@ public class Noteling extends Logged {
   /** Constructor
    *
    * @param notifier the notifier engine
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public Noteling(final NotifyEngine notifier) throws NoteException {
     debug = getLogger().isDebugEnabled();
@@ -102,7 +102,7 @@ public class Noteling extends Logged {
    *
    * @param action - the action to take
    * @return OK for all handled fine. ERROR - discard. WARN - retry.
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public StatusType handleAction(final Action action) throws NoteException {
     try {

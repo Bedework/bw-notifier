@@ -48,7 +48,7 @@ import java.util.List;
  *
  * <p>There are two ends to a subscription handled by connectors.
  *
- * <p>blah blah<</p>
+ * <p>blah blah</p>
  *
  * @author Mike Douglass
  */
@@ -119,7 +119,7 @@ public class NotifyEngine extends TzGetter {
   /**
    *
    * @param val add some messages to the queue
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public void addNotificationMsg(final NotificationMsg val) throws NoteException {
     try {
@@ -144,7 +144,7 @@ public class NotifyEngine extends TzGetter {
 
   /**
    * @return the notification engine
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public static NotifyEngine getNotifier() throws NoteException {
     if (notifier != null) {
@@ -192,6 +192,7 @@ public class NotifyEngine extends TzGetter {
 
   /**
    * @return configuration store
+   * @throws NoteException on error
    */
   public static ConfigurationStore getConfigStore() throws NoteException {
     if (cfgHolder == null) {
@@ -206,7 +207,7 @@ public class NotifyEngine extends TzGetter {
   }
 
   /**
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public void updateConfig() throws NoteException {
     if (cfgHolder != null) {
@@ -219,7 +220,7 @@ public class NotifyEngine extends TzGetter {
    *
    * @param id tzid
    * @return TimeZone with id or null
-   * @throws Throwable
+   * @throws Throwable on error
    */
    @Override
   public TimeZone getTz(final String id) throws Throwable {
@@ -228,7 +229,7 @@ public class NotifyEngine extends TzGetter {
 
   /** Start notify process.
    *
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public void start() throws NoteException {
     try {
@@ -307,10 +308,10 @@ public class NotifyEngine extends TzGetter {
     }
   }
 
-  /** Reschedule all subscriptions. This might blow things up at the
+  /* * Reschedule all subscriptions. This might blow things up at the
    * moment. It should do a paged request and space them out.
    *
-   * @throws NoteException
+   * @throws NoteException on error
    * /
   public void reschedule() throws NoteException {
     try {
@@ -345,7 +346,7 @@ public class NotifyEngine extends TzGetter {
   /** Reschedule an action for retry.
    *
    * @param act the action
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public void reschedule(final Action act) throws NoteException {
     if (debug) {
@@ -424,7 +425,7 @@ public class NotifyEngine extends TzGetter {
 
   /**
    * @param action to take
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public void handleAction(final Action action) throws NoteException {
     setConnectors(action);
@@ -441,7 +442,7 @@ public class NotifyEngine extends TzGetter {
   /**
    * @param val to decrypt
    * @return decrypted string
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public String decrypt(final String val) throws NoteException {
     try {
@@ -455,7 +456,7 @@ public class NotifyEngine extends TzGetter {
 
   /**
    * @return en/decryptor
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public PwEncryptionIntf getEncrypter() throws NoteException {
     if (pwEncrypt != null) {
@@ -489,7 +490,7 @@ public class NotifyEngine extends TzGetter {
    * @param db - for db interactions
    * @param action an action
    * @return ConnectorInstance or throws Exception
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public synchronized ConnectorInstance reserveInstance(final NotifyDb db,
                                                         final Action action) throws NoteException {
@@ -528,7 +529,7 @@ public class NotifyEngine extends TzGetter {
   /** Release a subscription after handling a notification.
    *
    * @param sub the subscription
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public synchronized void release(final Subscription sub) throws NoteException {
     if (debug) {
@@ -547,7 +548,7 @@ public class NotifyEngine extends TzGetter {
   /** When we start up a new subscription we implant a Connector in the object.
    *
    * @param action an action
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public void setConnectors(final Action action) throws NoteException {
     if ((action.getSub() == null) || (action.getConn() != null)) {
@@ -569,7 +570,7 @@ public class NotifyEngine extends TzGetter {
    * as a request is usually hanging on this.
    *
    * @param notes
-   * @throws NoteException
+   * @throws NoteException on error
    * /
   public void handleNotifications(
             final NotificationBatch<Notification> notes) throws NoteException {
@@ -597,7 +598,7 @@ public class NotifyEngine extends TzGetter {
   /**
    * @param action an action that needs outbound adaptors
    * @return list of adaptors
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public List<Adaptor> getAdaptors(final Action action) throws NoteException {
     final Note note = action.getNote();
@@ -619,7 +620,7 @@ public class NotifyEngine extends TzGetter {
 
   /**
    * @param adaptors list of adaptors
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public void releaseAdaptors(final List<Adaptor> adaptors) throws NoteException {
     for (final Adaptor adaptor: adaptors) {
@@ -629,7 +630,7 @@ public class NotifyEngine extends TzGetter {
 
   /**
    * @param sub a subscription
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public void addNotificationMsg(final Subscription sub) throws NoteException {
     /* Queue a message to process it */

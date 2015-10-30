@@ -141,15 +141,15 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
 
   /** Add a subject
    *
-   * @param name
-   * @param val
+   * @param name of notification
+   * @param val subject
    */
   void addSubject(final String name,
                   final String val);
 
   /** Get a subject
    *
-   * @param name
+   * @param name of notification
    * @return value or null
    */
   @ConfInfo(dontSave = true)
@@ -157,14 +157,14 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
 
   /** Remove a subject
    *
-   * @param name
+   * @param name of notification
    */
   void removeSubject(final String name);
 
   /** Set a hibernate property
    *
-   * @param name
-   * @param val
+   * @param name of property
+   * @param val of property
    */
   @ConfInfo(dontSave = true)
   void setSubject(final String name,

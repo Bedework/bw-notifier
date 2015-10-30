@@ -37,6 +37,7 @@ public interface Adaptor<Conf extends AdaptorConf> {
   /**
    * @param globalConfig the notifier engine config
    * @param conf the configuration
+   * @throws NoteException on error
    */
   void setConf(NotifyConfig globalConfig,
                Conf conf) throws NoteException;
@@ -57,7 +58,7 @@ public interface Adaptor<Conf extends AdaptorConf> {
    *
    * @param action containing the notification to process
    * @return true if processed ok
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException on error
    */
   boolean process(Action action) throws NoteException;
 }

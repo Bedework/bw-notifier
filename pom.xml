@@ -6,19 +6,22 @@
 	<version>4.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>bw-notifier</name>
+  <description>A notifcation service - used by bedework</description>
+  <url>https://github.com/Bedework/bw-notifier</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- Maven Plugin Versions -->
 		<maven.compiler.plugin.version>2.3.2</maven.compiler.plugin.version>
 		<maven.source.plugin.version>2.1.2</maven.source.plugin.version>
+
 		<!-- Bedework Versions -->
-		<bedework.releases.repo.url>scp://dev.bedework.org/data/repository/maven/maven2</bedework.releases.repo.url>
-		<bedework.snapshots.repo.url>scp://dev.bedework.org/data/repository/maven/maven2</bedework.snapshots.repo.url>
-    <bw-caldav-util.version>4.0.1-SNAPSHOT</bw-caldav-util.version>
-		<bw-ws.version>4.0.1-SNAPSHOT</bw-ws.version>
-		<bw-util.version>4.0.1-SNAPSHOT</bw-util.version>
-		<bw-access.version>4.0.1-SNAPSHOT</bw-access.version>
+    <bw-caldav-util.version>4.0.2</bw-caldav-util.version>
+		<bw-ws.version>4.0.3</bw-ws.version>
+		<bw-util.version>4.0.2</bw-util.version>
+		<bw-access.version>4.0.1</bw-access.version>
+    <ical4j.version>1.1.1</ical4j.version>
+
 		<!-- Third Party Library Versions -->
     <apache-http.version>4.2.2</apache-http.version>
     <asm.version>3.2</asm.version>
@@ -32,7 +35,6 @@
     <hibernate-commons-annotations.version>3.2.0.Final</hibernate-commons-annotations.version>
     <hibernate-ehcache.version>3.6.9.Final</hibernate-ehcache.version>
     <hibernate-validator.version>3.1.0.GA</hibernate-validator.version>
-    <ical4j.version>1.1-BW-SNAPSHOT</ical4j.version>
     <jackson.version>2.3.1</jackson.version>
     <javax.mail.version>1.5.4</javax.mail.version>
     <jaxen.version>1.1.6</jaxen.version>
@@ -76,6 +78,34 @@
     <module>bw-note-db</module>
   </modules>
 
+  <developers>
+    <developer>
+      <name>Mike Douglass</name>
+      <organization>
+        Spherical Cow Group
+      </organization>
+      <organizationUrl>http://sphericalcowgroup.com/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Arlen Johnson</name>
+      <organization>
+        Spherical Cow Group
+      </organization>
+      <organizationUrl>http://sphericalcowgroup.com/</organizationUrl>
+    </developer>
+  </developers>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
 	<dependencyManagement>
 		<dependencies>
 			<!-- Bedework: Access -->
@@ -84,6 +114,11 @@
 				<artifactId>bw-access</artifactId>
 				<version>${bw-access.version}</version>
 			</dependency>
+      <dependency>
+        <groupId>org.bedework</groupId>
+        <artifactId>bw-ws-appleServer</artifactId>
+        <version>${bw-ws.version}</version>
+      </dependency>
 			<!-- Bedework: Util -->
       <dependency>
         <groupId>org.bedework</groupId>
@@ -140,12 +175,13 @@
         <artifactId>bw-caldav-util</artifactId>
         <version>${bw-caldav-util.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.bedework</groupId>
+        <artifactId>bw-ical4j-cl</artifactId>
+        <version>${ical4j.version}</version>
+      </dependency>
+
 			<!-- Third Party Libraries -->
-			<dependency>
-				<groupId>net.fortuna.ical4j</groupId>
-				<artifactId>ical4j</artifactId>
-				<version>${ical4j.version}</version>
-			</dependency>
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpcore</artifactId>
@@ -291,34 +327,6 @@
 		</dependencies>
 	</dependencyManagement>
 
-  <repositories>
-    <repository>
-      <id>bedework.repository</id>
-      <name>Bedework Maven Repository</name>
-      <url>http://repository.bedework.org/maven2/</url>
-      <layout>default</layout>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
-	<distributionManagement>
-		<repository>
-			<id>bedework-releases-repository</id>
-			<name>Bedework Releases Repository</name>
-			<url>${bedework.releases.repo.url}</url>
-		</repository>
-		<snapshotRepository>
-			<id>bedework-snapshots-repository</id>
-			<name>Bedework Snapshots Repository</name>
-			<url>${bedework.snapshots.repo.url}</url>
-		</snapshotRepository>
-	</distributionManagement>
-
 	<build>
 		<extensions>
 			<extension>
@@ -356,7 +364,81 @@
 					</execution>
 				</executions>
 			</plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.5</version>
+        <configuration>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+          <useReleaseProfile>false</useReleaseProfile>
+          <releaseProfiles>release</releaseProfiles>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9.1</version>
+        <configuration>
+          <additionalparam>-Xdoclint:none</additionalparam>
+          <failOnError>false</failOnError>
+        </configuration>
+      </plugin>
 		</plugins>
 	</build>
 
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.2.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.9.1</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <additionalparam>-Xdoclint:none</additionalparam>
+              <failOnError>false</failOnError>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.5</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

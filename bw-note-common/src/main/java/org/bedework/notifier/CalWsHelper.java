@@ -49,8 +49,8 @@ public class CalWsHelper {
 
   /** Trace a calws SOAP message
    *
-   * @param o
-   * @throws Throwable
+   * @param o object
+   * @throws Throwable on errro
    */
   public void traceSoap(final Object o) throws Throwable {
     SOAPMessage msg = marshal(o, "org.oasis_open.docs.ns.wscal.calws_soap");
@@ -80,10 +80,10 @@ public class CalWsHelper {
   }
 
   /**
-   * @param o
-   * @param jaxbContextPath
+   * @param o the object
+   * @param jaxbContextPath path
    * @return SOAPMessage
-   * @throws Throwable
+   * @throws Throwable on error
    */
   public SOAPMessage marshal(final Object o,
                                 final String jaxbContextPath) throws Throwable {

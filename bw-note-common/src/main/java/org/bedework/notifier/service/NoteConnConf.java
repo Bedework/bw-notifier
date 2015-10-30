@@ -27,7 +27,7 @@ import org.bedework.util.jmx.ConfBase;
 /**
  * @author douglm
  *
- * @param <X>
+ * @param <X> connector class
  */
 public class NoteConnConf<X extends ConnectorConfig> extends ConfBase<X>
     implements NoteConnConfMBean {
@@ -36,8 +36,8 @@ public class NoteConnConf<X extends ConnectorConfig> extends ConfBase<X>
   private Connector connector;
 
   /**
-   * @param configStore
-   * @param serviceName
+   * @param configStore the store
+   * @param serviceName our name
    * @param cfg - the configuration
    */
   public void init(final ConfigurationStore configStore,
@@ -57,7 +57,7 @@ public class NoteConnConf<X extends ConnectorConfig> extends ConfBase<X>
 
   /** Embed the connector
    *
-   * @param val
+   * @param val connector
    */
   public void setConnector(final Connector val) {
     connector = val;

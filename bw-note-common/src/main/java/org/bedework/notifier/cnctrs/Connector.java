@@ -49,8 +49,8 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Mike Douglass
  *
- * @param <C>
- * @param <N>
+ * @param <C> ConnectorInstance class
+ * @param <N> Note class
  */
 public interface Connector<C extends ConnectorInstance,
                            N extends Note,
@@ -60,7 +60,7 @@ public interface Connector<C extends ConnectorInstance,
    *
    * @param name - name for the connector
    * @param conf configuration
-   * @throws NoteException
+   * @throws NoteException on error
    */
   void init(String name,
             Tconf conf) throws NoteException;
@@ -77,9 +77,9 @@ public interface Connector<C extends ConnectorInstance,
    * active subscription for which the callback is intended.
    *
    * @param db for db interactions
-   * @param callbackUri
-   * @param notifier
-   * @throws NoteException
+   * @param callbackUri callback
+   * @param notifier the engine
+   * @throws NoteException on error
    */
   void start(NotifyDb db,
              String callbackUri,
@@ -92,7 +92,7 @@ public interface Connector<C extends ConnectorInstance,
    * @param db for db interactions
    * @param vals the parsed Json subscription message
    * @return a filled in Subscription
-   * @throws NoteException
+   * @throws NoteException on error
    */
   Subscription subscribe(NotifyDb db,
                          Map<?, ?> vals) throws NoteException;
@@ -102,7 +102,7 @@ public interface Connector<C extends ConnectorInstance,
    * @param db for db interactions
    * @param vals the parsed Json unsubscribe message
    * @return cirrent subscription.
-   * @throws NoteException
+   * @throws NoteException on error
    */
   Subscription unsubscribe(NotifyDb db,
                            Map<?, ?> vals) throws NoteException;
@@ -172,9 +172,10 @@ public interface Connector<C extends ConnectorInstance,
   /** Called to obtain a connector instance for a subscription.
    * A response of null means none available.
    *
+   * @param db - the db object
    * @param sub - the subscription
    * @return null for none else a connector instance.
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException on error
    */
   C getConnectorInstance(NotifyDb db,
                          Subscription sub) throws NoteException;
@@ -182,7 +183,7 @@ public interface Connector<C extends ConnectorInstance,
   /** Far end may send a batch of notifications. These should not be batched
    * arbitrarily. One batch per message and response.
    *
-   * @param <N>
+   * @param <N> Note class
    */
   static class NotificationBatch<N extends Note> {
     private List<N> notifications = new ArrayList<N>();
@@ -230,11 +231,11 @@ public interface Connector<C extends ConnectorInstance,
    * to determine a subscription id allowing retrieval of the subscription from
    * the synch engine.
    *
-   * @param req
-   * @param resp
+   * @param req http request
+   * @param resp http response
    * @param resourceUri - elements of the path with context and connector id removed
    * @return Notification with 1 or more Notification items or null for no action.
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException on error
    */
   NotificationBatch<N> handleCallback(HttpServletRequest req,
                                       HttpServletResponse resp,
@@ -242,15 +243,15 @@ public interface Connector<C extends ConnectorInstance,
 
   /** Will respond to a notification.
    *
-   * @param resp
+   * @param resp http response
    * @param notifications from handleCallback.
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException on error
    */
   void respondCallback(HttpServletResponse resp,
                        NotificationBatch<N> notifications) throws NoteException;
 
   /** Shut down the connector
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException on error
    */
   void stop() throws NoteException;
 }

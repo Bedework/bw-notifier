@@ -30,42 +30,44 @@ import javax.xml.namespace.QName;
 
 /** The interface implemented by destination adaptors. A destination
  * may be an email address or sms.
- * <?xml version="1.0" encoding="UTF-8" ?>
- <CSS:notification xmlns:C="urn:ietf:params:xml:ns:caldav"
+ * <pre>
+ *
+ * &lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+ &lt;CSS:notification xmlns:C="urn:ietf:params:xml:ns:caldav"
                    xmlns:BSS="http://bedework.org/ns/"
                    xmlns:BW="http://bedeworkcalserver.org/ns/"
                    xmlns:CSS="http://calendarserver.org/ns/"
-                   xmlns:DAV="DAV:">
-   <BSS:processors>
-     <BSS:processor>
-       <BSS:type>email</BSS:type>
-     </BSS:processor>
-   </BSS:processors>
-   <CSS:dtstamp>20150819T173132Z</CSS:dtstamp>
-   <CSS:invite-notification shared-type="calendar">
-     <BW:name>402881f4-4f470345-014f-47040de1-00000004</BW:name>
-     <CSS:uid>402881f4-4f470345-014f-47040de1-00000004</CSS:uid>
-     <DAV:href>mailto:douglm@mysite.edu</DAV:href>
-     <CSS:invite-noresponse/>
-     <CSS:access>
-       <CSS:read-write/>
-     </CSS:access>
-     <CSS:hosturl>
-      <DAV:href>/notifyws/user/mtwain/share</DAV:href>
-     </CSS:hosturl>
-     <CSS:organizer>
-       <DAV:href>mailto:mtwain@mysite.edu</DAV:href>
-       <CSS:common-name></CSS:common-name>
-     </CSS:organizer>
-     <CSS:summary>share</CSS:summary>
-     <C:supported-calendar-component-set>
-       <C:comp name="VEVENT"/>
-       <C:comp name="VTODO"/>
-       <C:comp name="VAVAILABILITY"/>
-     </C:supported-calendar-component-set>
-   </CSS:invite-notification>
- </CSS:notification>
-
+                   xmlns:DAV="DAV:"&gt;
+   &lt;BSS:processors&gt;
+     &lt;BSS:processor&gt;
+       &lt;BSS:type&gt;email&lt;/BSS:type&gt;
+     &lt;/BSS:processor&gt;
+   &lt;/BSS:processors&gt;
+   &lt;CSS:dtstamp&gt;20150819T173132Z&lt;/CSS:dtstamp&gt;
+   &lt;CSS:invite-notification shared-type="calendar"&gt;
+     &lt;BW:name&gt;402881f4-4f470345-014f-47040de1-00000004&lt;/BW:name&gt;
+     &lt;CSS:uid&gt;402881f4-4f470345-014f-47040de1-00000004&lt;/CSS:uid&gt;
+     &lt;DAV:href&gt;mailto:douglm@mysite.edu&lt;/DAV:href&gt;
+     &lt;CSS:invite-noresponse/&gt;
+     &lt;CSS:access&gt;
+       &lt;CSS:read-write/&gt;
+     &lt;/CSS:access&gt;
+     &lt;CSS:hosturl&gt;
+      &lt;DAV:href&gt;/notifyws/user/mtwain/share&lt;/DAV:href&gt;
+     &lt;/CSS:hosturl&gt;
+     &lt;CSS:organizer&gt;
+       &lt;DAV:href&gt;mailto:mtwain@mysite.edu&lt;/DAV:href&gt;
+       &lt;CSS:common-name&gt;&lt;/CSS:common-name&gt;
+     &lt;/CSS:organizer&gt;
+     &lt;CSS:summary&gt;share&lt;/CSS:summary&gt;
+     &lt;C:supported-calendar-component-set&gt;
+       &lt;C:comp name="VEVENT"/&gt;
+       &lt;C:comp name="VTODO"/&gt;
+       &lt;C:comp name="VAVAILABILITY"/&gt;
+     &lt;/C:supported-calendar-component-set&gt;
+   &lt;/CSS:invite-notification&gt;
+ &lt;/CSS:notification&gt;
+ </pre>
  *
  * @author Greg Allen
  * @author Mike Douglass

@@ -35,7 +35,7 @@ public interface NotifyConfMBean
 
   /** Export schema to database?
    *
-   * @param val
+   * @param val true for export
    */
   void setExport(boolean val);
 
@@ -47,7 +47,7 @@ public interface NotifyConfMBean
 
   /** Output file name - full path
    *
-   * @param val
+   * @param val path
    */
   void setSchemaOutFile(String val);
 
@@ -81,7 +81,7 @@ public interface NotifyConfMBean
   public List<String> schemaStatus();
 
   /**
-   * @param value
+   * @param value dialect
    */
   @MBeanInfo("Set the hibernate dialect")
   void setHibernateDialect(@MBeanInfo("value: a valid hibernate dialect class") final String value);
@@ -101,7 +101,7 @@ public interface NotifyConfMBean
 
   /** Display the named property
    *
-   * @param name
+   * @param name property name
    * @return value
    */
   @MBeanInfo("Display the named hibernate property")
@@ -109,22 +109,22 @@ public interface NotifyConfMBean
 
   /** Remove the named property
    *
-   * @param name
+   * @param name property name
    */
   @MBeanInfo("Remove the named hibernate property")
   void removeHibernateProperty(@MBeanInfo("name") final String name);
 
   /**
-   * @param name
-   * @param value
+   * @param name property name
+   * @param value property value
    */
   @MBeanInfo("Add a hibernate property")
   void addHibernateProperty(@MBeanInfo("name") final String name,
                             @MBeanInfo("value") final String value);
 
   /**
-   * @param name
-   * @param value
+   * @param name property name
+   * @param value property value
    */
   @MBeanInfo("Set a hibernate property")
   void setHibernateProperty(@MBeanInfo("name") final String name,

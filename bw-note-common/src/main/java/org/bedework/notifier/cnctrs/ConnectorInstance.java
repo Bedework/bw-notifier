@@ -37,13 +37,13 @@ public interface ConnectorInstance {
    * creation of a new subscription.
    *
    * @return status + messages
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException on error
    */
   BaseResponseType open() throws NoteException;
 
   /**
    * @return the connector for this instance
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException on error
    */
   Connector getConnector() throws NoteException;
 
@@ -54,7 +54,7 @@ public interface ConnectorInstance {
    * probably always return false.
    *
    * @return true if a change occurred
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException on error
    */
   boolean changed() throws NoteException;
 
@@ -100,7 +100,7 @@ public interface ConnectorInstance {
    *
    * @param db to allow updates
    * @return false if nothing to do.
-   * @throws NoteException
+   * @throws NoteException on error
    */
   boolean check(NotifyDb db) throws NoteException;
 
@@ -108,7 +108,7 @@ public interface ConnectorInstance {
    *
    * @param db to allow updates
    * @return response
-   * @throws NoteException
+   * @throws NoteException on error
    */
   Note nextItem(NotifyDb db) throws NoteException;
 
@@ -118,7 +118,7 @@ public interface ConnectorInstance {
    * @param db to allow updates
    * @param note - specifyng the item to be updated
    * @return true OK -false check status
-   * @throws NoteException
+   * @throws NoteException on error
    */
   boolean completeItem(NotifyDb db,
                        Note note) throws NoteException;

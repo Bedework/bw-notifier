@@ -27,14 +27,14 @@ public class StatLong extends Stat {
   private long longValue;
 
   /**
-   * @param name
+   * @param name the name
    */
   public StatLong(final String name) {
     super(name, 0);
   }
 
   /**
-   * @param val
+   * @param val the val
    */
   public void setLongValue(final long val) {
     longValue = val;

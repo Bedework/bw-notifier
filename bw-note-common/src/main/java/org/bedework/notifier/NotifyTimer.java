@@ -116,7 +116,7 @@ public class NotifyTimer {
    *
    * @param action the action
    * @param when the date/time
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public void schedule(final Action action,
                        final Date when) throws NoteException {
@@ -132,7 +132,7 @@ public class NotifyTimer {
    *
    * @param action the action
    * @param delay - delay in milliseconds before subscription is processed.
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public void schedule(final Action action,
                        final long delay) throws NoteException {

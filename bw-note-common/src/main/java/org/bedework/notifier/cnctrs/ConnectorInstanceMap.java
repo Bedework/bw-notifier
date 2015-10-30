@@ -30,7 +30,7 @@ import java.util.Map;
  *
  * @author Mike Douglass
  *
- * @param <CI>
+ * @param <CI> ConnectorInstance class
  */
 public class ConnectorInstanceMap<CI extends ConnectorInstance> {
   static class Key {
@@ -66,9 +66,9 @@ public class ConnectorInstanceMap<CI extends ConnectorInstance> {
 
   /** Add a connector
    *
-     * @param sub
-     * @param cinst
-   * @throws org.bedework.notifier.exception.NoteException
+     * @param sub subscription
+     * @param cinst connector instance
+   * @throws NoteException on error
    */
   public synchronized void add(final Subscription sub,
                                final CI cinst) throws NoteException {
@@ -83,9 +83,9 @@ public class ConnectorInstanceMap<CI extends ConnectorInstance> {
 
   /** Find a connector
    *
-   * @param sub
+   * @param sub subscription
    * @return CI or null
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException on error
    */
   public synchronized CI find(final Subscription sub) throws NoteException {
     return theMap.get(new Key(sub));
@@ -94,8 +94,8 @@ public class ConnectorInstanceMap<CI extends ConnectorInstance> {
 
   /** Remove a connector
    *
-   * @param sub
-   * @throws org.bedework.notifier.exception.NoteException
+   * @param sub subscription
+   * @throws NoteException on error
    */
   public synchronized void remove(final Subscription sub) throws NoteException {
     theMap.remove(new Key(sub));

@@ -25,7 +25,7 @@ import org.bedework.util.jmx.ConfBase;
 /**
  * @author douglm
  *
- * @param <X>
+ * @param <X> adaptor class
  */
 public class AdaptorConf<X extends AdaptorConfig> extends ConfBase<X>
     implements AdaptorConfMBean {

@@ -310,10 +310,10 @@ public class NotifierServlet extends HttpServlet
   }
 
   /**
-   * @param syncher
-   * @param name
+   * @param syncher notify engine
+   * @param name of method
    * @return method
-   * @throws NoteException
+   * @throws NoteException on error
    */
   public MethodBase getMethod(final NotifyEngine syncher,
                               final String name) throws NoteException {
@@ -379,16 +379,10 @@ public class NotifierServlet extends HttpServlet
     }
   }
 
-  /* (non-Javadoc)
-   * @see javax.servlet.http.HttpSessionListener#sessionCreated(javax.servlet.http.HttpSessionEvent)
-   */
   @Override
   public void sessionCreated(final HttpSessionEvent se) {
   }
 
-  /* (non-Javadoc)
-   * @see javax.servlet.http.HttpSessionListener#sessionDestroyed(javax.servlet.http.HttpSessionEvent)
-   */
   @Override
   public void sessionDestroyed(final HttpSessionEvent se) {
     HttpSession session = se.getSession();
@@ -404,7 +398,7 @@ public class NotifierServlet extends HttpServlet
 
   /** Debug
    *
-   * @param req
+   * @param req the http request
    */
   public void dumpRequest(final HttpServletRequest req) {
     Logger log = getLogger();
@@ -510,7 +504,7 @@ public class NotifierServlet extends HttpServlet
   }
 
   /**
-   * @return LOgger
+   * @return Logger
    */
   public Logger getLogger() {
     if (log == null) {
@@ -522,7 +516,7 @@ public class NotifierServlet extends HttpServlet
 
   /** Debug
    *
-   * @param msg
+   * @param msg the message
    */
   public void debugMsg(final String msg) {
     getLogger().debug(msg);
@@ -530,7 +524,7 @@ public class NotifierServlet extends HttpServlet
 
   /** Info messages
    *
-   * @param msg
+   * @param msg the message
    */
   public void logIt(final String msg) {
     getLogger().info(msg);

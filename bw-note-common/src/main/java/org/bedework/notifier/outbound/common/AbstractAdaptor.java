@@ -192,7 +192,7 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
    *
    * @param note the notification
    * @param processor type
-   * @return
+   * @return processor information
    */
   protected ProcessorType getProcessorStatus(final Note note,
                                              final String processor) {

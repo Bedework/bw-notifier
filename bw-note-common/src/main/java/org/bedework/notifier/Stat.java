@@ -29,8 +29,8 @@ public class Stat implements Serializable {
   private String value;
 
   /**
-   * @param name
-   * @param value
+   * @param name of stat
+   * @param value value
    */
   public Stat(final String name,
                      final String value) {
@@ -39,8 +39,8 @@ public class Stat implements Serializable {
   }
 
   /**
-   * @param name
-   * @param value
+   * @param name of stat
+   * @param value value
    */
   public Stat(final String name,
                      final long value) {
@@ -64,7 +64,7 @@ public class Stat implements Serializable {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
 
     sb.append(getName());
     sb.append(" = ");

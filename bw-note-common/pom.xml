@@ -26,7 +26,6 @@
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-ws-appleServer</artifactId>
-      <version>4.0.0-SNAPSHOT</version>
     </dependency>
     <!-- Bedework: Util -->
     <dependency>
@@ -74,11 +73,13 @@
 			<groupId>org.bedework</groupId>
 			<artifactId>bw-access</artifactId>
 		</dependency>
-		<!-- Third Party Libraries -->
-		<dependency>
-			<groupId>net.fortuna.ical4j</groupId>
-			<artifactId>ical4j</artifactId>
-		</dependency>
+
+    <dependency>
+      <groupId>org.bedework</groupId>
+      <artifactId>bw-ical4j-cl</artifactId>
+    </dependency>
+
+    <!-- Third Party Libraries -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>

@@ -69,17 +69,17 @@ public class NotifyConfig extends NotifyConfPropertiesImpl {
     return connectorConfs;
   }
 
-  /** Map of (name, className)
+  /**
    *
-   * @param val
+   * @param val list of AdaptorConfig
    */
   public void setAdaptorConfs(final List<AdaptorConf> val) {
     adaptorConfs = val;
   }
 
-  /** Set<AdaptorConfig>
+  /**
    *
-   * @return map
+   * @return list of AdaptorConfig
    */
   public List<AdaptorConf> getAdaptorConfs() {
     return adaptorConfs;

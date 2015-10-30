@@ -56,10 +56,10 @@ public class NotelingPool {
 
   /** Create a pool with the given size
    *
-   * @param notifier
-   * @param size
+   * @param notifier the engine
+   * @param size of pool
    * @param timeout - millisecs
-   * @throws org.bedework.notifier.exception.NoteException
+   * @throws NoteException on error
    */
   public void start(final NotifyEngine notifier,
                     final int size,
@@ -101,8 +101,8 @@ public class NotelingPool {
 
   /** Resize the pool
    *
-   * @param size
-   * @throws org.bedework.notifier.exception.NoteException
+   * @param size of pool
+   * @throws NoteException on error
    */
   public void resize(final int size) throws NoteException {
     ArrayBlockingQueue<Noteling> oldPool = getPool();
@@ -189,8 +189,8 @@ public class NotelingPool {
 
   /** Put a noteling back in the pool if there's room else discard it
    *
-   * @param s
-   * @throws org.bedework.notifier.exception.NoteException
+   * @param s Noteling
+   * @throws NoteException on error
    */
   public void add(final Noteling s) throws NoteException {
     synchronized (active) {
@@ -201,8 +201,8 @@ public class NotelingPool {
 
   /** Get a noteling from the pool if possible
    *
-   * @return a sychling
-   * @throws org.bedework.notifier.exception.NoteException if none available
+   * @return a Noteling
+   * @throws NoteException if none available
    */
   public Noteling get() throws NoteException {
     return get(true);
@@ -210,7 +210,7 @@ public class NotelingPool {
 
   /** Get a noteling from the pool if possible. Return null if timed out
    *
-   * @return a sychling or null
+   * @return a Noteling or null
    * @throws NoteException on error
    */
   public Noteling getNoException() throws NoteException {
