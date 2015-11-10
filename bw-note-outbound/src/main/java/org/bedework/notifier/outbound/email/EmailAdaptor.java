@@ -18,12 +18,16 @@
  */
 package org.bedework.notifier.outbound.email;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bedework.caldav.util.notifications.NotificationType;
 import org.bedework.caldav.util.notifications.ProcessorType;
 import org.bedework.notifier.Action;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.outbound.common.AbstractAdaptor;
+import org.bedework.notifier.outbound.common.AbstractAdaptor.TemplateResult;
 import org.bedework.util.http.HttpUtil;
 
 import javax.xml.namespace.QName;
@@ -76,71 +80,77 @@ import javax.xml.namespace.QName;
 public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
   final static String processorType = "email";
 
-	private Mailer mailer;
+    private Mailer mailer;
 
-	@Override
-	public boolean process(final Action action) throws NoteException {
-    final Note note = action.getNote();
-    final NotificationType nt = note.getNotification();
-    final EmailSubscription sub = EmailSubscription.rewrap(action.getSub());
-    final ProcessorType pt = getProcessorStatus(note, processorType);
+    @Override
+    public boolean process(final Action action) throws NoteException {
+        final Note note = action.getNote();
+        final NotificationType nt = note.getNotification();
+        final EmailSubscription sub = EmailSubscription.rewrap(action.getSub());
+        final ProcessorType pt = getProcessorStatus(note, processorType);
 
-    if (processed(pt)) {
-      return true;
+        if (processed(pt)) {
+            return true;
+        }
+
+        final EmailMessage email = new EmailMessage(conf.getFrom(), null);
+
+        /* The subscription will define one or more recipients */
+        for (final String emailAddress: sub.getEmails()) {
+            email.addTo(stripMailTo(emailAddress));
+        }
+
+        // if (note.isRegisteredRecipient()) {
+        //   do one thing
+        // ? else { ... }
+
+        final QName elementName =  nt.getNotification().getElementName();
+        String prefix = nsContext.getPrefix(elementName.getNamespaceURI());
+
+        if (prefix == null) {
+            prefix = "default";
+        }
+
+        String subject = getConfig().getSubject(prefix + "-" + elementName.getLocalPart());
+        if (subject == null) {
+            subject = getConfig().getDefaultSubject();
+        }
+        email.setSubject(subject);
+
+        List<TemplateResult> results = applyTemplates(elementName, Note.DeliveryMethod.email, nt, note.getExtraValues());
+        for (TemplateResult result : results) {
+            subject = result.getStringVariable("subject");
+            if (subject != null) {
+                email.setSubject(subject);
+            }
+
+            String contentType = result.getStringVariable("contentType");
+            if (contentType == null) {
+                contentType = EmailMessage.CONTENT_TYPE_PLAIN;
+            }
+            email.addBody(contentType, result.getValue());
+        }
+        try {
+            if (email.getBodies().keySet().size() > 0) {
+                // No template results returned, don't email but still return success.
+                getMailer().send(email);
+
+                pt.setDtstamp(getDtstamp());
+                pt.setStatus(HttpUtil.makeOKHttpStatus());
+            }
+            return true;
+        } catch (final NoteException ne) {
+            if (debug) {
+                error(ne);
+            }
+        }
+        return false;
     }
-
-    final EmailMessage email =
-            new EmailMessage(conf.getFrom(), null);
-
-    /* The subscription will define one or more recipients */
-    for (final String emailAddress: sub.getEmails()) {
-      email.addTo(stripMailTo(emailAddress));
-    }
-
-		// if (note.isRegisteredRecipient()) {
-    //   do one thing
-    // ? else { ... }
-
-    final QName elementName =  nt.getNotification().getElementName();
-    String prefix = nsContext.getPrefix(elementName.getNamespaceURI());
-
-    if (prefix == null) {
-      prefix = "default";
-    }
-
-    String subject = getConfig().getSubject(prefix + "-" +
-                                                    elementName.getLocalPart());
-    if (subject == null) {
-      subject = getConfig().getDefaultSubject();
-    }
-    email.setSubject(subject);
-
-    email.addBody(EmailMessage.CONTENT_TYPE_PLAIN,
-                  applyTemplate(elementName,
-                                Note.DeliveryMethod.email,
-                                nt,
-                                note.getExtraValues()));
-
-    try {
-      getMailer().send(email);
-
-      pt.setDtstamp(getDtstamp());
-      pt.setStatus(HttpUtil.makeOKHttpStatus());
-
-      return true;
-    } catch (final NoteException ne) {
-      if (debug) {
-        error(ne);
-      }
-
-      return false;
-    }
-	}
 
   private Mailer getMailer() throws NoteException {
-		if (mailer == null) {
-			mailer = new Mailer(getConfig());
-		}
-		return mailer;
-	}
+        if (mailer == null) {
+            mailer = new Mailer(getConfig());
+        }
+        return mailer;
+    }
 }
