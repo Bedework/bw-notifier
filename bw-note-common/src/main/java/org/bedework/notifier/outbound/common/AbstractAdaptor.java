@@ -317,5 +317,17 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
             }
             return false;
         }
+
+        public List<String> getListVariable(String key) {
+            List<String> result = new ArrayList<String>();
+            try {
+                    Object val = env.getVariable(key);
+                    if (val != null) {
+                        result = Arrays.asList(val.toString().split("\\s*;\\s*"));;
+                    }
+            } catch (TemplateModelException tme) {
+            }
+            return result;
+        }
     }
 }

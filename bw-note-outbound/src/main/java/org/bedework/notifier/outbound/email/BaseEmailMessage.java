@@ -18,10 +18,10 @@
 */
 package org.bedework.notifier.outbound.email;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class BaseEmailMessage {
 	
@@ -29,7 +29,9 @@ public abstract class BaseEmailMessage {
 	public static final String CONTENT_TYPE_HTML = "text/html";
 	
 	private String from;
-	private ArrayList<String> tos = new ArrayList<String>();
+	private Set<String> tos = new HashSet<String>();
+	private Set<String> ccs = new HashSet<String>();
+	private Set<String> bccs = new HashSet<String>();
 	private String subject;
 	private LinkedHashMap<String, String> bodies = new LinkedHashMap<String, String>();
 
@@ -41,12 +43,28 @@ public abstract class BaseEmailMessage {
 		this.from = from;
 	}
 
-	public List<String> getTos() {
+	public Set<String> getTos() {
 		return tos;
 	}
 	
 	public void addTo(String to) {
 		this.tos.add(to);
+	}
+
+	public Set<String> getCcs() {
+		return ccs;
+	}
+
+	public void addCc(String cc) {
+		this.ccs.add(cc);
+	}
+
+	public Set<String> getBccs() {
+		return bccs;
+	}
+
+	public void addBcc(String bcc) {
+		this.bccs.add(bcc);
 	}
 
 	public String getSubject() {

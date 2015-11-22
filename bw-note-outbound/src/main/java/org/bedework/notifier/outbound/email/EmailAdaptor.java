@@ -95,11 +95,6 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
 
         final EmailMessage email = new EmailMessage(conf.getFrom(), null);
 
-        /* The subscription will define one or more recipients */
-        for (final String emailAddress: sub.getEmails()) {
-            email.addTo(stripMailTo(emailAddress));
-        }
-
         // if (note.isRegisteredRecipient()) {
         //   do one thing
         // ? else { ... }
@@ -119,6 +114,23 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
 
         List<TemplateResult> results = applyTemplates(elementName, Note.DeliveryMethod.email, nt, note.getExtraValues());
         for (TemplateResult result : results) {
+            String from = result.getStringVariable("from");
+            if (from != null) {
+                email.setFrom(from);
+            }
+
+            for (final String to: result.getListVariable("to")) {
+                email.addTo(to);
+            }
+
+            for (final String cc: result.getListVariable("cc")) {
+                email.addCc(cc);
+            }
+
+            for (final String bcc: result.getListVariable("bcc")) {
+                email.addBcc(bcc);
+            }
+
             subject = result.getStringVariable("subject");
             if (subject != null) {
                 email.setSubject(subject);
@@ -129,6 +141,14 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
                 contentType = EmailMessage.CONTENT_TYPE_PLAIN;
             }
             email.addBody(contentType, result.getValue());
+        }
+
+        if (email.getTos().size() == 0) {
+            /* The subscription will define one or more recipients */
+            for (final String emailAddress: sub.getEmails()) {
+                email.addTo(stripMailTo(emailAddress));
+            }
+
         }
         try {
             if (email.getBodies().keySet().size() > 0) {
