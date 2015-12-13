@@ -24,65 +24,65 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class BaseEmailMessage {
-	
-	public static final String CONTENT_TYPE_PLAIN = "text/plain";
-	public static final String CONTENT_TYPE_HTML = "text/html";
-	
-	private String from;
-	private Set<String> tos = new HashSet<String>();
-	private Set<String> ccs = new HashSet<String>();
-	private Set<String> bccs = new HashSet<String>();
-	private String subject;
-	private LinkedHashMap<String, String> bodies = new LinkedHashMap<String, String>();
 
-	public String getFrom() {
-		return from;
-	}
+  public static final String CONTENT_TYPE_PLAIN = "text/plain";
+  public static final String CONTENT_TYPE_HTML = "text/html";
 
-	public void setFrom(String from) {
-		this.from = from;
-	}
+  private String from;
+  private Set<String> tos = new HashSet<String>();
+  private Set<String> ccs = new HashSet<String>();
+  private Set<String> bccs = new HashSet<String>();
+  private String subject;
+  private LinkedHashMap<String, String> bodies = new LinkedHashMap<String, String>();
 
-	public Set<String> getTos() {
-		return tos;
-	}
-	
-	public void addTo(String to) {
-		this.tos.add(to);
-	}
+  public String getFrom() {
+    return from;
+  }
 
-	public Set<String> getCcs() {
-		return ccs;
-	}
+  public void setFrom(String from) {
+    this.from = from;
+  }
 
-	public void addCc(String cc) {
-		this.ccs.add(cc);
-	}
+  public Set<String> getTos() {
+    return tos;
+  }
 
-	public Set<String> getBccs() {
-		return bccs;
-	}
+  public void addTo(String to) {
+    this.tos.add(to);
+  }
 
-	public void addBcc(String bcc) {
-		this.bccs.add(bcc);
-	}
+  public Set<String> getCcs() {
+    return ccs;
+  }
 
-	public String getSubject() {
-		return subject;
-	}
+  public void addCc(String cc) {
+    this.ccs.add(cc);
+  }
 
-	public void setSubject(String subject) {
-		this.subject = transform(subject);
-	}
+  public Set<String> getBccs() {
+    return bccs;
+  }
 
-	public Map<String, String> getBodies() {
-		return bodies;
-	}
+  public void addBcc(String bcc) {
+    this.bccs.add(bcc);
+  }
 
-	public void addBody(String type, String content) {
-		this.bodies.put(type, transform(content));
-	}
+  public String getSubject() {
+    return subject;
+  }
 
-	// Perform some transformation on the subject and message bodies.
-	protected abstract String transform(String content); 
+  public void setSubject(String subject) {
+    this.subject = transform(subject);
+  }
+
+  public Map<String, String> getBodies() {
+    return bodies;
+  }
+
+  public void addBody(String type, String content) {
+    this.bodies.put(type, transform(content));
+  }
+
+  // Perform some transformation on the subject and message bodies.
+  protected abstract String transform(String content);
 }

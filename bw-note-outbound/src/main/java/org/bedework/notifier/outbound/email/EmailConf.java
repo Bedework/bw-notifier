@@ -32,39 +32,39 @@ public class EmailConf extends AdaptorConf<EmailAdaptorConfig> implements EmailC
   private String transientUsername;
   private String transientPassword;
 
-	/* ========================================================================
-	 * Conf properties
-	 * ======================================================================== */
+  /* ========================================================================
+   * Conf properties
+   * ======================================================================== */
 
-	@Override
-	public void setProtocol(final String val) {
-		cfg.setProtocol(val);
-	}
+  @Override
+  public void setProtocol(final String val) {
+    cfg.setProtocol(val);
+  }
 
-	@Override
-	public String getProtocol() {
-		return cfg.getProtocol();
-	}
+  @Override
+  public String getProtocol() {
+    return cfg.getProtocol();
+  }
 
-	@Override
-	public void setServerUri(final String val) {
-		cfg.setServerUri(val);
-	}
+  @Override
+  public void setServerUri(final String val) {
+    cfg.setServerUri(val);
+  }
 
-	@Override
-	public String getServerUri() {
-		return cfg.getServerUri();
-	}
+  @Override
+  public String getServerUri() {
+    return cfg.getServerUri();
+  }
 
-	@Override
-	public void setServerPort(final String val) {
-		cfg.setServerPort(val);
-	}
+  @Override
+  public void setServerPort(final String val) {
+    cfg.setServerPort(val);
+  }
 
-	@Override
-	public String getServerPort() {
-		return cfg.getServerPort();
-	}
+  @Override
+  public String getServerPort() {
+    return cfg.getServerPort();
+  }
 
   @Override
   public void setStarttls(final boolean val) {
@@ -77,44 +77,44 @@ public class EmailConf extends AdaptorConf<EmailAdaptorConfig> implements EmailC
   }
 
   @Override
-	public void setServerUsername(final String val) {
-		cfg.setServerUsername(val);
-	}
+  public void setServerUsername(final String val) {
+    cfg.setServerUsername(val);
+  }
 
-	@Override
-	public String getServerUsername() {
-		return cfg.getServerUsername();
-	}
+  @Override
+  public String getServerUsername() {
+    return cfg.getServerUsername();
+  }
 
-	@Override
-	public void setServerPassword(final String val) {
-		cfg.setServerPassword(val);
-	}
+  @Override
+  public void setServerPassword(final String val) {
+    cfg.setServerPassword(val);
+  }
 
-	@Override
-	public String getServerPassword() {
-		return cfg.getServerPassword();
-	}
+  @Override
+  public String getServerPassword() {
+    return cfg.getServerPassword();
+  }
 
-	@Override
-	public void setFrom(final String val) {
-		cfg.setFrom(val);
-	}
+  @Override
+  public void setFrom(final String val) {
+    cfg.setFrom(val);
+  }
 
-	@Override
-	public String getFrom() {
-		return cfg.getFrom();
-	}
+  @Override
+  public String getFrom() {
+    return cfg.getFrom();
+  }
 
-	@Override
-	public void setLocale(final String val) {
-		cfg.setLocale(val);
-	}
+  @Override
+  public void setLocale(final String val) {
+    cfg.setLocale(val);
+  }
 
-	@Override
-	public String getLocale() {
-		return cfg.getLocale();
-	}
+  @Override
+  public String getLocale() {
+    return cfg.getLocale();
+  }
 
   @Override
   public void setDefaultSubject(final String val) {

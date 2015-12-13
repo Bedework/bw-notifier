@@ -37,7 +37,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 public class Mailer extends Logged {
-	EmailConf config;
+  EmailConf config;
 
   public Mailer(final EmailConf config) throws NoteException {
     super();

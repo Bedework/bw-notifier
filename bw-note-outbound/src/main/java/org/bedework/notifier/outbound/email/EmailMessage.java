@@ -23,37 +23,37 @@ import java.util.regex.Pattern;
 
 public class EmailMessage extends BaseEmailMessage {
 
-	private static final char TAG = '%';
+  private static final char TAG = '%';
 
-	private Map<String, String> tags;
+  private Map<String, String> tags;
 
-	public EmailMessage(String from, Map<String, String> tags) {
-		setFrom(from);
-		setTags(tags);
-	}
+  public EmailMessage(String from, Map<String, String> tags) {
+    setFrom(from);
+    setTags(tags);
+  }
 
-	public Map<String, String> getTags() {
-		return tags;
-	}
+  public Map<String, String> getTags() {
+    return tags;
+  }
 
-	public void setTags(Map<String, String> tags) {
-		this.tags = tags;
-	}
+  public void setTags(Map<String, String> tags) {
+    this.tags = tags;
+  }
 
-	@Override
-	protected String transform(String content) {
-		String result = content;
-		if (getTags() != null) {
-			for (Map.Entry<String, String> entry : getTags().entrySet()) {
-				String key = entry.getKey().trim();
-				String value = entry.getValue();
-				if (value == null) {
-					value = "";
-				}
-				Pattern p = Pattern.compile(TAG + key + TAG);
-				result = p.matcher(result).replaceAll(value);
-			} 
-		}
-		return result;
-	}
+  @Override
+  protected String transform(String content) {
+    String result = content;
+    if (getTags() != null) {
+      for (Map.Entry<String, String> entry : getTags().entrySet()) {
+        String key = entry.getKey().trim();
+        String value = entry.getValue();
+        if (value == null) {
+          value = "";
+        }
+        Pattern p = Pattern.compile(TAG + key + TAG);
+        result = p.matcher(result).replaceAll(value);
+      }
+    }
+    return result;
+  }
 }

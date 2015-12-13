@@ -26,25 +26,25 @@ import org.bedework.util.jmx.MBeanInfo;
  * @author douglm
  */
 public interface EmailConfMBean extends ConfBaseMBean, EmailAdaptorConfigI {
-	/**
-	 * @param val user name
-	 */
-	void setTransientUsername(String val);
+  /**
+   * @param val user name
+   */
+  void setTransientUsername(String val);
 
-	/**
-	 * @return String
-	 */
-	@MBeanInfo("Override or supply a transient username if authentication is required.")
-	String getTransientUsername();
+  /**
+   * @return String
+   */
+  @MBeanInfo("Override or supply a transient username if authentication is required.")
+  String getTransientUsername();
 
-	/**
-	 * @param val a password
-	 */
-	void setTransientPassword(String val);
+  /**
+   * @param val a password
+   */
+  void setTransientPassword(String val);
 
-	/**
-	 * @return String
-	 */
-	@MBeanInfo("Override or supply a transient password if authentication is required.")
-	String getTransientPassword();
+  /**
+   * @return String
+   */
+  @MBeanInfo("Override or supply a transient password if authentication is required.")
+  String getTransientPassword();
 }

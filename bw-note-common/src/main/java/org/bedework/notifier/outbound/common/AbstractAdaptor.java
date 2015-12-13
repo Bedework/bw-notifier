@@ -28,8 +28,6 @@ import org.bedework.notifier.notifications.Note;
 import org.bedework.util.http.HttpUtil;
 import org.bedework.util.misc.Util;
 import org.bedework.util.xml.NsContext;
-import org.bedework.util.xml.XmlUtil;
-import org.bedework.util.xml.tagdefs.BedeworkServerTags;
 
 import freemarker.core.Environment;
 import freemarker.ext.dom.NodeModel;
@@ -43,10 +41,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.StringBufferInputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -55,7 +51,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.servlet.http.HttpServletResponse;
@@ -70,43 +65,43 @@ import javax.xml.parsers.DocumentBuilderFactory;
  */
 public abstract class AbstractAdaptor<Conf extends AdaptorConf>
         implements Adaptor<Conf> {
-    private transient Logger log;
+  private transient Logger log;
 
   protected boolean debug;
 
-    private final static AtomicLong nextId = new AtomicLong();
+  private final static AtomicLong nextId = new AtomicLong();
 
-    private final Long id;
+  private final Long id;
 
   protected NotifyConfig globalConfig;
 
-    protected Conf conf;
+  protected Conf conf;
 
   private Configuration fmConfig;
 
   protected NsContext nsContext = new NsContext(null);
 
-    private static final FilenameFilter templateFilter = new FilenameFilter() {
-        public boolean accept(File dir, String name) {
-            return name.endsWith(".ftl");
-        }
-    };
+  private static final FilenameFilter templateFilter = new FilenameFilter() {
+    public boolean accept(File dir, String name) {
+      return name.endsWith(".ftl");
+    }
+  };
 
-    protected AbstractAdaptor() {
-        debug = getLogger().isDebugEnabled();
+  protected AbstractAdaptor() {
+    debug = getLogger().isDebugEnabled();
     id = nextId.incrementAndGet();
-    }
+  }
 
   @Override
-    public long getId() {
-        return id;
-    }
+  public long getId() {
+    return id;
+  }
 
   @Override
-    public void setConf(final NotifyConfig globalConfig,
+  public void setConf(final NotifyConfig globalConfig,
                       final Conf conf) throws NoteException {
     this.globalConfig = globalConfig;
-        this.conf = conf;
+    this.conf = conf;
 
     try {
       // Init freemarker
@@ -120,71 +115,71 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
     } catch (final Throwable t) {
       throw new NoteException(t);
     }
-    }
+  }
 
   public List<TemplateResult> applyTemplates(final QName noteType,
                                              final Note.DeliveryMethod handlerType,
                                              final NotificationType note,
                                              final Map<String, Object> extraValues) throws NoteException {
-      List<TemplateResult> results = new ArrayList<TemplateResult>();
-      try {
-          String prefix = nsContext.getPrefix(noteType.getNamespaceURI());
+    List<TemplateResult> results = new ArrayList<TemplateResult>();
+    try {
+      String prefix = nsContext.getPrefix(noteType.getNamespaceURI());
 
-          if (prefix == null) {
-              prefix = "default";
-          }
-
-          final String abstractPath = Util.buildPath(false, handlerType.toString(), "/", prefix, "/", noteType.getLocalPart());
-
-          File templateDir = new File(Util.buildPath(false, globalConfig.getTemplatesPath(), "/", abstractPath));
-          if (templateDir.isDirectory()) {
-
-              Map<String, Object> root = new HashMap<String, Object>();
-              DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-              factory.setNamespaceAware(true);
-              DocumentBuilder builder = factory.newDocumentBuilder();
-              Document doc = builder.parse(new InputSource(new StringReader(note.toXml(true))));
-              Element el = doc.getDocumentElement();
-              NodeModel.simplify(el);
-              NodeModel.useJaxenXPathSupport();
-              root.put("notification", el);
-
-              if (extraValues != null) {
-                  root.putAll(extraValues);
-              }
-
-              // Sort files so the user can control the order of content types/body parts of the email by template file name.
-              File[] templates = templateDir.listFiles(templateFilter);
-              Arrays.sort(templates);
-              for (File f : templates) {
-                  Template template = fmConfig.getTemplate(Util.buildPath(false, abstractPath, "/", f.getName()));
-                  Writer out = new StringWriter();
-                  Environment env = template.createProcessingEnvironment(root, out);
-                  env.process();
-
-                  TemplateResult r = new TemplateResult(f.getName(), out.toString(), env);
-                  if (!r.getBooleanVariable("skip")) {
-                      results.add(new TemplateResult(f.getName(), out.toString(), env));
-                  }
-              }
-          }
-      } catch (final Throwable t) {
-          throw new NoteException(t);
+      if (prefix == null) {
+        prefix = "default";
       }
-      return results;
+
+      final String abstractPath = Util.buildPath(false, handlerType.toString(), "/", prefix, "/", noteType.getLocalPart());
+
+      File templateDir = new File(Util.buildPath(false, globalConfig.getTemplatesPath(), "/", abstractPath));
+      if (templateDir.isDirectory()) {
+
+        Map<String, Object> root = new HashMap<String, Object>();
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse(new InputSource(new StringReader(note.toXml(true))));
+        Element el = doc.getDocumentElement();
+        NodeModel.simplify(el);
+        NodeModel.useJaxenXPathSupport();
+        root.put("notification", el);
+
+        if (extraValues != null) {
+          root.putAll(extraValues);
+        }
+
+        // Sort files so the user can control the order of content types/body parts of the email by template file name.
+        File[] templates = templateDir.listFiles(templateFilter);
+        Arrays.sort(templates);
+        for (File f : templates) {
+          Template template = fmConfig.getTemplate(Util.buildPath(false, abstractPath, "/", f.getName()));
+          Writer out = new StringWriter();
+          Environment env = template.createProcessingEnvironment(root, out);
+          env.process();
+
+          TemplateResult r = new TemplateResult(f.getName(), out.toString(), env);
+          if (!r.getBooleanVariable("skip")) {
+            results.add(new TemplateResult(f.getName(), out.toString(), env));
+          }
+        }
+      }
+    } catch (final Throwable t) {
+      throw new NoteException(t);
+    }
+    return results;
   }
 
   @Override
-    public Conf getConfig() {
-        return conf;
-    }
+  public Conf getConfig() {
+    return conf;
+  }
 
-    public String getType() {
-        return conf.getType();
-    }
+  public String getType() {
+    return conf.getType();
+  }
 
   @Override
-    public abstract boolean process(final Action action) throws NoteException;
+  public abstract boolean process(final Action action) throws NoteException;
 
     /* ====================================================================
      *                   Protected methods
@@ -252,82 +247,82 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
   }
 
   protected void info(final String msg) {
-        getLogger().info(msg);
+    getLogger().info(msg);
+  }
+
+  protected void trace(final String msg) {
+    getLogger().debug(msg);
+  }
+
+  protected void error(final Throwable t) {
+    getLogger().error(this, t);
+  }
+
+  protected void error(final String msg) {
+    getLogger().error(msg);
+  }
+
+  protected void warn(final String msg) {
+    getLogger().warn(msg);
+  }
+
+  /* Get a logger for messages
+   */
+  protected Logger getLogger() {
+    if (log == null) {
+      log = Logger.getLogger(this.getClass());
     }
 
-    protected void trace(final String msg) {
-        getLogger().debug(msg);
+    return log;
+  }
+
+  public class TemplateResult {
+    String templateName;
+    String value;
+    Environment env;
+
+    protected TemplateResult(String templateName, String value, Environment env) {
+      this.templateName = templateName;
+      this.value = value;
+      this.env = env;
     }
 
-    protected void error(final Throwable t) {
-        getLogger().error(this, t);
+    public String getValue() {
+      return value;
     }
 
-    protected void error(final String msg) {
-        getLogger().error(msg);
-    }
-
-    protected void warn(final String msg) {
-        getLogger().warn(msg);
-    }
-
-    /* Get a logger for messages
-     */
-    protected Logger getLogger() {
-        if (log == null) {
-            log = Logger.getLogger(this.getClass());
+    public String getStringVariable(String key) {
+      try {
+        Object val = env.getVariable(key);
+        if (val != null) {
+          return val.toString();
         }
-
-        return log;
+      } catch (TemplateModelException tme) {
+      }
+      return null;
     }
 
-    public class TemplateResult {
-        String templateName;
-        String value;
-        Environment env;
-
-        protected TemplateResult(String templateName, String value, Environment env) {
-            this.templateName = templateName;
-            this.value = value;
-            this.env = env;
+    public Boolean getBooleanVariable(String key) {
+      try {
+        Object val = env.getVariable(key);
+        if (val != null) {
+          return Boolean.valueOf(val.toString());
         }
-
-        public String getValue() {
-            return value;
-        }
-
-        public String getStringVariable(String key) {
-            try {
-                    Object val = env.getVariable(key);
-                    if (val != null) {
-                        return val.toString();
-                    }
-            } catch (TemplateModelException tme) {
-            }
-            return null;
-        }
-
-        public Boolean getBooleanVariable(String key) {
-            try {
-                    Object val = env.getVariable(key);
-                    if (val != null) {
-                        return Boolean.valueOf(val.toString());
-                    }
-            } catch (TemplateModelException tme) {
-            }
-            return false;
-        }
-
-        public List<String> getListVariable(String key) {
-            List<String> result = new ArrayList<String>();
-            try {
-                    Object val = env.getVariable(key);
-                    if (val != null) {
-                        result = Arrays.asList(val.toString().split("\\s*;\\s*"));;
-                    }
-            } catch (TemplateModelException tme) {
-            }
-            return result;
-        }
+      } catch (TemplateModelException tme) {
+      }
+      return false;
     }
+
+    public List<String> getListVariable(String key) {
+      List<String> result = new ArrayList<String>();
+      try {
+        Object val = env.getVariable(key);
+        if (val != null) {
+          result = Arrays.asList(val.toString().split("\\s*;\\s*"));;
+        }
+      } catch (TemplateModelException tme) {
+      }
+      return result;
+    }
+  }
 }
