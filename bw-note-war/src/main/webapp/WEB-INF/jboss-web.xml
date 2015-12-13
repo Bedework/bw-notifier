@@ -3,9 +3,7 @@
 <jboss-web>
   <!-- Virtual host -->
 
-  <security-domain>java:/jaas/@SECURITY-DOMAIN@</security-domain>
-
-<!-- 
+<!--
   <resource-ref>
     <res-ref-name>jdbc/cardDB</res-ref-name>
     <res-type>javax.sql.DataSource</res-type>
