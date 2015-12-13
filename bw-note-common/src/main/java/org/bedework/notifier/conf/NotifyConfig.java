@@ -81,6 +81,7 @@ public class NotifyConfig extends NotifyConfPropertiesImpl {
    *
    * @return list of AdaptorConfig
    */
+  @ConfInfo(dontSave = true)
   public List<AdaptorConf> getAdaptorConfs() {
     return adaptorConfs;
   }
