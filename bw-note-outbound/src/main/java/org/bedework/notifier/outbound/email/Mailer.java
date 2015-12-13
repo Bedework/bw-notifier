@@ -58,6 +58,12 @@ public class Mailer extends Logged {
       for (final String to : email.getTos()) {
         msg.addRecipient(RecipientType.TO, new InternetAddress(to));
       }
+      for (final String cc : email.getCcs()) {
+        msg.addRecipient(RecipientType.CC, new InternetAddress(cc));
+      }
+      for (final String bcc : email.getBccs()) {
+        msg.addRecipient(RecipientType.BCC, new InternetAddress(bcc));
+      }
       msg.setSubject(email.getSubject());
 
       final MimeMultipart multipart = new MimeMultipart("alternative");

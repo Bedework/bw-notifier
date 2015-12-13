@@ -31,24 +31,37 @@ import org.bedework.util.xml.NsContext;
 import org.bedework.util.xml.XmlUtil;
 import org.bedework.util.xml.tagdefs.BedeworkServerTags;
 
+import freemarker.core.Environment;
+import freemarker.ext.dom.NodeModel;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
+import freemarker.template.TemplateModelException;
 import net.fortuna.ical4j.model.property.DtStamp;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FilenameFilter;
+import java.io.StringBufferInputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 /** Some useful methods..
  *
@@ -57,37 +70,43 @@ import javax.xml.namespace.QName;
  */
 public abstract class AbstractAdaptor<Conf extends AdaptorConf>
         implements Adaptor<Conf> {
-	private transient Logger log;
+    private transient Logger log;
 
   protected boolean debug;
 
-	private final static AtomicLong nextId = new AtomicLong();
+    private final static AtomicLong nextId = new AtomicLong();
 
-	private final Long id;
+    private final Long id;
 
   protected NotifyConfig globalConfig;
 
-	protected Conf conf;
+    protected Conf conf;
 
   private Configuration fmConfig;
 
   protected NsContext nsContext = new NsContext(null);
 
-	protected AbstractAdaptor() {
-		debug = getLogger().isDebugEnabled();
+    private static final FilenameFilter templateFilter = new FilenameFilter() {
+        public boolean accept(File dir, String name) {
+            return name.endsWith(".ftl");
+        }
+    };
+
+    protected AbstractAdaptor() {
+        debug = getLogger().isDebugEnabled();
     id = nextId.incrementAndGet();
-	}
+    }
 
   @Override
-	public long getId() {
-		return id;
-	}
+    public long getId() {
+        return id;
+    }
 
   @Override
-	public void setConf(final NotifyConfig globalConfig,
+    public void setConf(final NotifyConfig globalConfig,
                       final Conf conf) throws NoteException {
     this.globalConfig = globalConfig;
-		this.conf = conf;
+        this.conf = conf;
 
     try {
       // Init freemarker
@@ -101,87 +120,75 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
     } catch (final Throwable t) {
       throw new NoteException(t);
     }
-	}
-
-  public String applyTemplate(final QName noteType,
-                              final Note.DeliveryMethod handlerType,
-                              final NotificationType note,
-                              final Map extraValues) throws NoteException {
-    try {
-      String prefix = nsContext.getPrefix(noteType.getNamespaceURI());
-
-      if (prefix == null) {
-        prefix = "default";
-      }
-
-      final String abstractPath = Util.buildPath(false,
-                                                 handlerType
-                                                         .toString(),
-                                                 "/",
-                                                 prefix,
-                                                 "/",
-                                                 noteType.getLocalPart() + ".ftl");
-
-//      Element el = parsedNote.getDocumentElement();
-//      NodeModel.simplify(parsedNote);
-//      NodeModel nm = NodeModel.wrap(parsedNote);
-//       String xml = note.toXml(true);
-
-//      NodeModel.useJaxenXPathSupport();
-//      final NodeModel nm = NodeModel.parse(new InputSource(new StringReader(xml)));
-      Map<String, Object> root = new HashMap();
-
-      toMap(note.getParsed().getDocumentElement(), root);
-//      root.put("notification", nm);
-      if (extraValues != null) {
-        prefix = nsContext.getPrefix(BedeworkServerTags.notifyValues.getNamespaceURI());
-        if (prefix == null) {
-          prefix = "";
-        }
-
-        Set<String> keys = extraValues.keySet();
-        for (final String key: keys) {
-          Object val = extraValues.get(key);
-
-          if (val instanceof Document) {
-            /* Convert the value to a map */
-            Map docMap = new HashMap();
-            toMap(((Document)val).getDocumentElement(),
-                  docMap);
-            extraValues.put(key, docMap);
-          }
-        }
-
-        root.put(prefix + BedeworkServerTags.notifyValues.getLocalPart(),
-                 extraValues);
-      }
-
-      Template template = fmConfig.getTemplate(abstractPath);
-
-      Writer out = new StringWriter();
-      template.process(root, out);
-
-      return out.toString();
-    } catch (final Throwable t) {
-      throw new NoteException(t);
     }
+
+  public List<TemplateResult> applyTemplates(final QName noteType,
+                                             final Note.DeliveryMethod handlerType,
+                                             final NotificationType note,
+                                             final Map<String, Object> extraValues) throws NoteException {
+      List<TemplateResult> results = new ArrayList<TemplateResult>();
+      try {
+          String prefix = nsContext.getPrefix(noteType.getNamespaceURI());
+
+          if (prefix == null) {
+              prefix = "default";
+          }
+
+          final String abstractPath = Util.buildPath(false, handlerType.toString(), "/", prefix, "/", noteType.getLocalPart());
+
+          File templateDir = new File(Util.buildPath(false, globalConfig.getTemplatesPath(), "/", abstractPath));
+          if (templateDir.isDirectory()) {
+
+              Map<String, Object> root = new HashMap<String, Object>();
+              DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+              factory.setNamespaceAware(true);
+              DocumentBuilder builder = factory.newDocumentBuilder();
+              Document doc = builder.parse(new InputSource(new StringReader(note.toXml(true))));
+              Element el = doc.getDocumentElement();
+              NodeModel.simplify(el);
+              NodeModel.useJaxenXPathSupport();
+              root.put("notification", el);
+
+              if (extraValues != null) {
+                  root.putAll(extraValues);
+              }
+
+              // Sort files so the user can control the order of content types/body parts of the email by template file name.
+              File[] templates = templateDir.listFiles(templateFilter);
+              Arrays.sort(templates);
+              for (File f : templates) {
+                  Template template = fmConfig.getTemplate(Util.buildPath(false, abstractPath, "/", f.getName()));
+                  Writer out = new StringWriter();
+                  Environment env = template.createProcessingEnvironment(root, out);
+                  env.process();
+
+                  TemplateResult r = new TemplateResult(f.getName(), out.toString(), env);
+                  if (!r.getBooleanVariable("skip")) {
+                      results.add(new TemplateResult(f.getName(), out.toString(), env));
+                  }
+              }
+          }
+      } catch (final Throwable t) {
+          throw new NoteException(t);
+      }
+      return results;
   }
 
   @Override
-	public Conf getConfig() {
-		return conf;
-	}
+    public Conf getConfig() {
+        return conf;
+    }
 
-	public String getType() {
-		return conf.getType();
-	}
+    public String getType() {
+        return conf.getType();
+    }
 
   @Override
-	public abstract boolean process(final Action action) throws NoteException;
+    public abstract boolean process(final Action action) throws NoteException;
 
-	/* ====================================================================
-	 *                   Protected methods
-	 * ==================================================================== */
+    /* ====================================================================
+     *                   Protected methods
+     * ==================================================================== */
 
   protected String getDtstamp() {
     return new DtStamp().getValue();
@@ -245,63 +252,82 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
   }
 
   protected void info(final String msg) {
-		getLogger().info(msg);
-	}
-
-	protected void trace(final String msg) {
-		getLogger().debug(msg);
-	}
-
-	protected void error(final Throwable t) {
-		getLogger().error(this, t);
-	}
-
-	protected void error(final String msg) {
-		getLogger().error(msg);
-	}
-
-	protected void warn(final String msg) {
-		getLogger().warn(msg);
-	}
-
-	/* Get a logger for messages
-	 */
-	protected Logger getLogger() {
-		if (log == null) {
-			log = Logger.getLogger(this.getClass());
-		}
-
-		return log;
-	}
-
-  private void toMap(final Element el,
-                     final Map map) throws NoteException {
-    try {
-      String prefix = nsContext.getPrefix(el.getNamespaceURI());
-
-      final String name;
-      if (prefix == null) {
-        name = el.getLocalName();
-      } else {
-        name = prefix + el.getLocalName();
-      }
-
-      try {
-        if (!XmlUtil.hasChildren(el) && XmlUtil.hasContent(el)) {
-          map.put(name, XmlUtil.getElementContent(el));
-          return;
-        }
-      } catch (final Throwable ignored) {}
-
-      Map childMap = new HashMap();
-
-      map.put(name, childMap);
-
-      for (final Element ch: XmlUtil.getElements(el)) {
-        toMap(ch, childMap);
-      }
-    } catch (final Throwable t) {
-      throw new NoteException(t);
+        getLogger().info(msg);
     }
-  }
+
+    protected void trace(final String msg) {
+        getLogger().debug(msg);
+    }
+
+    protected void error(final Throwable t) {
+        getLogger().error(this, t);
+    }
+
+    protected void error(final String msg) {
+        getLogger().error(msg);
+    }
+
+    protected void warn(final String msg) {
+        getLogger().warn(msg);
+    }
+
+    /* Get a logger for messages
+     */
+    protected Logger getLogger() {
+        if (log == null) {
+            log = Logger.getLogger(this.getClass());
+        }
+
+        return log;
+    }
+
+    public class TemplateResult {
+        String templateName;
+        String value;
+        Environment env;
+
+        protected TemplateResult(String templateName, String value, Environment env) {
+            this.templateName = templateName;
+            this.value = value;
+            this.env = env;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public String getStringVariable(String key) {
+            try {
+                    Object val = env.getVariable(key);
+                    if (val != null) {
+                        return val.toString();
+                    }
+            } catch (TemplateModelException tme) {
+            }
+            return null;
+        }
+
+        public Boolean getBooleanVariable(String key) {
+            try {
+                    Object val = env.getVariable(key);
+                    if (val != null) {
+                        return Boolean.valueOf(val.toString());
+                    }
+            } catch (TemplateModelException tme) {
+            }
+            return false;
+        }
+
+        public List<String> getListVariable(String key) {
+            List<String> result = new ArrayList<String>();
+            try {
+                    Object val = env.getVariable(key);
+                    if (val != null) {
+                        result = Arrays.asList(val.toString().split("\\s*;\\s*"));;
+                    }
+            } catch (TemplateModelException tme) {
+            }
+            return result;
+        }
+    }
 }
