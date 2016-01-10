@@ -138,7 +138,7 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
                                              final Map<String, Object> extraValues) throws NoteException {
     List<TemplateResult> results = new ArrayList<TemplateResult>();
     try {
-      String prefix = nsContext.getPrefix(noteType.getNamespaceURI());
+      String prefix = note.getParsed().getDocumentElement().getPrefix();
 
       if (prefix == null) {
         prefix = "default";
