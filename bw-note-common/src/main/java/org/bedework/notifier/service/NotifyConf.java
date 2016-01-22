@@ -346,6 +346,96 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
     return getConfig().getPubKeys();
   }
 
+  /**
+   *
+   * @param val    String
+   */
+  @Override
+  public void setCardDAVHost(final String val) {
+    getConfig().setCardDAVHost(val);
+  }
+
+  /**
+   *
+   * @return String
+   */
+  @Override
+  public String getCardDAVHost() {
+    return getConfig().getCardDAVHost();
+  }
+
+  /**
+   *
+   * @param val    String
+   */
+  @Override
+  public void setCardDAVPort(final int val) {
+    getConfig().setCardDAVPort(val);
+  }
+
+  /**
+   *
+   * @return String
+   */
+  @Override
+  public int getCardDAVPort() {
+    return getConfig().getCardDAVPort();
+  }
+
+  /**
+   *
+   * @param val    String
+   */
+  @Override
+  public void setCardDAVContextPath(final String val) {
+    getConfig().setCardDAVContextPath(val);
+  }
+
+  /**
+   *
+   * @return String
+   */
+  @Override
+  public String getCardDAVContextPath() {
+    return getConfig().getCardDAVContextPath();
+  }
+
+  /**
+   *
+   * @param val    String
+   */
+  @Override
+  public void setCardDAVPrincipalsPath(final String val) {
+    getConfig().setCardDAVPrincipalsPath(val);
+  }
+
+  /**
+   *
+   * @return String
+   */
+  @Override
+  public String getCardDAVPrincipalsPath() {
+    return getConfig().getCardDAVPrincipalsPath();
+  }
+
+  /**
+   *
+   * @param val    String
+   */
+  @Override
+  public void setVCardContentType(final String val) {
+    getConfig().setVCardContentType(val);
+  }
+
+  /**
+   *
+   * @return String
+   */
+  @Override
+  public String getVCardContentType() {
+    return getConfig().getVCardContentType();
+  }
+
   @Override
   public List<String> getConnectorNames() {
     return connectorNames;

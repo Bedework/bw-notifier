@@ -142,4 +142,69 @@ public interface NotifyConfProperties {
    */
   @MBeanInfo("Name of public keys file.")
   String getPubKeys();
+
+  /**
+   *
+   * @param val    String
+   */
+  void setCardDAVHost(final String val);
+
+  /**
+   *
+   * @return String
+   */
+  @MBeanInfo("CalDAV host.")
+  String getCardDAVHost();
+
+  /**
+   *
+   * @param val    String
+   */
+  void setCardDAVPort(final int val);
+
+  /**
+   *
+   * @return String
+   */
+  @MBeanInfo("CardDAV port.")
+  int getCardDAVPort();
+
+  /**
+   *
+   * @param val    String
+   */
+  void setCardDAVContextPath(final String val);
+
+  /**
+   *
+   * @return String
+   */
+  @MBeanInfo("CardDAV context path.")
+  String getCardDAVContextPath();
+
+  /**
+   *
+   * @param val    String
+   */
+  void setCardDAVPrincipalsPath(final String val);
+
+  /**
+   *
+   * @return String
+   */
+  @MBeanInfo("Principals path for vCard lookup.")
+  String getCardDAVPrincipalsPath();
+
+  /**
+   *
+   * @param val    String
+   */
+  void setVCardContentType(final String val);
+
+  /**
+   *
+   * @return String
+   */
+  @MBeanInfo("ACCEPT header for vCard retrieval, either 'text/vcard' or 'application/vcard+json'.")
+  String getVCardContentType();
 }

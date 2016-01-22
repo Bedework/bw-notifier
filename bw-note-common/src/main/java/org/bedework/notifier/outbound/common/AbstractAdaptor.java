@@ -18,6 +18,8 @@
  */
 package org.bedework.notifier.outbound.common;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.bedework.caldav.util.notifications.NotificationType;
 import org.bedework.caldav.util.notifications.ProcessorType;
 import org.bedework.caldav.util.notifications.ProcessorsType;
@@ -25,6 +27,7 @@ import org.bedework.notifier.Action;
 import org.bedework.notifier.conf.NotifyConfig;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
+import org.bedework.util.http.BasicHttpClient;
 import org.bedework.util.http.HttpUtil;
 import org.bedework.util.misc.Util;
 import org.bedework.util.xml.NsContext;
@@ -36,13 +39,18 @@ import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.TemplateModelException;
 import net.fortuna.ical4j.model.property.DtStamp;
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -57,6 +65,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
 
 /** Some useful methods..
  *
@@ -80,6 +92,9 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
   private Configuration fmConfig;
 
   protected NsContext nsContext = new NsContext(null);
+
+  private static final String VCARD_SUFFIX = ".vcf"; 
+  private static final String MAILTO = "mailto:";
 
   private static final FilenameFilter templateFilter = new FilenameFilter() {
     public boolean accept(File dir, String name) {
@@ -123,7 +138,7 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
                                              final Map<String, Object> extraValues) throws NoteException {
     List<TemplateResult> results = new ArrayList<TemplateResult>();
     try {
-      String prefix = nsContext.getPrefix(noteType.getNamespaceURI());
+      String prefix = note.getParsed().getDocumentElement().getPrefix();
 
       if (prefix == null) {
         prefix = "default";
@@ -143,6 +158,41 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
         NodeModel.simplify(el);
         NodeModel.useJaxenXPathSupport();
         root.put("notification", el);
+
+        if (globalConfig.getCardDAVHost() != null && globalConfig.getCardDAVPort() != 0 && globalConfig.getCardDAVContextPath() != null) {
+          HashMap<String, Object> vcards = new HashMap<String, Object>();
+          BasicHttpClient client;
+          try {
+            ArrayList<Header> hdrs = new ArrayList<Header>();
+            BasicHeader h = new BasicHeader("ACCEPT", globalConfig.getVCardContentType());
+            hdrs.add(h);
+
+            client = new BasicHttpClient(globalConfig.getCardDAVHost(), globalConfig.getCardDAVPort(), null, 15 * 1000);
+
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            XPathExpression exp = xPath.compile("//*[local-name() = 'href']");
+            NodeList nl = (NodeList)exp.evaluate(doc, XPathConstants.NODESET);
+
+            for (int i = 0; i < nl.getLength(); i++) {
+              Node n = nl.item(i);
+              String text = n.getTextContent();
+
+              if ((text.startsWith(MAILTO) || text.startsWith(globalConfig.getCardDAVPrincipalsPath())) && !root.containsKey(text)) {
+                String path = Util.buildPath(false, globalConfig.getCardDAVContextPath() + "/" + text.replace(':', '/'));
+
+                final InputStream is = client.get(path + VCARD_SUFFIX, "application/text", hdrs);
+                if (is != null) {
+                  ObjectMapper om = new ObjectMapper();
+                  ArrayList<Object> hm = om.readValue(is, ArrayList.class);
+                  vcards.put(text, hm);
+                }
+              }
+            }
+            root.put("vcards", vcards);
+          } catch (final Throwable t) {
+            error(t);
+          }
+        }
 
         if (extraValues != null) {
           root.putAll(extraValues);

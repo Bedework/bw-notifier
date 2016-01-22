@@ -98,7 +98,7 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
     // ? else { ... }
 
     final QName elementName =  nt.getNotification().getElementName();
-    String prefix = nsContext.getPrefix(elementName.getNamespaceURI());
+    String prefix = nt.getParsed().getDocumentElement().getPrefix();
 
     if (prefix == null) {
       prefix = "default";

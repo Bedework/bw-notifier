@@ -53,6 +53,12 @@ public class NotifyConfPropertiesImpl extends HibernateConfigBase<NotifyConfProp
   /* Path to keystores  */
   private String pubKeys;
 
+  private String cardDAVHost;
+  private int cardDAVPort;
+  private String cardDAVContextPath;
+  private String cardDAVPrincipalsPath;
+  private String vCardContentType;
+
   @Override
   public void setNotelingPoolSize(final int val) {
     notelingPoolSize = val;
@@ -141,5 +147,55 @@ public class NotifyConfPropertiesImpl extends HibernateConfigBase<NotifyConfProp
   @Override
   public String getPubKeys() {
     return pubKeys;
+  }
+
+  @Override
+  public String getCardDAVHost() {
+    return cardDAVHost;
+  }
+
+  @Override
+  public void setCardDAVHost(String cardDAVHost) {
+    this.cardDAVHost = cardDAVHost;
+  }
+
+  @Override
+  public int getCardDAVPort() {
+    return cardDAVPort;
+  }
+
+  @Override
+  public void setCardDAVPort(int cardDAVPort) {
+    this.cardDAVPort = cardDAVPort;
+  }
+
+  @Override
+  public String getCardDAVContextPath() {
+    return cardDAVContextPath;
+  }
+
+  @Override
+  public void setCardDAVContextPath(String cardDAVContextPath) {
+    this.cardDAVContextPath = cardDAVContextPath;
+  }
+
+  @Override
+  public String getCardDAVPrincipalsPath() {
+    return cardDAVPrincipalsPath;
+  }
+
+  @Override
+  public void setCardDAVPrincipalsPath(String cardDAVPrincipalsPath) {
+    this.cardDAVPrincipalsPath = cardDAVPrincipalsPath;
+  }
+
+  @Override
+  public String getVCardContentType() {
+    return vCardContentType;
+  }
+
+  @Override
+  public void setVCardContentType(String vCardContentType) {
+    this.vCardContentType = vCardContentType;
   }
 }
