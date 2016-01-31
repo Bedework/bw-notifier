@@ -177,7 +177,7 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
               Node n = nl.item(i);
               String text = n.getTextContent();
 
-              if ((text.startsWith(MAILTO) || text.startsWith(globalConfig.getCardDAVPrincipalsPath())) && !root.containsKey(text)) {
+              if ((text.startsWith(MAILTO) || text.startsWith(globalConfig.getCardDAVPrincipalsPath())) && !vcards.containsKey(text)) {
                 String path = Util.buildPath(false, globalConfig.getCardDAVContextPath() + "/" + text.replace(':', '/'));
 
                 final InputStream is = client.get(path + VCARD_SUFFIX, "application/text", hdrs);
