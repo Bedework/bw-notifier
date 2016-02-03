@@ -60,6 +60,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
@@ -95,6 +96,7 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
 
   private static final String VCARD_SUFFIX = ".vcf"; 
   private static final String MAILTO = "mailto:";
+  private static final Pattern pMailto = Pattern.compile("^" + MAILTO, Pattern.CASE_INSENSITIVE);
 
   private static final FilenameFilter templateFilter = new FilenameFilter() {
     public boolean accept(File dir, String name) {
@@ -177,6 +179,7 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
               Node n = nl.item(i);
               String text = n.getTextContent();
 
+              text = pMailto.matcher(text).replaceFirst(MAILTO);
               if ((text.startsWith(MAILTO) || text.startsWith(globalConfig.getCardDAVPrincipalsPath())) && !vcards.containsKey(text)) {
                 String path = Util.buildPath(false, globalConfig.getCardDAVContextPath() + "/" + text.replace(':', '/'));
 
@@ -293,7 +296,7 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
   }
 
   protected String stripMailTo(final String address) {
-    return address.replaceAll("^mailto:", "");
+    return pMailto.matcher(address).replaceFirst("");
   }
 
   protected void info(final String msg) {
