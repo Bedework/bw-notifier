@@ -57,6 +57,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -76,8 +77,7 @@ import javax.xml.xpath.XPathFactory;
  * @author Mike Douglass
  *
  */
-public abstract class AbstractAdaptor<Conf extends AdaptorConf>
-        implements Adaptor<Conf> {
+public abstract class AbstractAdaptor<Conf extends AdaptorConf> implements Adaptor<Conf> {
   private transient Logger log;
 
   protected boolean debug;
@@ -122,9 +122,8 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
 
     try {
       // Init freemarker
-      fmConfig = new Configuration();
-      fmConfig.setTemplateExceptionHandler(
-              TemplateExceptionHandler.RETHROW_HANDLER);
+      fmConfig = new Configuration(Configuration.getVersion());
+      fmConfig.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
       fmConfig.setDefaultEncoding("UTF-8");
 
       File templateDir = new File(globalConfig.getTemplatesPath());
@@ -137,6 +136,7 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
   public List<TemplateResult> applyTemplates(final QName noteType,
                                              final Note.DeliveryMethod handlerType,
                                              final NotificationType note,
+                                             final List<String> recipientEmails,
                                              final Map<String, Object> extraValues) throws NoteException {
     List<TemplateResult> results = new ArrayList<TemplateResult>();
     try {
@@ -161,6 +161,12 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
         NodeModel.useJaxenXPathSupport();
         root.put("notification", el);
 
+        HashSet<String> recipients = new HashSet<String>();
+        for (String email : recipientEmails) {
+            recipients.add(MAILTO + email);
+        }
+        root.put("recipients", recipients);
+
         if (globalConfig.getCardDAVHost() != null && globalConfig.getCardDAVPort() != 0 && globalConfig.getCardDAVContextPath() != null) {
           HashMap<String, Object> vcards = new HashMap<String, Object>();
           BasicHttpClient client;
@@ -175,20 +181,29 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
             XPathExpression exp = xPath.compile("//*[local-name() = 'href']");
             NodeList nl = (NodeList)exp.evaluate(doc, XPathConstants.NODESET);
 
+            HashSet<String> vcardLookups = new HashSet<String>();
             for (int i = 0; i < nl.getLength(); i++) {
               Node n = nl.item(i);
               String text = n.getTextContent();
 
               text = pMailto.matcher(text).replaceFirst(MAILTO);
-              if ((text.startsWith(MAILTO) || text.startsWith(globalConfig.getCardDAVPrincipalsPath())) && !vcards.containsKey(text)) {
-                String path = Util.buildPath(false, globalConfig.getCardDAVContextPath() + "/" + text.replace(':', '/'));
+              if (text.startsWith(MAILTO) || text.startsWith(globalConfig.getCardDAVPrincipalsPath())) {
+                  vcardLookups.add(text);
+              }
+            }
 
-                final InputStream is = client.get(path + VCARD_SUFFIX, "application/text", hdrs);
-                if (is != null) {
-                  ObjectMapper om = new ObjectMapper();
-                  ArrayList<Object> hm = om.readValue(is, ArrayList.class);
-                  vcards.put(text, hm);
-                }
+            // Get vCards for recipients too. They may not be referenced in the notification.
+            vcardLookups.addAll(recipients);
+
+            for (String lookup : vcardLookups) {
+              String path = Util.buildPath(false, globalConfig.getCardDAVContextPath() + "/" + lookup.replace(':', '/'));
+
+              final InputStream is = client.get(path + VCARD_SUFFIX, "application/text", hdrs);
+              if (is != null) {
+                ObjectMapper om = new ObjectMapper();
+                @SuppressWarnings("unchecked")
+                ArrayList<Object> hm = om.readValue(is, ArrayList.class);
+                vcards.put(lookup, hm);
               }
             }
             root.put("vcards", vcards);

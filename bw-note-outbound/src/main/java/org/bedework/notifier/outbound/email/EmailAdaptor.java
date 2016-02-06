@@ -110,7 +110,7 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
     }
     email.setSubject(subject);
 
-    List<TemplateResult> results = applyTemplates(elementName, Note.DeliveryMethod.email, nt, note.getExtraValues());
+    List<TemplateResult> results = applyTemplates(elementName, Note.DeliveryMethod.email, nt, sub.getEmails(), note.getExtraValues());
     for (TemplateResult result : results) {
       String from = result.getStringVariable("from");
       if (from != null) {
