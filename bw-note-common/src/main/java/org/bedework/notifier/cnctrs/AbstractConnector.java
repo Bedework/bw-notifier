@@ -69,6 +69,13 @@ public abstract class AbstractConnector<T,
     return connectorName;
   }
 
+  /**
+   * @return the connector config
+   */
+  public Tconf getConnectorConfig() {
+    return config;
+  }
+
   @Override
   public void init(final String name,
                       final Tconf config) throws NoteException {

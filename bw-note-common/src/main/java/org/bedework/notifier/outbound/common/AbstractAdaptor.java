@@ -90,19 +90,9 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf> implements Adapt
 
   protected Conf conf;
 
-  private Configuration fmConfig;
+  protected Configuration fmConfig;
 
   protected NsContext nsContext = new NsContext(null);
-
-  private static final String VCARD_SUFFIX = ".vcf"; 
-  private static final String MAILTO = "mailto:";
-  private static final Pattern pMailto = Pattern.compile("^" + MAILTO, Pattern.CASE_INSENSITIVE);
-
-  private static final FilenameFilter templateFilter = new FilenameFilter() {
-    public boolean accept(File dir, String name) {
-      return name.endsWith(".ftl");
-    }
-  };
 
   protected AbstractAdaptor() {
     debug = getLogger().isDebugEnabled();
@@ -131,110 +121,6 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf> implements Adapt
     } catch (final Throwable t) {
       throw new NoteException(t);
     }
-  }
-
-  public List<TemplateResult> applyTemplates(final QName noteType,
-                                             final Note.DeliveryMethod handlerType,
-                                             final NotificationType note,
-                                             final List<String> recipientEmails,
-                                             final Map<String, Object> extraValues) throws NoteException {
-    List<TemplateResult> results = new ArrayList<TemplateResult>();
-    try {
-      String prefix = note.getParsed().getDocumentElement().getPrefix();
-
-      if (prefix == null) {
-        prefix = "default";
-      }
-
-      final String abstractPath = Util.buildPath(false, handlerType.toString(), "/", prefix, "/", noteType.getLocalPart());
-
-      File templateDir = new File(Util.buildPath(false, globalConfig.getTemplatesPath(), "/", abstractPath));
-      if (templateDir.isDirectory()) {
-
-        Map<String, Object> root = new HashMap<String, Object>();
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(new InputSource(new StringReader(note.toXml(true))));
-        Element el = doc.getDocumentElement();
-        NodeModel.simplify(el);
-        NodeModel.useJaxenXPathSupport();
-        root.put("notification", el);
-
-        HashSet<String> recipients = new HashSet<String>();
-        for (String email : recipientEmails) {
-            recipients.add(MAILTO + email);
-        }
-        root.put("recipients", recipients);
-
-        if (globalConfig.getCardDAVHost() != null && globalConfig.getCardDAVPort() != 0 && globalConfig.getCardDAVContextPath() != null) {
-          HashMap<String, Object> vcards = new HashMap<String, Object>();
-          BasicHttpClient client;
-          try {
-            ArrayList<Header> hdrs = new ArrayList<Header>();
-            BasicHeader h = new BasicHeader("ACCEPT", globalConfig.getVCardContentType());
-            hdrs.add(h);
-
-            client = new BasicHttpClient(globalConfig.getCardDAVHost(), globalConfig.getCardDAVPort(), null, 15 * 1000);
-
-            XPath xPath = XPathFactory.newInstance().newXPath();
-            XPathExpression exp = xPath.compile("//*[local-name() = 'href']");
-            NodeList nl = (NodeList)exp.evaluate(doc, XPathConstants.NODESET);
-
-            HashSet<String> vcardLookups = new HashSet<String>();
-            for (int i = 0; i < nl.getLength(); i++) {
-              Node n = nl.item(i);
-              String text = n.getTextContent();
-
-              text = pMailto.matcher(text).replaceFirst(MAILTO);
-              if (text.startsWith(MAILTO) || text.startsWith(globalConfig.getCardDAVPrincipalsPath())) {
-                  vcardLookups.add(text);
-              }
-            }
-
-            // Get vCards for recipients too. They may not be referenced in the notification.
-            vcardLookups.addAll(recipients);
-
-            for (String lookup : vcardLookups) {
-              String path = Util.buildPath(false, globalConfig.getCardDAVContextPath() + "/" + lookup.replace(':', '/'));
-
-              final InputStream is = client.get(path + VCARD_SUFFIX, "application/text", hdrs);
-              if (is != null) {
-                ObjectMapper om = new ObjectMapper();
-                @SuppressWarnings("unchecked")
-                ArrayList<Object> hm = om.readValue(is, ArrayList.class);
-                vcards.put(lookup, hm);
-              }
-            }
-            root.put("vcards", vcards);
-          } catch (final Throwable t) {
-            error(t);
-          }
-        }
-
-        if (extraValues != null) {
-          root.putAll(extraValues);
-        }
-
-        // Sort files so the user can control the order of content types/body parts of the email by template file name.
-        File[] templates = templateDir.listFiles(templateFilter);
-        Arrays.sort(templates);
-        for (File f : templates) {
-          Template template = fmConfig.getTemplate(Util.buildPath(false, abstractPath, "/", f.getName()));
-          Writer out = new StringWriter();
-          Environment env = template.createProcessingEnvironment(root, out);
-          env.process();
-
-          TemplateResult r = new TemplateResult(f.getName(), out.toString(), env);
-          if (!r.getBooleanVariable("skip")) {
-            results.add(new TemplateResult(f.getName(), out.toString(), env));
-          }
-        }
-      }
-    } catch (final Throwable t) {
-      throw new NoteException(t);
-    }
-    return results;
   }
 
   @Override
@@ -310,10 +196,6 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf> implements Adapt
     }
   }
 
-  protected String stripMailTo(final String address) {
-    return pMailto.matcher(address).replaceFirst("");
-  }
-
   protected void info(final String msg) {
     getLogger().info(msg);
   }
@@ -342,55 +224,5 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf> implements Adapt
     }
 
     return log;
-  }
-
-  public class TemplateResult {
-    String templateName;
-    String value;
-    Environment env;
-
-    protected TemplateResult(String templateName, String value, Environment env) {
-      this.templateName = templateName;
-      this.value = value;
-      this.env = env;
-    }
-
-    public String getValue() {
-      return value;
-    }
-
-    public String getStringVariable(String key) {
-      try {
-        Object val = env.getVariable(key);
-        if (val != null) {
-          return val.toString();
-        }
-      } catch (TemplateModelException tme) {
-      }
-      return null;
-    }
-
-    public Boolean getBooleanVariable(String key) {
-      try {
-        Object val = env.getVariable(key);
-        if (val != null) {
-          return Boolean.valueOf(val.toString());
-        }
-      } catch (TemplateModelException tme) {
-      }
-      return false;
-    }
-
-    public List<String> getListVariable(String key) {
-      List<String> result = new ArrayList<String>();
-      try {
-        Object val = env.getVariable(key);
-        if (val != null) {
-          result = Arrays.asList(val.toString().split("\\s*;\\s*"));;
-        }
-      } catch (TemplateModelException tme) {
-      }
-      return result;
-    }
   }
 }
