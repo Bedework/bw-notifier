@@ -39,20 +39,18 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import freemarker.core.Environment;
 import freemarker.ext.dom.NodeModel;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.DefaultObjectWrapperBuilder;
-import freemarker.template.ObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateHashModel;
 import freemarker.template.TemplateModelException;
-import freemarker.template.utility.DateUtil;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.InputStream;
@@ -60,12 +58,15 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
@@ -91,6 +92,9 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
   private static final String VCARD_SUFFIX = ".vcf";
   private static final String MAILTO = "mailto:";
   private static final Pattern pMailto = Pattern.compile("^" + MAILTO, Pattern.CASE_INSENSITIVE);
+  private static final SimpleDateFormat recurIdFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
+  private static final SimpleDateFormat jsonIdFormatUTC = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+  private static final SimpleDateFormat jsonIdFormatTZ = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
   private static final String HEADER_ACCEPT = "ACCEPT";
   private static final String HEADER_DEPTH = "DEPTH";
@@ -292,29 +296,66 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
             href = chg.getCreated().getHref();
           } else if (chg.getDeleted() != null) {
             href = chg.getDeleted().getHref();
-          } else if (chg.getUpdated() != null) {
+          } else if (chg.getUpdated() != null && chg.getUpdated().size() > 0) {
             href = chg.getUpdated().get(0).getHref();
           }
 
           if (href != null) {
-            ObjectMapper om = new ObjectMapper();
-            final InputStream is = cl.get(cfg.getSystemUrl() + href, null, hdrs);
-            @SuppressWarnings("unchecked")
-            ArrayList<Object> a = om.readValue(is, ArrayList.class);
-            root.put("vevent", a);
+            if (chg.getCreated() != null || chg.getUpdated() != null) {
+              // We only have an event for the templates on a create or update, not on delete.
+              ObjectMapper om = new ObjectMapper();
+              final InputStream is = cl.get(cfg.getSystemUrl() + href, null, hdrs);
+              JsonNode a = om.readValue(is, JsonNode.class);
+              
+              // Check for a recurrence ID on this notification.
+              XPathExpression exp = xPath.compile("//*[local-name() = 'recurrenceid']/text()");
+              String rid = exp.evaluate(doc);
+              if (rid != null && !rid.isEmpty()) {
+                Calendar rcal = Calendar.getInstance();
+                recurIdFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+                rcal.setTime(recurIdFormat.parse(rid));
+                
+                // Find the matching recurrence ID in the JSON, and make that the only vevent object.
+                Calendar c = Calendar.getInstance();
+                ArrayNode vevents = (ArrayNode) a.get(2);
+                for (JsonNode vevent : vevents) {
+                  if (vevent.size() > 1 && vevent.get(1).size() > 1) {
+                    JsonNode n = vevent.get(1).get(0);
+                    if (n.get(0).asText().equals("recurrence-id")) {
+                      if (n.get(1).size() > 0 && n.get(1).get("tzid") != null) {
+                        jsonIdFormatTZ.setTimeZone(TimeZone.getTimeZone(n.get(1).get("tzid").asText()));
+                        c.setTime(jsonIdFormatTZ.parse(n.get(3).asText()));
+                      } else {
+                        jsonIdFormatUTC.setTimeZone(TimeZone.getTimeZone("UTC"));
+                        c.setTime(jsonIdFormatUTC.parse(n.get(3).asText()));
+                      }
+                      if (rcal.compareTo(c) == 0) {
+                        vevents.removeAll();
+                        vevents.add(vevent);
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
 
+              root.put("vevent", (ArrayList<Object>)om.convertValue(a, ArrayList.class));                
+            }
+
+            // TODO: Provide some calendar information to the templates. This is currently the publisher's
+            // calendar, but needs to be fixed to be the subscriber's calendar.
             String chref = href.substring(0, href.lastIndexOf("/"));
             hdrs.add(new BasicHeader(HEADER_DEPTH, "0"));
             int rc = cl.sendRequest("PROPFIND", cfg.getSystemUrl() + chref, hdrs, "text/xml", CALENDAR_PROPFIND.length(), CALENDAR_PROPFIND.getBytes());
             if (rc == HttpServletResponse.SC_OK || rc == SC_MULTISTATUS) {
-              doc = builder.parse(new InputSource(cl.getResponseBodyAsStream()));
+              Document d = builder.parse(new InputSource(cl.getResponseBodyAsStream()));
               HashMap<String, String> hm = new HashMap<String, String>();
               XPathExpression exp = xPath.compile("//*[local-name() = 'href']/text()");
-              hm.put("href", exp.evaluate(doc));
+              hm.put("href", exp.evaluate(d));
               exp = xPath.compile("//*[local-name() = 'displayname']/text()");
-              hm.put("name", (String)exp.evaluate(doc));
+              hm.put("name", (String)exp.evaluate(d));
               exp = xPath.compile("//*[local-name() = 'calendar-description']/text()");
-              hm.put("description", (String)exp.evaluate(doc));
+              hm.put("description", (String)exp.evaluate(d));
               root.put("calendar", hm);
             }
           }
@@ -358,7 +399,7 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
     }
   }
 
-  private List<Header> getHeaders(BedeworkConnectorConfig config, BedeworkSubscription sub) {
+  protected List<Header> getHeaders(BedeworkConnectorConfig config, BedeworkSubscription sub) {
     List<Header> hdrs = new ArrayList<>(1);
     hdrs.add(new BasicHeader("X-BEDEWORK-NOTEPR", sub.getPrincipalHref()));
     hdrs.add(new BasicHeader("X-BEDEWORK-PT", sub.getUserToken()));
