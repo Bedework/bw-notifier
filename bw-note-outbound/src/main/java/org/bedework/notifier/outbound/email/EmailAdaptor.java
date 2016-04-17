@@ -301,7 +301,7 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
           }
 
           if (href != null) {
-            if (chg.getCreated() != null || chg.getUpdated() != null) {
+            if (chg.getDeleted() == null) {
               // We only have an event for the templates on a create or update, not on delete.
               ObjectMapper om = new ObjectMapper();
               final InputStream is = cl.get(cfg.getSystemUrl() + href, null, hdrs);
