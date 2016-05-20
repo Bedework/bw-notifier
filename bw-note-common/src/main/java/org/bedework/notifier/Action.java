@@ -60,6 +60,8 @@ public class Action {
 
   private ConnectorInstance sourceConnInst;
 
+  private int retries = 0;
+
   /** Create an action
    */
   public Action(final ActionType type,
@@ -154,6 +156,14 @@ public class Action {
    */
   public ConnectorInstance getConnInst() {
     return sourceConnInst;
+  }
+
+  public int getRetries() {
+    return retries;
+  }
+
+  public void setRetries(int retries) {
+    this.retries = retries;
   }
 
   protected void toStringSegment(final ToString ts) {

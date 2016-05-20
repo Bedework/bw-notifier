@@ -129,7 +129,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
   }
 
   @Override
-  public boolean check(final NotifyDb db) throws NoteException {
+  public boolean check(final NotifyDb db, String resource) throws NoteException {
     /* Will do a query on the configured resource directory and add
        a list of hrefs for notifications.
 
@@ -164,6 +164,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
       boolean found = false;
       String newSyncToken = null;
 
+      getBwsub().getNoteHrefs().clear(); // Clear out hrefs in case we are retrying.
       for (final DavChild ch: chs) {
         if (ch.status != HttpServletResponse.SC_OK) {
           // Notification deleted. Don't think we care.
@@ -183,10 +184,10 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
         }
 
         getBwsub().getNoteHrefs().add(ch.uri);
-        found = true;
+        found = found || (resource != null && !resource.isEmpty() && ch.uri.endsWith(resource));
       }
 
-      if (newSyncToken != null) {
+      if (found && newSyncToken != null) {
         getBwsub().setSynchToken(newSyncToken);
       }
       db.update(sub);
