@@ -18,8 +18,6 @@
  */
 package org.bedework.notifier.outbound.email;
 
-import org.apache.http.Header;
-import org.apache.http.message.BasicHeader;
 import org.bedework.caldav.util.notifications.NotificationType;
 import org.bedework.caldav.util.notifications.ProcessorType;
 import org.bedework.caldav.util.notifications.ResourceChangeType;
@@ -33,16 +31,10 @@ import org.bedework.notifier.outbound.common.AbstractAdaptor;
 import org.bedework.util.http.BasicHttpClient;
 import org.bedework.util.http.HttpUtil;
 import org.bedework.util.misc.Util;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-
 import freemarker.core.Environment;
 import freemarker.ext.dom.NodeModel;
 import freemarker.template.Configuration;
@@ -51,6 +43,14 @@ import freemarker.template.DefaultObjectWrapperBuilder;
 import freemarker.template.Template;
 import freemarker.template.TemplateHashModel;
 import freemarker.template.TemplateModelException;
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.InputStream;
@@ -78,7 +78,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
-/* The interface implemented by destination adaptors. A destination
+/** The interface implemented by destination adaptors. A destination
  * may be an email address or sms.
  *
  * @author Greg Allen
