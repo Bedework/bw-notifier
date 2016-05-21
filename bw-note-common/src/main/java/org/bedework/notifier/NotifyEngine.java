@@ -100,11 +100,14 @@ public class NotifyEngine extends TzGetter {
   public static class NotificationMsg {
     private final String system;
     private final String href;
+    private final String resource;
 
     public NotificationMsg(final String system,
-                           final String href) {
+                           final String href,
+                           final String resource) {
       this.system = system;
       this.href = href;
+      this.resource = resource;
     }
 
     public String getSystem() {
@@ -113,6 +116,10 @@ public class NotifyEngine extends TzGetter {
 
     public String getHref() {
       return href;
+    }
+
+    public String getResource() {
+      return resource;
     }
   }
 
@@ -349,11 +356,17 @@ public class NotifyEngine extends TzGetter {
    * @throws NoteException on error
    */
   public void reschedule(final Action act) throws NoteException {
-    if (debug) {
-      trace("reschedule action after error " + act.getSub());
+    if (act.getRetries() < 10) {
+      act.setRetries(act.getRetries()+1);
+      if (debug) {
+        trace("reschedule action after error, attempt #" + act.getRetries() + ": " + act.getSub());
+      }
+      notifyTimer.schedule(act, 1 * 60 * 1000);  // 1 minute
+    } else {
+      if (debug) {
+        trace("not rescheduling action after " + act.getRetries() + " attempts: " + act.getSub());
+      }
     }
-
-    notifyTimer.schedule(act, 1 * 60 * 1000);  // 1 minute
   }
 
   public void queueNotification(final Note note) throws NoteException {
@@ -636,7 +649,8 @@ public class NotifyEngine extends TzGetter {
     /* Queue a message to process it */
     addNotificationMsg(
             new NotificationMsg(sub.getConnectorName(),
-                                sub.getPrincipalHref()));
+                                sub.getPrincipalHref(),
+                                null));
   }
 
   /* ====================================================================

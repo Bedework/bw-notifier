@@ -114,8 +114,7 @@ public class Noteling extends Logged {
           break;
 
         case checkItems:
-          handleCheck(action);
-          break;
+          return handleCheck(action);
 
         case processItem:
           handleProcessItem(action);
@@ -153,18 +152,21 @@ public class Noteling extends Logged {
     notifier.handleAction(action);
   }
 
-  private void handleCheck(final Action action) throws NoteException {
+  private StatusType handleCheck(final Action action) throws NoteException {
     try {
       final ConnectorInstance ci = notifier.reserveInstance(db,
                                                             action);
       if (ci == null) {
         // Been queued
-        return;
+        return StatusType.OK;
       }
 
-      if (!ci.check(db)) {
+      if (!ci.check(db, action.getMsg().getResource())) {
         // No new notifications
-        return;
+        if (debug) {
+          debug("No new notifications matching resource: " + action.getMsg().getResource());
+        }
+        return StatusType.Reprocess;
       }
 
       action.setType(ActionType.processItem);
@@ -172,6 +174,7 @@ public class Noteling extends Logged {
     } finally {
       notifier.release(action.getSub());
     }
+    return StatusType.OK;
   }
 
   private void handleProcessItem(final Action action) throws NoteException {

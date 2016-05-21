@@ -99,10 +99,11 @@ public interface ConnectorInstance {
   /** Check for notifications.
    *
    * @param db to allow updates
+   * @param resource we are looking for
    * @return false if nothing to do.
    * @throws NoteException on error
    */
-  boolean check(NotifyDb db) throws NoteException;
+  boolean check(NotifyDb db, String resource) throws NoteException;
 
   /** Fetch the next resource - return null if none.
    *

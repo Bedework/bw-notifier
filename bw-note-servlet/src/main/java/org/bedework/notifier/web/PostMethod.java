@@ -86,8 +86,8 @@ public class PostMethod extends MethodBase {
      * take care of.
      *
      * We get a message which defines the system, provides a token and
-     * an array of hrefs identifying the notification collections to
-     * be queried.
+     * a href identifying the notification collection to be queried.
+     * The resource name indicates which resource message we should wait for, at a minimum.
      */
 
     final Map vals = getJson(req, resp);
@@ -95,8 +95,8 @@ public class PostMethod extends MethodBase {
     try {
       final String system = must("system", vals);
       final String token = must("token", vals);
-      @SuppressWarnings("unchecked")
-      final List<String> hrefs = mayList("hrefs", vals);
+      final String href = may("href", vals);
+      final String resource = may("resource", vals);
 
       if (!NotifyEngine.authenticate(system, token)) {
         resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -107,15 +107,14 @@ public class PostMethod extends MethodBase {
 
       resp.setStatus(HttpServletResponse.SC_OK);
 
-      if (Util.isEmpty(hrefs)) {
+      if (href == null) {
         return;
       }
 
-      for (final String href: hrefs) {
-        notifier.addNotificationMsg(
-                new NotifyEngine.NotificationMsg(system,
-                                                 Util.buildPath(true, href)));
-      }
+      notifier.addNotificationMsg(
+              new NotifyEngine.NotificationMsg(system,
+                                               Util.buildPath(true, href),
+                                               resource));
     } catch(final Throwable t) {
       if (debug) {
         error(t);
