@@ -96,7 +96,7 @@ public class PostMethod extends MethodBase {
       final String system = must("system", vals);
       final String token = must("token", vals);
       final String href = may("href", vals);
-      final String resource = may("resource", vals);
+      final String resourceName = may("resourceName", vals);
 
       if (!NotifyEngine.authenticate(system, token)) {
         resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -114,7 +114,7 @@ public class PostMethod extends MethodBase {
       notifier.addNotificationMsg(
               new NotifyEngine.NotificationMsg(system,
                                                Util.buildPath(true, href),
-                                               resource));
+                                               resourceName));
     } catch(final Throwable t) {
       if (debug) {
         error(t);

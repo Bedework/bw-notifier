@@ -161,10 +161,10 @@ public class Noteling extends Logged {
         return StatusType.OK;
       }
 
-      if (!ci.check(db, action.getMsg().getResource())) {
+      if (!ci.check(db, action.getMsg().getResourceName())) {
         // No new notifications
         if (debug) {
-          debug("No new notifications matching resource: " + action.getMsg().getResource());
+          debug("No new notifications matching resource: " + action.getMsg().getResourceName());
         }
         return StatusType.Reprocess;
       }
