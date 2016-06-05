@@ -100,14 +100,14 @@ public class NotifyEngine extends TzGetter {
   public static class NotificationMsg {
     private final String system;
     private final String href;
-    private final String resource;
+    private final String resourceName;
 
     public NotificationMsg(final String system,
                            final String href,
-                           final String resource) {
+                           final String resourceName) {
       this.system = system;
       this.href = href;
-      this.resource = resource;
+      this.resourceName = resourceName;
     }
 
     public String getSystem() {
@@ -118,8 +118,8 @@ public class NotifyEngine extends TzGetter {
       return href;
     }
 
-    public String getResource() {
-      return resource;
+    public String getResourceName() {
+      return resourceName;
     }
   }
 
