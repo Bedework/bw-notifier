@@ -235,7 +235,8 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
       final UrlHandler urlHandler = new UrlHandler(urlPrefix, context, false);
 
-      final InputStream is = cl.get(noteHref,
+      URI uri = new URI("http", "localhost", noteHref, null); // Change to URI to get path encoded.
+      final InputStream is = cl.get(uri.toURL().getPath(),
                                     "application/xml",
                                     getAuthHeaders());
 
