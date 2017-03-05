@@ -25,12 +25,13 @@ import org.bedework.notifier.conf.NotifyConfig;
 import org.bedework.notifier.outbound.common.AdaptorConf;
 import org.bedework.notifier.outbound.common.AdaptorConfig;
 import org.bedework.util.config.ConfigurationStore;
+import org.bedework.util.hibernate.HibConfig;
+import org.bedework.util.hibernate.SchemaThread;
 import org.bedework.util.jmx.ConfBase;
 import org.bedework.util.jmx.ConfigHolder;
 import org.bedework.util.jmx.InfoLines;
 
 import org.hibernate.cfg.Configuration;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
 
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -63,57 +64,22 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
   private Configuration hibCfg;
 
-  private class SchemaThread extends Thread {
-    InfoLines infoLines = new InfoLines();
+  private class SchemaBuilder extends SchemaThread {
 
-    SchemaThread() {
-      super("BuildSchema");
+    SchemaBuilder(final String outFile,
+                  final boolean export,
+                  final Properties hibConfig) {
+      super(outFile, export, hibConfig);
     }
 
     @Override
-    public void run() {
-      try {
-        infoLines.addLn("Started export of schema");
-
-        long startTime = System.currentTimeMillis();
-
-        SchemaExport se = new SchemaExport(getHibConfiguration());
-
-//      if (getDelimiter() != null) {
-//        se.setDelimiter(getDelimiter());
-//      }
-
-        se.setFormat(true);       // getFormat());
-        se.setHaltOnError(false); // getHaltOnError());
-        se.setOutputFile(getSchemaOutFile());
-        /* There appears to be a bug in the hibernate code. Everybody initialises
-        this to /import.sql. Set to null causes an NPE
-        Make sure it refers to a non-existant file */
-        //se.setImportFile("not-a-file.sql");
-
-        se.execute(false, // script - causes write to System.out if true
-                   getExport(),
-                   false,   // drop
-                   true);   //   getCreate());
-
-        long millis = System.currentTimeMillis() - startTime;
-        long seconds = millis / 1000;
-        long minutes = seconds / 60;
-        seconds -= (minutes * 60);
-
-        infoLines.addLn("Elapsed time: " + minutes + ":" +
-                                twoDigits(seconds));
-      } catch (Throwable t) {
-        error(t);
-        infoLines.exceptionMsg(t);
-      } finally {
-        infoLines.addLn("Schema build completed");
-        export = false;
-      }
+    public void completed(final String status) {
+      setExport(false);
+      info("Schema build completed with status " + status);
     }
   }
 
-  private SchemaThread buildSchema = new SchemaThread();
+  private SchemaBuilder buildSchema;
 
   private class ProcessorThread extends Thread {
     boolean showedTrace;
@@ -457,9 +423,13 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
   @Override
   public String schema() {
     try {
-//      buildSchema = new SchemaThread();
+      final HibConfig hc = new HibConfig(getConfig());
 
-      buildSchema.start();
+      buildSchema = new SchemaBuilder(getSchemaOutFile(),
+                                      getExport(),
+                                      hc.getHibConfiguration().getProperties());
+
+      setStatus(statusStopped);
 
       return "OK";
     } catch (Throwable t) {

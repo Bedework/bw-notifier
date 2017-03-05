@@ -31,7 +31,7 @@ import org.oasis_open.docs.ws_calendar.ns.soap.BaseResponseType;
  * @author Mike Douglass
  */
 public class NotifyConnectorInstance extends AbstractConnectorInstance {
-  private NotifyConnector cnctr;
+  private final NotifyConnector cnctr;
 
   NotifyConnectorInstance(final NotifyConnector cnctr){
     super(null);
@@ -55,7 +55,8 @@ public class NotifyConnectorInstance extends AbstractConnectorInstance {
   }
 
   @Override
-  public boolean check(final NotifyDb db) throws NoteException {
+  public boolean check(final NotifyDb db,
+                       final String resource) throws NoteException {
     throw new NoteException("Uncallable");
   }
 

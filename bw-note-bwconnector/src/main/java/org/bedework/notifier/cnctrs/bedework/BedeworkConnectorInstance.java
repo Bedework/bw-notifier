@@ -218,7 +218,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     final String noteHref = getBwsub().getNoteHrefs().get(0);
 
     if (debug) {
-      trace("Fetch item " + noteHref);
+      debug("Fetch item " + noteHref);
     }
 
     final BasicHttpClient cl = getClient();
@@ -505,7 +505,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
       if (dc == null) {
         if (debug) {
-          trace("No response getting notification collection");
+          debug("No response getting notification collection");
         }
         // Could delete but might be dangerous - cnctr.getNotifier().deleteSubscription(sub);
         return false;
@@ -519,7 +519,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
       if ((dp == null) || (dp.status != HttpServletResponse.SC_OK)) {
         if (debug) {
-          trace("No notification collection");
+          debug("No notification collection");
         }
         // Could delete but might be dangerous - cnctr.getNotifier().deleteSubscription(sub);
         return false;

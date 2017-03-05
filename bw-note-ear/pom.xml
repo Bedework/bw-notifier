@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.bedework</groupId>
+    <groupId>org.bedework.notifier</groupId>
     <artifactId>bw-notifier</artifactId>
     <version>4.0.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
@@ -14,7 +14,7 @@
 
     <!-- Project Dependencies -->
     <dependency>
-      <groupId>org.bedework</groupId>
+      <groupId>org.bedework.notifier</groupId>
       <artifactId>bw-note-war</artifactId>
       <version>${project.version}</version>
       <type>war</type>
@@ -26,7 +26,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.bedework</groupId>
+      <groupId>org.bedework.notifier</groupId>
       <artifactId>bw-note-db</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -37,7 +37,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.bedework</groupId>
+      <groupId>org.bedework.notifier</groupId>
       <artifactId>bw-note-shared</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -48,7 +48,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.bedework</groupId>
+      <groupId>org.bedework.notifier</groupId>
       <artifactId>bw-note-servlet</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -59,7 +59,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.bedework</groupId>
+      <groupId>org.bedework.notifier</groupId>
       <artifactId>bw-note-bwconnector</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -70,7 +70,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.bedework</groupId>
+      <groupId>org.bedework.notifier</groupId>
       <artifactId>bw-note-outbound</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -115,26 +115,10 @@
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpcore</artifactId>
     </dependency>
-    <dependency>
-      <groupId>asm</groupId>
-      <artifactId>asm</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>asm</groupId>
-      <artifactId>asm-attrs</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>cglib</groupId>
-      <artifactId>cglib</artifactId>
-    </dependency>
+
     <dependency>
       <groupId>net.sf.ehcache</groupId>
       <artifactId>ehcache</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>backport-util-concurrent</groupId>
-      <artifactId>backport-util-concurrent</artifactId>
-      <version>3.1</version>
     </dependency>
     <dependency>
       <groupId>org.bedework</groupId>
