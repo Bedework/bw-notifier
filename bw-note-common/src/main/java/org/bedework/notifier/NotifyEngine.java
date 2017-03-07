@@ -422,9 +422,14 @@ public class NotifyEngine extends TzGetter {
 
     info("Connectors stopped");
 
-    actionInHandler.shutdown();
-    actionOutHandler.shutdown();
-
+    if (actionInHandler != null) {
+      actionInHandler.shutdown();
+    }
+    
+    if (actionOutHandler != null) {
+      actionOutHandler.shutdown();
+    }
+    
     if (notelingPool != null) {
       notelingPool.stop();
     }
