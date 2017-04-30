@@ -50,11 +50,6 @@
       <artifactId>bw-caldav-util</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.bedework</groupId>
-      <artifactId>bw-ical4j-cl</artifactId>
-    </dependency>
-
     <!-- Third Party Libraries -->
     <dependency>
       <groupId>javax.mail</groupId>
