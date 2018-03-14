@@ -141,6 +141,9 @@ public class Noteling extends Logged {
                                      msg.getHref());
 
     if (sub == null) {
+      if (debug) {
+        debug("No subscription for " + msg.getHref() + " (" + msg.getSystem() + "), not processing notification " + msg.getResourceName() + ".");
+      }
       // Not one of ours
       return;
     }

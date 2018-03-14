@@ -21,6 +21,7 @@ package org.bedework.notifier.outbound.email;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.util.misc.Logged;
 
+import java.util.HashMap;
 import java.util.Properties;
 
 import javax.activation.CommandMap;
@@ -77,14 +78,37 @@ public class Mailer extends Logged {
       if (debug) {
         debug("About to get transport");
       }
-//      Transport.send(msg);
       Transport transport = session.getTransport(config.getProtocol());
       try {
         if (debug) {
           debug("About to connect");
         }
 
-        transport.connect(/*host, from, pass*/);
+        String username = null;
+        String pw = null;
+
+        if (config.getTransientUsername() != null) {
+          username = config.getTransientUsername();
+          pw = config.getTransientPassword();
+        } else if (config.getServerUsername() != null) {
+          username = config.getServerUsername();
+          pw = config.getServerPassword();
+        }
+
+        if (username != null && pw != null) {
+          if (config.getServerUri() != null) {
+            if (config.getServerPort() != null) {
+              transport.connect(config.getServerUri(), Integer.parseInt(config.getServerPort()), username, pw);
+            } else {
+              transport.connect(config.getServerUri(), username, pw);
+            }
+          } else {
+            transport.connect(username, pw);
+          }
+        } else {
+          // No other connect methods with any arguments.
+          transport.connect();
+        }
 
         if (debug) {
           debug("About to send message");
@@ -98,6 +122,9 @@ public class Mailer extends Logged {
       } finally {
         transport.close();
       }
+      if (debug) {
+        debug("Message sent");
+      }
     } catch (final MessagingException e) {
       throw new NoteException(e);
     }
@@ -105,21 +132,6 @@ public class Mailer extends Logged {
 
   private Session getSession() throws NoteException {
     final Properties props = new Properties();
-
-    setNonNull(props, "mail.transport.protocol", config.getProtocol());
-//    setNonNull(props, "mail." + config.getProtocol() + ".class",
-//               config.getProtocolClass());
-    setNonNull(props, "mail." + config.getProtocol() + ".host",
-               config.getServerUri());
-    if (config.getServerPort() != null) {
-      props.put("mail." + config.getProtocol() + ".port",
-                config.getServerPort());
-    }
-
-    props.put("mail." + config.getProtocol() + ".starttls.enable",
-              String.valueOf(config.getStarttls()));
-    props.put("mail." + config.getProtocol() + ".connectiontimeout", 10000);
-    props.put("mail." + config.getProtocol() + "smtp.timeout", 10000);
 
     //  add handlers for main MIME types
     final MailcapCommandMap mc = (MailcapCommandMap)CommandMap.getDefaultCommandMap();
@@ -131,50 +143,6 @@ public class Mailer extends Logged {
     mc.addMailcap("message/rfc822;; x-java-content-handler=com.sun.mail.handlers.message_rfc822");
     CommandMap.setDefaultCommandMap(mc);
 
-    final String username;
-    final String pw;
-
-    if (config.getTransientUsername() != null) {
-      username = config.getTransientUsername();
-      pw = config.getTransientPassword();
-    } else if (config.getServerUsername() != null) {
-      username = config.getServerUsername();
-      pw = config.getServerPassword();
-    } else {
-      username = null;
-      pw = null;
-    }
-
-    if (username != null) {
-      // Authentication required.
-      final MailerAuthenticator authenticator =
-              new MailerAuthenticator(username, pw);
-      props.put("mail." + config.getProtocol() + ".auth", "true");
-      return Session.getInstance(props, authenticator);
-    }
-
     return Session.getDefaultInstance(props);
-  }
-
-  private void setNonNull(final Properties props,
-                          final String name,
-                          final String val) throws NoteException {
-    if (val == null) {
-      throw new NoteException("Null property value for " + name);
-    }
-
-    props.setProperty(name, val);
-  }
-
-  private class MailerAuthenticator extends Authenticator {
-    private final PasswordAuthentication authentication;
-
-    MailerAuthenticator(final String user, final String password) {
-      authentication = new PasswordAuthentication(user, password);
-    }
-
-    protected PasswordAuthentication getPasswordAuthentication() {
-      return authentication;
-    }
   }
 }
