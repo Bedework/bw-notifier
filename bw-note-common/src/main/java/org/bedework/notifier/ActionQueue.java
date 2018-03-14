@@ -18,8 +18,6 @@
 */
 package org.bedework.notifier;
 
-import org.bedework.notifier.exception.NoteException;
-
 import org.apache.log4j.Logger;
 
 import java.util.List;
@@ -43,7 +41,7 @@ public class ActionQueue extends Thread {
 
   private final StatLong actionsCt;
 
-  long lastTrace;
+  private long lastTrace;
 
   private final BlockingQueue<Action> actionQueue;
 
@@ -70,9 +68,8 @@ public class ActionQueue extends Thread {
 
   /**
    * @param action to take
-   * @throws NoteException
    */
-  public void queueAction(final Action action) throws NoteException {
+  public void queueAction(final Action action) {
     try {
       while (!stopping) {
         if (actionQueue.offer(action, 5, TimeUnit.SECONDS)) {

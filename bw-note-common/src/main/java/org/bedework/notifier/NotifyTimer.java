@@ -19,8 +19,7 @@
 package org.bedework.notifier;
 
 import org.bedework.notifier.exception.NoteException;
-
-import org.apache.log4j.Logger;
+import org.bedework.util.misc.Logged;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,11 +35,7 @@ import java.util.TimerTask;
  *
  *   @author Mike Douglass   douglm   bedework.edu
  */
-public class NotifyTimer {
-  private final boolean debug;
-
-  protected transient Logger log;
-
+public class NotifyTimer extends Logged {
   private final NotifyEngine notifier;
 
   /** This is the class that goes into a wait. The run method MUST only take  a
@@ -67,7 +62,8 @@ public class NotifyTimer {
       }
 
       if (debug){
-        trace("About to requeue action for " + action.getSub().getSubscriptionId());
+        debug("About to requeue action for " + 
+                      action.getSub().getSubscriptionId());
       }
 
       try {
@@ -82,7 +78,7 @@ public class NotifyTimer {
     }
   }
 
-  Timer timer;
+  private Timer timer;
 
   private final Map<String, NotifyTask> waiting = new HashMap<>();
 
@@ -96,8 +92,6 @@ public class NotifyTimer {
     this.notifier = notifier;
 
     timer = new Timer("NotifyTimer", true);
-
-    debug = getLogger().isDebugEnabled();
   }
 
   /** Stop our timer thread.
@@ -121,7 +115,7 @@ public class NotifyTimer {
   public void schedule(final Action action,
                        final Date when) throws NoteException {
     if (debug){
-      trace("reschedule " + action.getSub().getSubscriptionId() + " for " + when);
+      debug("reschedule " + action.getSub().getSubscriptionId() + " for " + when);
     }
 
     final NotifyTask st = new NotifyTask(action);
@@ -137,11 +131,11 @@ public class NotifyTimer {
   public void schedule(final Action action,
                        final long delay) throws NoteException {
     if (debug){
-      trace("reschedule " + action.getSub().getSubscriptionId() +
+      debug("reschedule " + action.getSub().getSubscriptionId() +
                     " in " + delay + " millisecs");
     }
 
-    NotifyTask st = new NotifyTask(action);
+    final NotifyTask st = new NotifyTask(action);
     timer.schedule(st, delay);
   }
 
@@ -170,35 +164,5 @@ public class NotifyTimer {
     stats.add(new Stat("max waiting", getMaxWaitingCt()));
 
     return stats;
-  }
-
-  private Logger getLogger() {
-    if (log == null) {
-      log = Logger.getLogger(this.getClass());
-    }
-
-    return log;
-  }
-
-  private void trace(final String msg) {
-    getLogger().debug(msg);
-  }
-
-  @SuppressWarnings("unused")
-  private void warn(final String msg) {
-    getLogger().warn(msg);
-  }
-
-  private void error(final Throwable t) {
-    getLogger().error(this, t);
-  }
-
-  private void error(final String msg) {
-    getLogger().error(msg);
-  }
-
-  @SuppressWarnings("unused")
-  private void info(final String msg) {
-    getLogger().info(msg);
   }
 }
