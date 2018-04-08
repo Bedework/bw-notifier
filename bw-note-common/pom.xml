@@ -27,18 +27,17 @@
       <artifactId>bw-ws-appleServer</artifactId>
     </dependency>
     <!-- Bedework: Util -->
-    <dependency>
-      <groupId>org.bedework</groupId>
-      <artifactId>bw-util-calendar</artifactId>
-    </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-config</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-dav</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-hibernate</artifactId>
@@ -67,6 +66,12 @@
       <groupId>org.bedework</groupId>
       <artifactId>bw-caldav-util</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>org.bedework</groupId>
+      <artifactId>bw-util2-calendar</artifactId>
+    </dependency>
+
     <!-- Bedework: Access -->
     <dependency>
       <groupId>org.bedework</groupId>

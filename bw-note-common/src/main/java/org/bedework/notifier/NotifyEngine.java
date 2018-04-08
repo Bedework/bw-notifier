@@ -52,7 +52,7 @@ import java.util.List;
  *
  * @author Mike Douglass
  */
-public class NotifyEngine extends TzGetter {
+public class NotifyEngine implements TzGetter {
   protected transient Logger log;
 
   private final boolean debug;
@@ -229,7 +229,7 @@ public class NotifyEngine extends TzGetter {
    * @return TimeZone with id or null
    * @throws Throwable on error
    */
-   @Override
+  @Override
   public TimeZone getTz(final String id) throws Throwable {
      return getNotifier().timezones.getTimeZone(id);
    }

@@ -251,7 +251,7 @@ public class NotifyDbImpl implements NotifyDb {
       sess = new HibSessionImpl();
       try {
         sess.init(HibSessionFactory.getSessionFactory(
-                config.getHibernateProperties()), getLogger());
+                config.getHibernateProperties()));
       } catch (HibException he) {
         throw new NoteException(he);
       }
