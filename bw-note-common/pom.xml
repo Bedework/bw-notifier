@@ -24,7 +24,7 @@
 
     <dependency>
       <groupId>org.bedework</groupId>
-      <artifactId>bw-ws-appleServer</artifactId>
+      <artifactId>bw-xml-appleServer</artifactId>
     </dependency>
     <!-- Bedework: Util -->
 
