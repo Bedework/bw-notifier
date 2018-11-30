@@ -384,6 +384,27 @@
           </modules>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>org.bedework</groupId>
+        <artifactId>bw-util-maven-deploy</artifactId>
+        <version>${bw-util.version}</version>
+        <executions>
+          <execution>
+            <phase>install</phase>
+            <goals>
+              <goal>bw-deploy</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <noversion>true</noversion>
+          <delete>true</delete>
+          <earName>bw-notifier</earName>
+          <baseDirPath>${project.basedir}/../..</baseDirPath>
+          <propsPath>${org.bedework.deployment.properties}</propsPath>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
