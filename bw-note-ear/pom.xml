@@ -25,6 +25,7 @@
         </exclusion>
       </exclusions>
     </dependency>
+
     <dependency>
       <groupId>org.bedework.notifier</groupId>
       <artifactId>bw-note-db</artifactId>
@@ -36,17 +37,13 @@
         </exclusion>
       </exclusions>
     </dependency>
+
     <dependency>
       <groupId>org.bedework.notifier</groupId>
       <artifactId>bw-note-shared</artifactId>
       <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>*</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
+
     <dependency>
       <groupId>org.bedework.notifier</groupId>
       <artifactId>bw-note-servlet</artifactId>
@@ -58,6 +55,7 @@
         </exclusion>
       </exclusions>
     </dependency>
+
     <dependency>
       <groupId>org.bedework.notifier</groupId>
       <artifactId>bw-note-bwconnector</artifactId>
@@ -69,6 +67,7 @@
         </exclusion>
       </exclusions>
     </dependency>
+
     <dependency>
       <groupId>org.bedework.notifier</groupId>
       <artifactId>bw-note-outbound</artifactId>
@@ -80,6 +79,7 @@
         </exclusion>
       </exclusions>
     </dependency>
+
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>bw-note-common</artifactId>
