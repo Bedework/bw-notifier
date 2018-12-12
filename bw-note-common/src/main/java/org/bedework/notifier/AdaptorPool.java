@@ -22,9 +22,8 @@ import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.outbound.common.Adaptor;
 import org.bedework.notifier.outbound.common.AdaptorConf;
 import org.bedework.notifier.outbound.common.AdaptorConfig;
+import org.bedework.util.logging.Logged;
 import org.bedework.util.misc.ToString;
-
-import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,9 +38,7 @@ import java.util.concurrent.TimeUnit;
  * @author Mike Douglass
  *
  */
-public class AdaptorPool {
-  protected transient Logger log;
-
+public class AdaptorPool implements Logged {
   private static class AdaptorState {
     AdaptorConf conf;
 
@@ -290,29 +287,5 @@ public class AdaptorPool {
     ts.append("currentAvailable", getCurrentAvailable());
 
     return ts.toString();
-  }
-
-  /* ====================================================================
-   *                        private methods
-   * ==================================================================== */
-
-  private Logger getLogger() {
-    if (log == null) {
-      log = Logger.getLogger(this.getClass());
-    }
-
-    return log;
-  }
-
-  private void info(final String msg) {
-    getLogger().info(msg);
-  }
-
-  private void warn(final String msg) {
-    getLogger().warn(msg);
-  }
-
-  private void error(final String msg) {
-    getLogger().error(msg);
   }
 }

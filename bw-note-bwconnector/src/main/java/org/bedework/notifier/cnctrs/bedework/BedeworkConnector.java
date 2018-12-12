@@ -114,8 +114,8 @@ public class BedeworkConnector
     Subscription theSub =
             db.find(getConnectorName(), href);
     if (theSub == null) {
-      if (debug) {
-        trace("Adding subscription");
+      if (debug()) {
+        debug("Adding subscription");
       }
       final BedeworkSubscription sub = new BedeworkSubscription();
 
@@ -137,8 +137,8 @@ public class BedeworkConnector
       return sub;
     }
 
-    if (debug) {
-      trace("Updating subscription");
+    if (debug()) {
+      debug("Updating subscription");
     }
 
     final BedeworkSubscription sub = new BedeworkSubscription(theSub);
@@ -300,8 +300,8 @@ public class BedeworkConnector
         return;
       }
 
-      if (debug) {
-        trace("Notification collections available on " +
+      if (debug()) {
+        debug("Notification collections available on " +
                       config.getSystemNotificationHref());
       }
 

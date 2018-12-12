@@ -84,20 +84,6 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>bw-note-common</artifactId>
       <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
-      </exclusions>
-      <!--
-      <exclusions>
-        <exclusion>
-          <groupId>*</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    -->
     </dependency>
 
     <dependency>
@@ -123,22 +109,12 @@
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-access</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-caching</artifactId>
       <version>${bw-util.version}</version>
       <exclusions>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
         <exclusion>
           <groupId>org.apache.derby</groupId>
           <artifactId>derbynet</artifactId>
@@ -178,10 +154,6 @@
       <artifactId>bw-util-servlet</artifactId>
       <exclusions>
         <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>org.apache.derby</groupId>
           <artifactId>derbynet</artifactId>
         </exclusion>
@@ -212,10 +184,6 @@
       <artifactId>bw-util-xml</artifactId>
       <version>${bw-util.version}</version>
       <exclusions>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
         <exclusion>
           <groupId>org.apache.derby</groupId>
           <artifactId>derbynet</artifactId>

@@ -22,9 +22,9 @@ import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.db.JsonUtil;
 import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.util.logging.Logged;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
 import java.net.URLDecoder;
@@ -41,12 +41,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 /** Base class for all webdav servlet methods.
  */
-public abstract class MethodBase extends JsonUtil {
-  protected boolean debug;
-
+public abstract class MethodBase extends JsonUtil implements Logged {
   protected boolean dumpContent;
-
-  protected transient Logger log;
 
   protected NotifyEngine notifier;
 
@@ -122,8 +118,6 @@ public abstract class MethodBase extends JsonUtil {
                    final boolean dumpContent) throws NoteException {
     this.notifier = notifier;
     this.dumpContent = dumpContent;
-
-    debug = getLogger().isDebugEnabled();
 //    xml = notifier.getXmlEmit();
 
     // content = null;
@@ -346,45 +340,6 @@ public abstract class MethodBase extends JsonUtil {
     synchronized (httpDateFormatter) {
       return httpDateFormatter.format(val) + "GMT";
     }
-  }
-
-  /** ===================================================================
-   *                   Logging methods
-   *  =================================================================== */
-
-  /**
-   * @return Logger
-   */
-  protected Logger getLogger() {
-    if (log == null) {
-      log = Logger.getLogger(this.getClass());
-    }
-
-    return log;
-  }
-
-  protected void debugMsg(final String msg) {
-    getLogger().debug(msg);
-  }
-
-  protected void error(final Throwable t) {
-    getLogger().error(this, t);
-  }
-
-  protected void error(final String msg) {
-    getLogger().error(msg);
-  }
-
-  protected void warn(final String msg) {
-    getLogger().warn(msg);
-  }
-
-  protected void logIt(final String msg) {
-    getLogger().info(msg);
-  }
-
-  protected void trace(final String msg) {
-    getLogger().debug(msg);
   }
 }
 

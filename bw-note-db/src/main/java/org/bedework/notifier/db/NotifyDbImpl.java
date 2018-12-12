@@ -24,8 +24,7 @@ import org.bedework.util.hibernate.HibException;
 import org.bedework.util.hibernate.HibSession;
 import org.bedework.util.hibernate.HibSessionFactory;
 import org.bedework.util.hibernate.HibSessionImpl;
-
-import org.apache.log4j.Logger;
+import org.bedework.util.logging.Logged;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,11 +40,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author Mike Douglass
  */
-public class NotifyDbImpl implements NotifyDb {
-  private transient Logger log;
-
-  private final boolean debug;
-
+public class NotifyDbImpl implements NotifyDb, Logged {
   private HibernateConfigBase config;
 
   /** */
@@ -65,8 +60,6 @@ public class NotifyDbImpl implements NotifyDb {
    *
    */
   public NotifyDbImpl(final HibernateConfigBase config) {
-    debug = getLogger().isDebugEnabled();
-
     this.config = config;
   }
 
@@ -91,8 +84,8 @@ public class NotifyDbImpl implements NotifyDb {
     try {
       checkOpen();
 
-      if (debug) {
-        trace("End transaction for " + sessionCt);
+      if (debug()) {
+        debug("End transaction for " + sessionCt);
       }
 
       try {
@@ -245,8 +238,8 @@ public class NotifyDbImpl implements NotifyDb {
     sessionCt = globalSessionCt.incrementAndGet();
 
     if (sess == null) {
-      if (debug) {
-        trace("New hibernate session for " + sessionCt);
+      if (debug()) {
+        debug("New hibernate session for " + sessionCt);
       }
       sess = new HibSessionImpl();
       try {
@@ -255,7 +248,7 @@ public class NotifyDbImpl implements NotifyDb {
       } catch (HibException he) {
         throw new NoteException(he);
       }
-      trace("Open session for " + sessionCt);
+      debug("Open session for " + sessionCt);
     }
 
     beginTransaction();
@@ -263,14 +256,14 @@ public class NotifyDbImpl implements NotifyDb {
 
   protected synchronized void closeSession() throws NoteException {
     if (!isOpen()) {
-      if (debug) {
-        trace("Close for " + sessionCt + " closed session");
+      if (debug()) {
+        debug("Close for " + sessionCt + " closed session");
       }
       return;
     }
 
-    if (debug) {
-      trace("Close for " + sessionCt);
+    if (debug()) {
+      debug("Close for " + sessionCt);
     }
 
     try {
@@ -300,8 +293,8 @@ public class NotifyDbImpl implements NotifyDb {
   protected void beginTransaction() throws NoteException {
     checkOpen();
 
-    if (debug) {
-      trace("Begin transaction for " + sessionCt);
+    if (debug()) {
+      debug("Begin transaction for " + sessionCt);
     }
     try {
       sess.beginTransaction();
@@ -317,38 +310,6 @@ public class NotifyDbImpl implements NotifyDb {
     } catch (HibException he) {
       throw new NoteException(he);
     }
-  }
-
-  /**
-   * @return Logger
-   */
-  protected Logger getLogger() {
-    if (log == null) {
-      log = Logger.getLogger(this.getClass());
-    }
-
-    return log;
-  }
-
-  /**
-   * @param t the exception
-   */
-  protected void error(final Throwable t) {
-    getLogger().error(this, t);
-  }
-
-  /**
-   * @param msg the message
-   */
-  protected void warn(final String msg) {
-    getLogger().warn(msg);
-  }
-
-  /**
-   * @param msg the message
-   */
-  protected void trace(final String msg) {
-    getLogger().debug(msg);
   }
 
   /* ====================================================================

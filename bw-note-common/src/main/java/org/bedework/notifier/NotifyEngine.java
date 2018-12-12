@@ -32,13 +32,13 @@ import org.bedework.util.config.ConfigException;
 import org.bedework.util.config.ConfigurationStore;
 import org.bedework.util.http.BasicHttpClient;
 import org.bedework.util.jmx.ConfigHolder;
+import org.bedework.util.logging.Logged;
 import org.bedework.util.misc.Util;
 import org.bedework.util.security.PwEncryptionIntf;
 import org.bedework.util.timezones.Timezones;
 import org.bedework.util.timezones.TimezonesImpl;
 
 import net.fortuna.ical4j.model.TimeZone;
-import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,11 +52,7 @@ import java.util.List;
  *
  * @author Mike Douglass
  */
-public class NotifyEngine implements TzGetter {
-  protected transient Logger log;
-
-  private final boolean debug;
-
+public class NotifyEngine implements Logged, TzGetter {
   //private static String appname = "Synch";
   static ConfigHolder<NotifyConfig> cfgHolder;
 
@@ -143,10 +139,8 @@ public class NotifyEngine implements TzGetter {
    *
    */
   private NotifyEngine() throws NoteException {
-    debug = getLogger().isDebugEnabled();
-
     System.setProperty("com.sun.xml.ws.transport.http.client.HttpTransportPipe.dump",
-                       String.valueOf(debug));
+                       String.valueOf(debug()));
   }
 
   /**
@@ -328,14 +322,14 @@ public class NotifyEngine implements TzGetter {
 
 
       if (Util.isEmpty(rescheduleList)) {
-        if (debug) {
-          trace("rescheduleList is empty");
+        if (debug()) {
+          debug("rescheduleList is empty");
         }
         return;
       }
 
-      if (debug) {
-        trace("rescheduleList has " + rescheduleList.size() + " subscriptions");
+      if (debug()) {
+        debug("rescheduleList has " + rescheduleList.size() + " subscriptions");
       }
 
       for (final Subscription sub: rescheduleList) {
@@ -358,13 +352,13 @@ public class NotifyEngine implements TzGetter {
   public void reschedule(final Action act) throws NoteException {
     if (act.getRetries() < 10) {
       act.setRetries(act.getRetries()+1);
-      if (debug) {
-        trace("reschedule action after error, attempt #" + act.getRetries() + ": " + act.getSub());
+      if (debug()) {
+        debug("reschedule action after error, attempt #" + act.getRetries() + ": " + act.getSub());
       }
       notifyTimer.schedule(act, 1 * 60 * 1000);  // 1 minute
     } else {
-      if (debug) {
-        trace("not rescheduling action after " + act.getRetries() + " attempts: " + act.getSub());
+      if (debug()) {
+        debug("not rescheduling action after " + act.getRetries() + " attempts: " + act.getSub());
       }
     }
   }
@@ -412,7 +406,7 @@ public class NotifyEngine implements TzGetter {
       try {
         conn.stop();
       } catch (final Throwable t) {
-        if (debug) {
+        if (debug()) {
           error(t);
         } else {
           error(t.getMessage());
@@ -550,8 +544,8 @@ public class NotifyEngine implements TzGetter {
    * @throws NoteException on error
    */
   public synchronized void release(final Subscription sub) throws NoteException {
-    if (debug) {
-      trace("release subscription " + sub);
+    if (debug()) {
+      debug("release subscription " + sub);
     }
 
     sub.release();
@@ -656,37 +650,5 @@ public class NotifyEngine implements TzGetter {
             new NotificationMsg(sub.getConnectorName(),
                                 sub.getPrincipalHref(),
                                 null));
-  }
-
-  /* ====================================================================
-   *                        private methods
-   * ==================================================================== */
-
-  private Logger getLogger() {
-    if (log == null) {
-      log = Logger.getLogger(this.getClass());
-    }
-
-    return log;
-  }
-
-  private void trace(final String msg) {
-    getLogger().debug(msg);
-  }
-
-  private void warn(final String msg) {
-    getLogger().warn(msg);
-  }
-
-  private void error(final String msg) {
-    getLogger().error(msg);
-  }
-
-  private void error(final Throwable t) {
-    getLogger().error(this, t);
-  }
-
-  private void info(final String msg) {
-    getLogger().info(msg);
   }
 }

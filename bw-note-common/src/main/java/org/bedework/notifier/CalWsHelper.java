@@ -18,7 +18,8 @@
 */
 package org.bedework.notifier;
 
-import org.apache.log4j.Logger;
+import org.bedework.util.logging.Logged;
+
 import org.w3c.dom.Document;
 
 import java.io.ByteArrayInputStream;
@@ -42,15 +43,13 @@ import javax.xml.transform.stream.StreamSource;
  *
  *   @author Mike Douglass   douglm bedework.edu
  */
-public class CalWsHelper {
-  protected transient Logger log;
-
+public class CalWsHelper implements Logged {
   private MessageFactory soapMsgFactory;
 
   /** Trace a calws SOAP message
    *
    * @param o object
-   * @throws Throwable on errro
+   * @throws Throwable on error
    */
   public void traceSoap(final Object o) throws Throwable {
     SOAPMessage msg = marshal(o, "org.oasis_open.docs.ns.wscal.calws_soap");
@@ -107,17 +106,5 @@ public class CalWsHelper {
                        msg.getSOAPBody());
 
     return msg;
-  }
-
-  protected Logger getLogger() {
-    if (log == null) {
-      log = Logger.getLogger(this.getClass());
-    }
-
-    return log;
-  }
-
-  protected void trace(final String msg) {
-    getLogger().debug(msg);
   }
 }

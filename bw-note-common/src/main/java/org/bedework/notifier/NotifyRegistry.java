@@ -10,8 +10,7 @@ import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.SubscriptionWrapper;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.service.NoteConnConf;
-
-import org.apache.log4j.Logger;
+import org.bedework.util.logging.Logged;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,9 +20,7 @@ import java.util.Map;
 /**
  * User: mike Date: 8/4/15 Time: 19:41
  */
-public class NotifyRegistry {
-  protected transient Logger log;
-
+public class NotifyRegistry implements Logged {
   private NotifyConfig config;
 
   public interface Authenticator {
@@ -174,25 +171,5 @@ public class NotifyRegistry {
     } catch (final Throwable t) {
       throw new NoteException(t);
     }
-  }
-
-  /* ====================================================================
-   *                        private methods
-   * ==================================================================== */
-
-  private Logger getLogger() {
-    if (log == null) {
-      log = Logger.getLogger(this.getClass());
-    }
-
-    return log;
-  }
-
-  private void info(final String msg) {
-    getLogger().info(msg);
-  }
-
-  private void error(final String msg) {
-    getLogger().error(msg);
   }
 }

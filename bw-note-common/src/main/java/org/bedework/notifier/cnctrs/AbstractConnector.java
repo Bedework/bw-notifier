@@ -18,14 +18,13 @@
 */
 package org.bedework.notifier.cnctrs;
 
-import org.bedework.notifier.db.JsonUtil;
-import org.bedework.notifier.db.NotifyDb;
-import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.conf.ConnectorConfig;
+import org.bedework.notifier.db.JsonUtil;
+import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.exception.NoteException;
-
-import org.apache.log4j.Logger;
+import org.bedework.notifier.notifications.Note;
+import org.bedework.util.logging.Logged;
 
 import java.util.List;
 
@@ -45,18 +44,14 @@ public abstract class AbstractConnector<T,
                                         TN extends Note,
                                         Tconf extends ConnectorConfig>
         extends JsonUtil
-        implements Connector<TI, TN, Tconf> {
+        implements Logged, Connector<TI, TN, Tconf> {
   protected Tconf config;
 
   protected String callbackUri;
 
   private String connectorName;
 
-  private transient Logger log;
-
   protected NotifyEngine notifier;
-
-  protected boolean debug;
 
   protected boolean running;
 
@@ -89,8 +84,6 @@ public abstract class AbstractConnector<T,
                     final NotifyEngine notifier) throws NoteException {
     this.notifier = notifier;
     this.callbackUri = callbackUri;
-
-    debug = getLogger().isDebugEnabled();
   }
 
   @Override
@@ -155,42 +148,4 @@ public abstract class AbstractConnector<T,
   public void stop() throws NoteException {
     running = false;
   }
-
-  /* ====================================================================
-   *                   Protected methods
-   * ==================================================================== */
-
-  protected void info(final String msg) {
-    getLogger().info(msg);
-  }
-
-  protected void trace(final String msg) {
-    getLogger().debug(msg);
-  }
-
-  protected void error(final Throwable t) {
-    getLogger().error(this, t);
-  }
-
-  protected void error(final String msg) {
-    getLogger().error(msg);
-  }
-
-  protected void warn(final String msg) {
-    getLogger().warn(msg);
-  }
-
-  /* Get a logger for messages
-   */
-  protected Logger getLogger() {
-    if (log == null) {
-      log = Logger.getLogger(this.getClass());
-    }
-
-    return log;
-  }
-
-  /* ====================================================================
-   *                         Package methods
-   * ==================================================================== */
 }

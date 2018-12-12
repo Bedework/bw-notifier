@@ -18,7 +18,7 @@
 */
 package org.bedework.notifier;
 
-import org.apache.log4j.Logger;
+import org.bedework.util.logging.Logged;
 
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -32,11 +32,7 @@ import static org.bedework.notifier.Noteling.StatusType;
  *
  *   @author Mike Douglass   douglm   bedework.org
  */
-public class ActionQueue extends Thread {
-  protected transient Logger log;
-
-  private final boolean debug;
-
+public class ActionQueue extends Thread implements Logged {
   /* Some counts */
 
   private final StatLong actionsCt;
@@ -58,8 +54,6 @@ public class ActionQueue extends Thread {
                      final NotelingPool notelingPool) {
     super(name);
 
-    debug = getLogger().isDebugEnabled();
-
     this.notifier = notifier;
     this.notelingPool = notelingPool;
     actionQueue = new ArrayBlockingQueue<>(100);
@@ -73,13 +67,13 @@ public class ActionQueue extends Thread {
     try {
       while (!stopping) {
         if (actionQueue.offer(action, 5, TimeUnit.SECONDS)) {
-          if (debug) {
-            trace("Action accepted");
+          if (debug()) {
+            debug("Action accepted");
           }
           break;
         }
-        if (debug) {
-          trace("Action queue timedout: retrying");
+        if (debug()) {
+          debug("Action queue timedout: retrying");
         }
       }
     } catch (final InterruptedException ignored) {
@@ -98,8 +92,8 @@ public class ActionQueue extends Thread {
     int exceptions = 0;
 
     while (true) {
-      if (debug) {
-        trace("About to wait for action");
+      if (debug()) {
+        debug("About to wait for action");
       }
 
       try {
@@ -108,16 +102,16 @@ public class ActionQueue extends Thread {
           continue;
         }
 
-        if (debug) {
-          trace("Received action");
+        if (debug()) {
+          debug("Received action");
         }
 
           /*
           if ((note.getSub() != null) && note.getSub().getDeleted()) {
             // Drop it
 
-            if (debug) {
-              trace("Dropping deleted notification");
+            if (debug()) {
+              debug("Dropping deleted notification");
             }
 
             continue;
@@ -170,7 +164,7 @@ public class ActionQueue extends Thread {
         break;
       } catch (final Throwable t) {
         exceptions++;
-        if (debug) {
+        if (debug()) {
           error(t);
         } else {
           // Try not to flood the log with error traces
@@ -193,35 +187,5 @@ public class ActionQueue extends Thread {
   public void shutdown() {
     stopping = true;
     interrupt();
-  }
-
-  private Logger getLogger() {
-    if (log == null) {
-      log = Logger.getLogger(this.getClass());
-    }
-
-    return log;
-  }
-
-  private void trace(final String msg) {
-    getLogger().debug(msg);
-  }
-
-  @SuppressWarnings("unused")
-  private void warn(final String msg) {
-    getLogger().warn(msg);
-  }
-
-  private void error(final Throwable t) {
-    getLogger().error(this, t);
-  }
-
-  private void error(final String msg) {
-    getLogger().error(msg);
-  }
-
-  @SuppressWarnings("unused")
-  private void info(final String msg) {
-    getLogger().info(msg);
   }
 }

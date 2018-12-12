@@ -19,17 +19,14 @@
 package org.bedework.notifier.outbound.email;
 
 import org.bedework.notifier.exception.NoteException;
-import org.bedework.util.misc.Logged;
+import org.bedework.util.logging.Logged;
 
-import java.util.HashMap;
 import java.util.Properties;
 
 import javax.activation.CommandMap;
 import javax.activation.MailcapCommandMap;
-import javax.mail.Authenticator;
 import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
@@ -37,7 +34,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-public class Mailer extends Logged {
+public class Mailer implements Logged {
   EmailConf config;
 
   public Mailer(final EmailConf config) throws NoteException {
@@ -75,12 +72,12 @@ public class Mailer extends Logged {
       }
       msg.setContent(multipart);
 
-      if (debug) {
+      if (debug()) {
         debug("About to get transport");
       }
       Transport transport = session.getTransport(config.getProtocol());
       try {
-        if (debug) {
+        if (debug()) {
           debug("About to connect");
         }
 
@@ -110,19 +107,19 @@ public class Mailer extends Logged {
           transport.connect();
         }
 
-        if (debug) {
+        if (debug()) {
           debug("About to send message");
         }
 
         transport.sendMessage(msg, msg.getAllRecipients());
 
-        if (debug) {
+        if (debug()) {
           debug("Message sent");
         }
       } finally {
         transport.close();
       }
-      if (debug) {
+      if (debug()) {
         debug("Message sent");
       }
     } catch (final MessagingException e) {

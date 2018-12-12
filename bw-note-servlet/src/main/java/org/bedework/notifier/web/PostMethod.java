@@ -65,8 +65,8 @@ public class PostMethod extends MethodBase {
         return;
       }
 
-      if (debug) {
-        debugMsg("Unknown POST uri: " + ruri);
+      if (debug()) {
+        debug("Unknown POST uri: " + ruri);
       }
 
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -116,7 +116,7 @@ public class PostMethod extends MethodBase {
                                                Util.buildPath(true, href),
                                                resourceName));
     } catch(final Throwable t) {
-      if (debug) {
+      if (debug()) {
         error(t);
       }
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -139,8 +139,8 @@ public class PostMethod extends MethodBase {
       final String token = must("token", vals);
 
       if (!NotifyEngine.authenticate(system, token)) {
-        if (debug) {
-          debugMsg("Bad sys/token " + system + ", " + token);
+        if (debug()) {
+          debug("Bad sys/token " + system + ", " + token);
         }
         resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         return;
@@ -150,8 +150,8 @@ public class PostMethod extends MethodBase {
               getConnector(system).subscribe(getDb(), vals);
 
       if (sub == null) {
-        if (debug) {
-          debugMsg("Subscribe failed for " + system + ", " + token);
+        if (debug()) {
+          debug("Subscribe failed for " + system + ", " + token);
         }
         resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         return;
@@ -159,7 +159,7 @@ public class PostMethod extends MethodBase {
 
       resp.setStatus(HttpServletResponse.SC_OK);
     } catch(final Throwable t) {
-      if (debug) {
+      if (debug()) {
         error(t);
       }
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -193,7 +193,7 @@ public class PostMethod extends MethodBase {
 
       resp.setStatus(HttpServletResponse.SC_OK);
     } catch(final Throwable t) {
-      if (debug) {
+      if (debug()) {
         error(t);
       }
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);

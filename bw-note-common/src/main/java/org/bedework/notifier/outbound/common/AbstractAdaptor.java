@@ -18,70 +18,32 @@
  */
 package org.bedework.notifier.outbound.common;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.bedework.caldav.util.notifications.NotificationType;
 import org.bedework.caldav.util.notifications.ProcessorType;
 import org.bedework.caldav.util.notifications.ProcessorsType;
 import org.bedework.notifier.Action;
 import org.bedework.notifier.conf.NotifyConfig;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
-import org.bedework.util.http.BasicHttpClient;
 import org.bedework.util.http.HttpUtil;
-import org.bedework.util.misc.Util;
+import org.bedework.util.logging.Logged;
 import org.bedework.util.xml.NsContext;
 
-import freemarker.core.Environment;
-import freemarker.ext.dom.NodeModel;
 import freemarker.template.Configuration;
-import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
-import freemarker.template.TemplateModelException;
 import net.fortuna.ical4j.model.property.DtStamp;
-import org.apache.http.Header;
-import org.apache.http.message.BasicHeader;
-import org.apache.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 import java.io.File;
-import java.io.FilenameFilter;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
 
 /** Some useful methods..
  *
  * @author Mike Douglass
  *
  */
-public abstract class AbstractAdaptor<Conf extends AdaptorConf> implements Adaptor<Conf> {
-  private transient Logger log;
-
-  protected boolean debug;
-
+public abstract class AbstractAdaptor<Conf extends AdaptorConf>
+        implements Logged, Adaptor<Conf> {
   private final static AtomicLong nextId = new AtomicLong();
 
   private final Long id;
@@ -95,7 +57,6 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf> implements Adapt
   protected NsContext nsContext = new NsContext(null);
 
   protected AbstractAdaptor() {
-    debug = getLogger().isDebugEnabled();
     id = nextId.incrementAndGet();
   }
 
@@ -194,35 +155,5 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf> implements Adapt
       warn("Bad status: " + pt.getStatus());
       return false;
     }
-  }
-
-  protected void info(final String msg) {
-    getLogger().info(msg);
-  }
-
-  protected void trace(final String msg) {
-    getLogger().debug(msg);
-  }
-
-  protected void error(final Throwable t) {
-    getLogger().error(this, t);
-  }
-
-  protected void error(final String msg) {
-    getLogger().error(msg);
-  }
-
-  protected void warn(final String msg) {
-    getLogger().warn(msg);
-  }
-
-  /* Get a logger for messages
-   */
-  protected Logger getLogger() {
-    if (log == null) {
-      log = Logger.getLogger(this.getClass());
-    }
-
-    return log;
   }
 }

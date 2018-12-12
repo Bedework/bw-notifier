@@ -20,7 +20,7 @@ package org.bedework.notifier.cnctrs;
 
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
-import org.bedework.util.misc.Logged;
+import org.bedework.util.logging.Logged;
 
 import net.fortuna.ical4j.model.property.DtStamp;
 import org.oasis_open.docs.ws_calendar.ns.soap.BaseResponseType;
@@ -29,8 +29,8 @@ import org.oasis_open.docs.ws_calendar.ns.soap.BaseResponseType;
  *
  * @author Mike Douglass
  */
-public abstract class AbstractConnectorInstance extends Logged
-        implements ConnectorInstance {
+public abstract class AbstractConnectorInstance 
+        implements Logged, ConnectorInstance {
   protected Subscription sub;
 
   protected AbstractConnectorInstance(final Subscription sub) {

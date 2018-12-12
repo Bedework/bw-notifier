@@ -122,8 +122,8 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
     final EmailSubscription sub = EmailSubscription.rewrap(action.getSub());
     final ProcessorType pt = getProcessorStatus(note, processorType);
 
-    if (debug) {
-        trace("EmailAdaptor: processing notifications for " + sub.getPrincipalHref());
+    if (debug()) {
+        debug("EmailAdaptor: processing notifications for " + sub.getPrincipalHref());
     }
     if (processed(pt)) {
       return true;
@@ -194,13 +194,13 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
         pt.setStatus(HttpUtil.makeOKHttpStatus());
       } else {
         // No template results returned, don't email but still return success.
-        if (debug) {
-          trace("EmailAdaptor: no emails to be sent for " + sub.getPrincipalHref());
+        if (debug()) {
+          debug("EmailAdaptor: no emails to be sent for " + sub.getPrincipalHref());
         }
       }
       return true;
     } catch (final NoteException ne) {
-      if (debug) {
+      if (debug()) {
         error(ne);
       }
     }

@@ -25,10 +25,8 @@ import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.outbound.common.Adaptor;
-import org.bedework.util.misc.Logged;
+import org.bedework.util.logging.Logged;
 import org.bedework.util.misc.Util;
-
-import org.apache.log4j.Logger;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -50,11 +48,7 @@ import static org.bedework.notifier.NotifyEngine.NotificationMsg;
  *
  * @author Mike Douglass
  */
-public class Noteling extends Logged {
-  private final boolean debug;
-
-  protected transient Logger log;
-
+public class Noteling implements Logged {
   private static final AtomicLong lastNotelingid = new AtomicLong(0);
 
   private final long notelingId;
@@ -77,8 +71,6 @@ public class Noteling extends Logged {
    * @throws NoteException on error
    */
   public Noteling(final NotifyEngine notifier) throws NoteException {
-    debug = getLogger().isDebugEnabled();
-
     this.notifier = notifier;
     db = NotifyEngine.getNewDb();
 
@@ -141,7 +133,7 @@ public class Noteling extends Logged {
                                      msg.getHref());
 
     if (sub == null) {
-      if (debug) {
+      if (debug()) {
         debug("No subscription for " + msg.getHref() + " (" + msg.getSystem() + "), not processing notification " + msg.getResourceName() + ".");
       }
       // Not one of ours
@@ -166,7 +158,7 @@ public class Noteling extends Logged {
 
       if (!ci.check(db, action.getMsg().getResourceName())) {
         // No new notifications
-        if (debug) {
+        if (debug()) {
           debug("No new notifications matching resource: " + action.getMsg().getResourceName());
         }
         return StatusType.Reprocess;
@@ -194,7 +186,7 @@ public class Noteling extends Logged {
         return;
       }
 
-      if (debug) {
+      if (debug()) {
         debug("Got notification " + note);
       }
 

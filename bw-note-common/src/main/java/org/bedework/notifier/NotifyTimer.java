@@ -19,7 +19,7 @@
 package org.bedework.notifier;
 
 import org.bedework.notifier.exception.NoteException;
-import org.bedework.util.misc.Logged;
+import org.bedework.util.logging.Logged;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,7 +35,7 @@ import java.util.TimerTask;
  *
  *   @author Mike Douglass   douglm   bedework.edu
  */
-public class NotifyTimer extends Logged {
+public class NotifyTimer implements Logged {
   private final NotifyEngine notifier;
 
   /** This is the class that goes into a wait. The run method MUST only take  a
@@ -61,7 +61,7 @@ public class NotifyTimer extends Logged {
         waiting.remove(action.getSub().getSubscriptionId());
       }
 
-      if (debug){
+      if (debug()){
         debug("About to requeue action for " + 
                       action.getSub().getSubscriptionId());
       }
@@ -69,7 +69,7 @@ public class NotifyTimer extends Logged {
       try {
         notifier.handleAction(action);
       } catch (final NoteException ne) {
-        if (debug) {
+        if (debug()) {
           error(ne);
         } else {
           error(ne.getMessage());
@@ -114,7 +114,7 @@ public class NotifyTimer extends Logged {
    */
   public void schedule(final Action action,
                        final Date when) throws NoteException {
-    if (debug){
+    if (debug()){
       debug("reschedule " + action.getSub().getSubscriptionId() + " for " + when);
     }
 
@@ -130,7 +130,7 @@ public class NotifyTimer extends Logged {
    */
   public void schedule(final Action action,
                        final long delay) throws NoteException {
-    if (debug){
+    if (debug()){
       debug("reschedule " + action.getSub().getSubscriptionId() +
                     " in " + delay + " millisecs");
     }

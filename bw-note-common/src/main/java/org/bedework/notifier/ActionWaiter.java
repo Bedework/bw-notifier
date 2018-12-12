@@ -19,7 +19,7 @@
 package org.bedework.notifier;
 
 import org.bedework.notifier.db.Subscription;
-import org.bedework.util.misc.Logged;
+import org.bedework.util.logging.Logged;
 import org.bedework.util.misc.ToString;
 
 import java.util.ArrayDeque;
@@ -34,7 +34,7 @@ import java.util.Map;
  * @author douglm
  *
  */
-public class ActionWaiter extends Logged {
+public class ActionWaiter implements Logged {
   private final Map<String, List<Action>> actions = new HashMap<>();
 
   private static final int maxFree = 20;

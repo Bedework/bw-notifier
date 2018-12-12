@@ -21,9 +21,8 @@ package org.bedework.notifier;
 
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.exception.NoteTimeout;
+import org.bedework.util.logging.Logged;
 import org.bedework.util.misc.ToString;
-
-import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,9 +36,7 @@ import java.util.concurrent.TimeUnit;
  * @author Mike Douglass
  *
  */
-public class NotelingPool {
-  protected transient Logger log;
-
+public class NotelingPool implements Logged {
   private NotifyEngine notifier;
 
   private ArrayBlockingQueue<Noteling> pool;
@@ -279,25 +276,5 @@ public class NotelingPool {
     ts.append("currentAvailable", getCurrentAvailable());
 
     return ts.toString();
-  }
-
-  /* ====================================================================
-   *                        private methods
-   * ==================================================================== */
-
-  private Logger getLogger() {
-    if (log == null) {
-      log = Logger.getLogger(this.getClass());
-    }
-
-    return log;
-  }
-
-  private void info(final String msg) {
-    getLogger().info(msg);
-  }
-
-  private void warn(final String msg) {
-    getLogger().warn(msg);
   }
 }

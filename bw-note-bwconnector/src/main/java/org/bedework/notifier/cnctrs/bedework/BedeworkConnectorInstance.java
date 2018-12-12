@@ -217,7 +217,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
     final String noteHref = getBwsub().getNoteHrefs().get(0);
 
-    if (debug) {
+    if (debug()) {
       debug("Fetch item " + noteHref);
     }
 
@@ -504,7 +504,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
                                             notificationURLProps);
 
       if (dc == null) {
-        if (debug) {
+        if (debug()) {
           debug("No response getting notification collection");
         }
         // Could delete but might be dangerous - cnctr.getNotifier().deleteSubscription(sub);
@@ -518,7 +518,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
       }
 
       if ((dp == null) || (dp.status != HttpServletResponse.SC_OK)) {
-        if (debug) {
+        if (debug()) {
           debug("No notification collection");
         }
         // Could delete but might be dangerous - cnctr.getNotifier().deleteSubscription(sub);
@@ -532,8 +532,8 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
         cl.setBaseURI(new URI(sub.getUri()));
         return true;
       } catch (final Throwable ignored) {
-        if (debug) {
-          trace("Bad uri returned: " + sub.getUri());
+        if (debug()) {
+          debug("Bad uri returned: " + sub.getUri());
         }
         // Could delete but might be dangerous - cnctr.getNotifier().deleteSubscription(sub);
         return false;
