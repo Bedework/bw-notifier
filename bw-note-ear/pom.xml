@@ -106,109 +106,42 @@
       <groupId>net.sf.ehcache</groupId>
       <artifactId>ehcache</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-access</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-caching</artifactId>
       <version>${bw-util.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.derby</groupId>
-          <artifactId>derbynet</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.struts</groupId>
-          <artifactId>struts-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.lucene</groupId>
-          <artifactId>lucene-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.lucene</groupId>
-          <artifactId>lucene-misc</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>jtidy</groupId>
-          <artifactId>jtidy</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.h2database</groupId>
-          <artifactId>h2</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-hibernate</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>org.bedework</groupId>
+      <artifactId>bw-util-logging</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-timezones</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-servlet</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.derby</groupId>
-          <artifactId>derbynet</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.struts</groupId>
-          <artifactId>struts-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.lucene</groupId>
-          <artifactId>lucene-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.lucene</groupId>
-          <artifactId>lucene-misc</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>jtidy</groupId>
-          <artifactId>jtidy</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.h2database</groupId>
-          <artifactId>h2</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-xml</artifactId>
       <version>${bw-util.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.derby</groupId>
-          <artifactId>derbynet</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.struts</groupId>
-          <artifactId>struts-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.lucene</groupId>
-          <artifactId>lucene-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.lucene</groupId>
-          <artifactId>lucene-misc</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>jtidy</groupId>
-          <artifactId>jtidy</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.h2database</groupId>
-          <artifactId>h2</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
