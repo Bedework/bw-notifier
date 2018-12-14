@@ -18,9 +18,9 @@
 */
 package org.bedework.notifier;
 
-
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.exception.NoteTimeout;
+import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
 import org.bedework.util.misc.ToString;
 
@@ -276,5 +276,20 @@ public class NotelingPool implements Logged {
     ts.append("currentAvailable", getCurrentAvailable());
 
     return ts.toString();
+  }
+
+  /* ====================================================================
+   *                   Logged methods
+   * ==================================================================== */
+
+  private BwLogger logger = new BwLogger();
+
+  @Override
+  public BwLogger getLogger() {
+    if ((logger.getLoggedClass() == null) && (logger.getLoggedName() == null)) {
+      logger.setLoggedClass(getClass());
+    }
+
+    return logger;
   }
 }

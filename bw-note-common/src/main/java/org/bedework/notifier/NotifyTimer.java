@@ -19,6 +19,7 @@
 package org.bedework.notifier;
 
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
 
 import java.util.ArrayList;
@@ -164,5 +165,20 @@ public class NotifyTimer implements Logged {
     stats.add(new Stat("max waiting", getMaxWaitingCt()));
 
     return stats;
+  }
+
+  /* ====================================================================
+   *                   Logged methods
+   * ==================================================================== */
+
+  private BwLogger logger = new BwLogger();
+
+  @Override
+  public BwLogger getLogger() {
+    if ((logger.getLoggedClass() == null) && (logger.getLoggedName() == null)) {
+      logger.setLoggedClass(getClass());
+    }
+
+    return logger;
   }
 }

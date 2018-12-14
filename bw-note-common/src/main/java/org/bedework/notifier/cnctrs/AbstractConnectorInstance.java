@@ -20,6 +20,7 @@ package org.bedework.notifier.cnctrs;
 
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
 
 import net.fortuna.ical4j.model.property.DtStamp;
@@ -62,4 +63,19 @@ public abstract class AbstractConnectorInstance
   }
    *
    */
+
+  /* ====================================================================
+   *                   Logged methods
+   * ==================================================================== */
+
+  private BwLogger logger = new BwLogger();
+
+  @Override
+  public BwLogger getLogger() {
+    if ((logger.getLoggedClass() == null) && (logger.getLoggedName() == null)) {
+      logger.setLoggedClass(getClass());
+    }
+
+    return logger;
+  }
 }

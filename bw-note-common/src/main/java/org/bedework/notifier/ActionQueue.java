@@ -18,6 +18,7 @@
 */
 package org.bedework.notifier;
 
+import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
 
 import java.util.List;
@@ -187,5 +188,20 @@ public class ActionQueue extends Thread implements Logged {
   public void shutdown() {
     stopping = true;
     interrupt();
+  }
+
+  /* ====================================================================
+   *                   Logged methods
+   * ==================================================================== */
+
+  private BwLogger logger = new BwLogger();
+
+  @Override
+  public BwLogger getLogger() {
+    if ((logger.getLoggedClass() == null) && (logger.getLoggedName() == null)) {
+      logger.setLoggedClass(getClass());
+    }
+
+    return logger;
   }
 }

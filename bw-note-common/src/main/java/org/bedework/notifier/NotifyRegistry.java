@@ -10,6 +10,7 @@ import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.SubscriptionWrapper;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.service.NoteConnConf;
+import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
 
 import java.util.ArrayList;
@@ -171,5 +172,20 @@ public class NotifyRegistry implements Logged {
     } catch (final Throwable t) {
       throw new NoteException(t);
     }
+  }
+
+  /* ====================================================================
+   *                   Logged methods
+   * ==================================================================== */
+
+  private BwLogger logger = new BwLogger();
+
+  @Override
+  public BwLogger getLogger() {
+    if ((logger.getLoggedClass() == null) && (logger.getLoggedName() == null)) {
+      logger.setLoggedClass(getClass());
+    }
+
+    return logger;
   }
 }

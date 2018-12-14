@@ -18,6 +18,7 @@
 */
 package org.bedework.notifier;
 
+import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
 
 import org.w3c.dom.Document;
@@ -106,5 +107,20 @@ public class CalWsHelper implements Logged {
                        msg.getSOAPBody());
 
     return msg;
+  }
+
+  /* ====================================================================
+   *                   Logged methods
+   * ==================================================================== */
+
+  private BwLogger logger = new BwLogger();
+
+  @Override
+  public BwLogger getLogger() {
+    if ((logger.getLoggedClass() == null) && (logger.getLoggedName() == null)) {
+      logger.setLoggedClass(getClass());
+    }
+
+    return logger;
   }
 }

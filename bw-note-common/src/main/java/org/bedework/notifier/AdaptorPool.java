@@ -22,6 +22,7 @@ import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.outbound.common.Adaptor;
 import org.bedework.notifier.outbound.common.AdaptorConf;
 import org.bedework.notifier.outbound.common.AdaptorConfig;
+import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
 import org.bedework.util.misc.ToString;
 
@@ -287,5 +288,20 @@ public class AdaptorPool implements Logged {
     ts.append("currentAvailable", getCurrentAvailable());
 
     return ts.toString();
+  }
+
+  /* ====================================================================
+   *                   Logged methods
+   * ==================================================================== */
+
+  private BwLogger logger = new BwLogger();
+
+  @Override
+  public BwLogger getLogger() {
+    if ((logger.getLoggedClass() == null) && (logger.getLoggedName() == null)) {
+      logger.setLoggedClass(getClass());
+    }
+
+    return logger;
   }
 }

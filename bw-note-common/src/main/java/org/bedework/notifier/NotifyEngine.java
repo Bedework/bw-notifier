@@ -32,6 +32,7 @@ import org.bedework.util.config.ConfigException;
 import org.bedework.util.config.ConfigurationStore;
 import org.bedework.util.http.BasicHttpClient;
 import org.bedework.util.jmx.ConfigHolder;
+import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
 import org.bedework.util.misc.Util;
 import org.bedework.util.security.PwEncryptionIntf;
@@ -650,5 +651,20 @@ public class NotifyEngine implements Logged, TzGetter {
             new NotificationMsg(sub.getConnectorName(),
                                 sub.getPrincipalHref(),
                                 null));
+  }
+
+  /* ====================================================================
+   *                   Logged methods
+   * ==================================================================== */
+
+  private BwLogger logger = new BwLogger();
+
+  @Override
+  public BwLogger getLogger() {
+    if ((logger.getLoggedClass() == null) && (logger.getLoggedName() == null)) {
+      logger.setLoggedClass(getClass());
+    }
+
+    return logger;
   }
 }

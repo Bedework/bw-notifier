@@ -19,6 +19,7 @@
 package org.bedework.notifier.outbound.email;
 
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
 
 import java.util.Properties;
@@ -141,5 +142,20 @@ public class Mailer implements Logged {
     CommandMap.setDefaultCommandMap(mc);
 
     return Session.getDefaultInstance(props);
+  }
+
+  /* ====================================================================
+   *                   Logged methods
+   * ==================================================================== */
+
+  private BwLogger logger = new BwLogger();
+
+  @Override
+  public BwLogger getLogger() {
+    if ((logger.getLoggedClass() == null) && (logger.getLoggedName() == null)) {
+      logger.setLoggedClass(getClass());
+    }
+
+    return logger;
   }
 }

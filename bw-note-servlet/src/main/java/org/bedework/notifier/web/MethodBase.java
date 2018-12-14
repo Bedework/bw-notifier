@@ -22,6 +22,7 @@ import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.db.JsonUtil;
 import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.exception.NoteException;
+import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -340,6 +341,21 @@ public abstract class MethodBase extends JsonUtil implements Logged {
     synchronized (httpDateFormatter) {
       return httpDateFormatter.format(val) + "GMT";
     }
+  }
+
+  /* ====================================================================
+   *                   Logged methods
+   * ==================================================================== */
+
+  private BwLogger logger = new BwLogger();
+
+  @Override
+  public BwLogger getLogger() {
+    if ((logger.getLoggedClass() == null) && (logger.getLoggedName() == null)) {
+      logger.setLoggedClass(getClass());
+    }
+
+    return logger;
   }
 }
 
