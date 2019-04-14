@@ -25,7 +25,7 @@
     <orderEntry type="module" module-name="bw-note-servlet" />
     <orderEntry type="module" module-name="bw-note-common" />
     <orderEntry type="module" module-name="bw-note-db" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.3.1" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.8.11" level="project" />
     <orderEntry type="module" module-name="bw-note-shared" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-config:4.0.20" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-xml:4.0.20" level="project" />
@@ -90,8 +90,8 @@
     <orderEntry type="library" name="Maven: org.bedework:bw-util-logging:4.0.0" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-misc:4.0.20" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-servlet:4.0.20" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.3.1" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.3.1" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.8.11" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.8.11" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.2.2" level="project" />
   </component>
 </module>
