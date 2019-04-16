@@ -17,7 +17,7 @@
     <maven.source.plugin.version>2.1.2</maven.source.plugin.version>
 
     <!-- Bedework Versions -->
-    <bw-caldav-util.version>4.0.5</bw-caldav-util.version>
+    <bw-caldav-util.version>4.0.7</bw-caldav-util.version>
     <bw-access.version>4.0.6</bw-access.version>
     <bw-util.version>4.0.24</bw-util.version>
     <bw-util-deploy.version>4.0.24</bw-util-deploy.version>
