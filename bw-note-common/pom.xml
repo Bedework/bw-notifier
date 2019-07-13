@@ -121,9 +121,20 @@
       <groupId>org.freemarker</groupId>
       <artifactId>freemarker</artifactId>
     </dependency>
+
     <dependency>
       <groupId>jaxen</groupId>
       <artifactId>jaxen</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.xml.soap</groupId>
+      <artifactId>javax.xml.soap-api</artifactId>
     </dependency>
   </dependencies>
 

@@ -85,6 +85,8 @@
     <orderEntry type="library" name="Maven: javax.inject:javax.inject:1" level="project" />
     <orderEntry type="library" name="Maven: org.freemarker:freemarker:2.3.23" level="project" />
     <orderEntry type="library" name="Maven: jaxen:jaxen:1.1.6" level="project" />
+    <orderEntry type="library" name="Maven: javax.xml.bind:jaxb-api:2.3.0" level="project" />
+    <orderEntry type="library" name="Maven: javax.xml.soap:javax.xml.soap-api:1.4.0" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-xml-appleServer:4.0.8" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-logging:4.0.2" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.8.11" level="project" />

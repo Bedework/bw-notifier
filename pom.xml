@@ -44,6 +44,8 @@
     <http-core.version>4.4.8</http-core.version>
     <jackson.version>2.8.11</jackson.version>
     <javax.mail.version>1.5.4</javax.mail.version>
+    <java.jaxb.api.version>2.3.0</java.jaxb.api.version>
+    <javax.xml.soap-api.version>1.4.0</javax.xml.soap-api.version>
     <jaxen.version>1.1.6</jaxen.version>
     <junit.version>4.8.2</junit.version>
     <servlet-api.version>4.0.0</servlet-api.version>
@@ -311,6 +313,18 @@
         <groupId>jaxen</groupId>
         <artifactId>jaxen</artifactId>
         <version>${jaxen.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <version>${java.jaxb.api.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>javax.xml.soap</groupId>
+        <artifactId>javax.xml.soap-api</artifactId>
+        <version>${javax.xml.soap-api.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
