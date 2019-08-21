@@ -31,7 +31,6 @@
     <ical4j.version>2.0.3</ical4j.version>
 
     <!-- Third Party Library Versions -->
-    <apache-http.version>4.2.2</apache-http.version>
     <classmate.version>1.3.0</classmate.version>
     <commons-codec.version>1.6</commons-codec.version>
     <dom4j-version>1.6.1</dom4j-version>
@@ -213,11 +212,6 @@
       </dependency>
 
       <!-- Third Party Libraries -->
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpcore</artifactId>
-        <version>${apache-http.version}</version>
-      </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
