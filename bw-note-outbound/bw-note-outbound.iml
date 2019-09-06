@@ -44,7 +44,7 @@
     <orderEntry type="library" name="Maven: org.bedework:bw-util-caching:4.0.25" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util2-calendar:4.0.5" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-xml-icalendar:4.0.9" level="project" />
-    <orderEntry type="module" module-name="bw-access" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-access:4.0.7" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.4.8" level="project" />
     <orderEntry type="library" name="Maven: org.hibernate:hibernate-core:5.2.5.Final" level="project" />
     <orderEntry type="library" name="Maven: org.jboss.logging:jboss-logging:3.3.0.Final" level="project" />
