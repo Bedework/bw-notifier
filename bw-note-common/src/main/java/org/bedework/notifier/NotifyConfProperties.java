@@ -147,40 +147,14 @@ public interface NotifyConfProperties {
    *
    * @param val    String
    */
-  void setCardDAVHost(final String val);
+  void setCardDAVURI(final String val);
 
   /**
    *
    * @return String
    */
   @MBeanInfo("CalDAV host.")
-  String getCardDAVHost();
-
-  /**
-   *
-   * @param val    String
-   */
-  void setCardDAVPort(final int val);
-
-  /**
-   *
-   * @return String
-   */
-  @MBeanInfo("CardDAV port.")
-  int getCardDAVPort();
-
-  /**
-   *
-   * @param val    String
-   */
-  void setCardDAVContextPath(final String val);
-
-  /**
-   *
-   * @return String
-   */
-  @MBeanInfo("CardDAV context path.")
-  String getCardDAVContextPath();
+  String getCardDAVURI();
 
   /**
    *

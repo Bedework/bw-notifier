@@ -37,7 +37,10 @@ import org.bedework.notifier.notifications.Note.DeliveryMethod;
 import org.bedework.util.dav.DavUtil;
 import org.bedework.util.dav.DavUtil.DavChild;
 import org.bedework.util.dav.DavUtil.DavProp;
-import org.bedework.util.http.BasicHttpClient;
+import org.bedework.util.http.Headers;
+import org.bedework.util.http.HttpUtil;
+import org.bedework.util.http.PooledHttpClient;
+import org.bedework.util.http.PooledHttpClient.ResponseHolder;
 import org.bedework.util.misc.Util;
 import org.bedework.util.timezones.Timezones;
 import org.bedework.util.timezones.TimezonesImpl;
@@ -54,8 +57,7 @@ import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.DtEnd;
 import net.fortuna.ical4j.model.property.DtStart;
 import net.fortuna.ical4j.model.property.Summary;
-import org.apache.http.Header;
-import org.apache.http.HttpException;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.message.BasicHeader;
 import org.w3c.dom.Element;
 
@@ -66,11 +68,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
+
+import static org.apache.http.HttpStatus.SC_OK;
 
 /** Handles bedework synch interactions.
  *
@@ -82,7 +85,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
 
   private final BedeworkConnector cnctr;
 
-  private BasicHttpClient client;
+  private PooledHttpClient client;
 
   private DavUtil dav;
 
@@ -137,8 +140,6 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
        we want. For the moment just hope the collection is small.
      */
 
-    final BasicHttpClient cl = getClient();
-
     try {
       /* The URI stored in the info is located by doing a PROPFIND on
        * the user principal. If we already fetched it we'll use it.
@@ -155,7 +156,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
       final String syncToken = getBwsub().getSynchToken();
 
       final Collection<DavChild> chs = getDav().
-              syncReport(cl, sub.getUri(), syncToken, noteTypeProps);
+              syncReport(getClient(), sub.getUri(), syncToken, noteTypeProps);
 
       if (Util.isEmpty(chs)) {
         return false;
@@ -198,15 +199,37 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     } catch (final Throwable t) {
       throw new NoteException(t);
     } finally {
-      if (cl != null){
-        try {
-          cl.release();
-        } catch (final HttpException e) {
-          error(e);
-        }
-        cl.close();
+      if (getClient() != null){
+        getClient().release();
       }
     }
+  }
+
+  private UrlHandler urlHandler;
+
+  private UrlHandler getUrlHandler() {
+    if (urlHandler != null) {
+      return urlHandler;
+    }
+
+    final URL sysUrl;
+    try {
+      sysUrl = new URL(config.getSystemUrl());
+    } catch (final Throwable t) {
+      error(t);
+      throw new RuntimeException(t);
+    }
+
+    final String context = sysUrl.getPath();
+    String urlPrefix = sysUrl.toString();
+    if (context != null) {
+      urlPrefix = urlPrefix.substring(0,
+                                      urlPrefix.length() - context
+                                              .length());
+    }
+
+    urlHandler = new UrlHandler(urlPrefix, context, false);
+    return urlHandler;
   }
 
   @Override
@@ -221,47 +244,14 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
       debug("Fetch item " + noteHref);
     }
 
-    final BasicHttpClient cl = getClient();
-
     try {
-      final URL sysUrl = new URL(config.getSystemUrl());
-      final String context = sysUrl.getPath();
-      String urlPrefix = sysUrl.toString();
-      if (context != null) {
-        urlPrefix = urlPrefix.substring(0,
-                                        urlPrefix.length() - context
-                                                .length());
+      final ResponseHolder resp = getClient().get(noteHref,
+                                                  "application/xml",
+                                                  this::processGetItem);
+
+      if (resp.failed) {
+        return null;
       }
-
-      final UrlHandler urlHandler = new UrlHandler(urlPrefix, context, false);
-
-      final InputStream is = cl.get(noteHref,
-                                    "application/xml",
-                                    getAuthHeaders());
-
-      NotificationType nt = Parser.fromXml(is);
-
-      Map extraValues = checkExtraValues(cl, nt);
-
-      nt.getNotification().unprefixHrefs(urlHandler);
-
-      /* TODO try not to have to do this...
-         Save it as XML and reparse it
-       */
-
-      final String strNote = nt.toXml(true);
-
-      nt = Parser.fromXml(strNote);
-
-      // TODO use nt.getDtstamp()?
-
-      ItemInfo item = new ItemInfo(noteHref, null);
-      Note note = new Note(item, nt);
-
-      note.setExtraValues(extraValues);
-
-      // TODO temp - until we set this at the other end.
-      note.addDeliveryMethod(DeliveryMethod.email);
 
       /* TODO At this stage we should move the href to a pending list and a
          later action will remove it from that list.
@@ -274,17 +264,12 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
       getBwsub().getNoteHrefs().remove(0);
       db.update(sub);
 
-      return note;
+      return (Note)resp.response;
     } catch (final Throwable t) {
       throw new NoteException(t);
     } finally {
-      if (cl != null){
-        try {
-          cl.release();
-        } catch (final HttpException e) {
-          error(e);
-        }
-        cl.close();
+      if (getClient() != null){
+        getClient().release();
       }
     }
   }
@@ -318,8 +303,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
    *                   Private methods
    * ==================================================================== */
 
-  private Map checkExtraValues(final BasicHttpClient cl,
-                               final NotificationType nt) throws NoteException {
+  private Map checkExtraValues(final NotificationType nt) throws NoteException {
     BaseNotificationType bnt = nt.getNotification();
 
     String href = null;
@@ -380,24 +364,16 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     }
 
     try {
-      List<Header> headers = getAuthHeaders();
+      final ResponseHolder resp = getClient().get(href,
+                                                  "text/calendar",
+                                                  this::processGetEvent);
 
-      headers.add(new BasicHeader("ACCEPT", "text/calendar"));
-      final InputStream is = cl.get(href,
-                                    null,
-                                    headers);
-
-      CalendarBuilder cb = new CalendarBuilder(Timezones.getTzRegistry());
-
-      Calendar cal = cb.build(is);
-
-      Component comp = cal.getComponent(VEvent.VEVENT);
-
-      if (comp == null) {
+      if (resp.failed) {
         return null;
       }
 
-      final Map extraValues = new HashMap();
+      final Component comp = (Component)resp.response;
+      final Map<String, Object> extraValues = new HashMap<>();
 
       extraValues.put("event", comp);
 
@@ -426,56 +402,115 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     }
   }
 
+  final ResponseHolder processGetItem(final String path,
+                                      final CloseableHttpResponse resp) {
+    try {
+      final int status = HttpUtil.getStatus(resp);
+
+      if (status != SC_OK) {
+        return new ResponseHolder(status,
+                                  "Failed response from server");
+      }
+
+      if (resp.getEntity() == null) {
+        return new ResponseHolder(status,
+                                  "No content in response from server");
+      }
+
+      final InputStream is = resp.getEntity().getContent();
+
+      NotificationType nt = Parser.fromXml(is);
+
+      Map extraValues = checkExtraValues(nt);
+
+      nt.getNotification().unprefixHrefs(getUrlHandler());
+
+      /* TODO try not to have to do this...
+         Save it as XML and reparse it
+       */
+
+      final String strNote = nt.toXml(true);
+
+      nt = Parser.fromXml(strNote);
+
+      // TODO use nt.getDtstamp()?
+
+      ItemInfo item = new ItemInfo(path, null);
+      Note note = new Note(item, nt);
+
+      note.setExtraValues(extraValues);
+
+      // TODO temp - until we set this at the other end.
+      note.addDeliveryMethod(DeliveryMethod.email);
+
+      return new ResponseHolder(note);
+    } catch (final Throwable t) {
+      return new ResponseHolder(t);
+    }
+  }
+
+  final ResponseHolder processGetEvent(final String path,
+                                       final CloseableHttpResponse resp) {
+    try {
+      final int status = HttpUtil.getStatus(resp);
+
+      if (status != SC_OK) {
+        return new ResponseHolder(status,
+                                  "Failed response from server");
+      }
+
+      if (resp.getEntity() == null) {
+        return new ResponseHolder(status,
+                                  "No content in response from server");
+      }
+
+      final InputStream is = resp.getEntity().getContent();
+
+
+      CalendarBuilder cb = new CalendarBuilder(Timezones.getTzRegistry());
+
+      Calendar cal = cb.build(is);
+
+      return new ResponseHolder(cal.getComponent(VEvent.VEVENT));
+    } catch (final Throwable t) {
+      return new ResponseHolder(t);
+    }
+  }
+
   public boolean deleteItem(final Note note) throws NoteException {
     final ItemInfo item = note.getItemInfo();
 
-    final BasicHttpClient cl = getClient();
-
     try {
-      final int response = cl.delete(item.href,
-                                     getAuthHeaders());
+      final ResponseHolder response = getClient().delete(item.href);
 
-      return true;
+      return !response.failed;
     } catch (final Throwable t) {
       error(t);
       return false;
     } finally {
-      if (cl != null){
-        try {
-          cl.release();
-        } catch (final HttpException e) {
-          error(e);
-        }
-        cl.close();
+      if (getClient() != null){
+        getClient().release();
       }
     }
   }
 
   public boolean replaceItem(final Note note) throws NoteException {
-    final BasicHttpClient cl = getClient();
-
     try {
       final ItemInfo item = note.getItemInfo();
 
       final String xml = note.getNotification().toXml(true);
 
-      final int response = cl.putObject(item.href,
-                                        getAuthHeaders(),
-                                        xml,
-                                        "application/xml");
+      final int response = getClient().put(item.href,
+                                           xml,
+                                           "application/xml");
 
       return true;
     } catch (final Throwable t) {
       error(t);
       return false;
     } finally {
-      if (cl != null){
-        try {
-          cl.release();
-        } catch (final HttpException e) {
-          error(e);
-        }
-        cl.close();
+      if (getClient() != null){
+        getClient().release();
       }
     }
   }
@@ -489,8 +524,6 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
                         AppleServerTags.notificationURL);
 
   private boolean getUri() throws NoteException {
-    final BasicHttpClient cl = getClient();
-
     try {
       //cl.setBaseURI(new URI(config.getSystemUrl()));
 
@@ -499,7 +532,7 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
          If the uri were absolute we would lose the path part of
          the base uri. Everything has to be relative to that.
        */
-      final DavChild dc = getDav().getProps(cl,
+      final DavChild dc = getDav().getProps(getClient(),
                                             sub.getPrincipalHref().substring(1),
                                             notificationURLProps);
 
@@ -544,18 +577,14 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     }
   }
 
-  private BasicHttpClient getClient() throws NoteException {
+  private PooledHttpClient getClient() throws NoteException {
     if (client != null) {
       return client;
     }
 
     try {
-      client = new BasicHttpClient(30 * 1000,
-                                   false);  // followRedirects
-      client.setBaseURI(new URI(config.getSystemUrl()));
-      //if (sub.getUri() != null) {
-      //  client.setBaseURI(new URI(sub.getUri()));
-      //}
+      client = new PooledHttpClient(new URI(config.getSystemUrl()));
+      client.setHeadersFetcher(this::getAuthHeaders);
 
       return client;
     } catch (final Throwable t) {
@@ -563,10 +592,13 @@ public class BedeworkConnectorInstance extends AbstractConnectorInstance {
     }
   }
 
-  List<Header> getAuthHeaders() {
+  Headers getAuthHeaders() {
     final String userToken = getBwsub().getUserToken();
 
-    final List<Header> authheaders = new ArrayList<>(cnctr.getAuthHeaders());
+    final Headers authheaders = new Headers();
+
+    authheaders.addAll(cnctr.getAuthHeaders());
+
     if (userToken == null) {
       return authheaders;
     }

@@ -317,8 +317,8 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
    * @param val    String
    */
   @Override
-  public void setCardDAVHost(final String val) {
-    getConfig().setCardDAVHost(val);
+  public void setCardDAVURI(final String val) {
+    getConfig().setCardDAVURI(val);
   }
 
   /**
@@ -326,44 +326,8 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
    * @return String
    */
   @Override
-  public String getCardDAVHost() {
-    return getConfig().getCardDAVHost();
-  }
-
-  /**
-   *
-   * @param val    String
-   */
-  @Override
-  public void setCardDAVPort(final int val) {
-    getConfig().setCardDAVPort(val);
-  }
-
-  /**
-   *
-   * @return String
-   */
-  @Override
-  public int getCardDAVPort() {
-    return getConfig().getCardDAVPort();
-  }
-
-  /**
-   *
-   * @param val    String
-   */
-  @Override
-  public void setCardDAVContextPath(final String val) {
-    getConfig().setCardDAVContextPath(val);
-  }
-
-  /**
-   *
-   * @return String
-   */
-  @Override
-  public String getCardDAVContextPath() {
-    return getConfig().getCardDAVContextPath();
+  public String getCardDAVURI() {
+    return getConfig().getCardDAVURI();
   }
 
   /**

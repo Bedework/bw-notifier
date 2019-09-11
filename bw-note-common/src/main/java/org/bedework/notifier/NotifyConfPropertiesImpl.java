@@ -53,9 +53,7 @@ public class NotifyConfPropertiesImpl extends HibernateConfigBase<NotifyConfProp
   /* Path to keystores  */
   private String pubKeys;
 
-  private String cardDAVHost;
-  private int cardDAVPort;
-  private String cardDAVContextPath;
+  private String cardDAVURI;
   private String cardDAVPrincipalsPath;
   private String vCardContentType;
 
@@ -150,33 +148,13 @@ public class NotifyConfPropertiesImpl extends HibernateConfigBase<NotifyConfProp
   }
 
   @Override
-  public String getCardDAVHost() {
-    return cardDAVHost;
+  public String getCardDAVURI() {
+    return cardDAVURI;
   }
 
   @Override
-  public void setCardDAVHost(String cardDAVHost) {
-    this.cardDAVHost = cardDAVHost;
-  }
-
-  @Override
-  public int getCardDAVPort() {
-    return cardDAVPort;
-  }
-
-  @Override
-  public void setCardDAVPort(int cardDAVPort) {
-    this.cardDAVPort = cardDAVPort;
-  }
-
-  @Override
-  public String getCardDAVContextPath() {
-    return cardDAVContextPath;
-  }
-
-  @Override
-  public void setCardDAVContextPath(String cardDAVContextPath) {
-    this.cardDAVContextPath = cardDAVContextPath;
+  public void setCardDAVURI(String cardDAVURI) {
+    this.cardDAVURI = cardDAVURI;
   }
 
   @Override

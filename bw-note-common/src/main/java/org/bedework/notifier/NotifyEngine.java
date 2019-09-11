@@ -30,7 +30,6 @@ import org.bedework.notifier.outbound.common.Adaptor;
 import org.bedework.util.calendar.XcalUtil.TzGetter;
 import org.bedework.util.config.ConfigException;
 import org.bedework.util.config.ConfigurationStore;
-import org.bedework.util.http.BasicHttpClient;
 import org.bedework.util.jmx.ConfigHolder;
 import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
@@ -253,9 +252,6 @@ public class NotifyEngine implements Logged, TzGetter {
       timezones.init(getConfig().getTimezonesURI());
 
       tzgetter = this;
-
-      //DavClient.setDefaultMaxPerHost(20);
-      BasicHttpClient.setDefaultMaxPerRoute(20);
 
       notelingPool = new NotelingPool();
       notelingPool.start(this,

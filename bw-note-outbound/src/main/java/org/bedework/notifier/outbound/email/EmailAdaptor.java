@@ -28,8 +28,10 @@ import org.bedework.notifier.cnctrs.bedework.BedeworkSubscription;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.outbound.common.AbstractAdaptor;
-import org.bedework.util.http.BasicHttpClient;
+import org.bedework.util.http.Headers;
 import org.bedework.util.http.HttpUtil;
+import org.bedework.util.http.PooledHttpClient;
+import org.bedework.util.http.PooledHttpClient.ResponseHolder;
 import org.bedework.util.misc.Util;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -43,7 +45,7 @@ import freemarker.template.DefaultObjectWrapperBuilder;
 import freemarker.template.Template;
 import freemarker.template.TemplateHashModel;
 import freemarker.template.TemplateModelException;
-import org.apache.http.Header;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.message.BasicHeader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -69,14 +71,16 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
+
+import static org.apache.http.HttpStatus.SC_OK;
 
 /** The interface implemented by destination adaptors. A destination
  * may be an email address or sms.
@@ -114,6 +118,18 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
   final static String processorType = "email";
 
   private Mailer mailer;
+  private DocumentBuilder builder;
+
+  public EmailAdaptor() {
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    try {
+      builder = factory.newDocumentBuilder();
+    } catch (ParserConfigurationException e) {
+      error(e);
+      throw new RuntimeException(e);
+    }
+  }
 
   @Override
   public boolean process(final Action action) throws NoteException {
@@ -219,7 +235,7 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
     final NotificationType nt = note.getNotification();
     final EmailSubscription sub = EmailSubscription.rewrap(action.getSub());
 
-    List<TemplateResult> results = new ArrayList<TemplateResult>();
+    List<TemplateResult> results = new ArrayList<>();
     try {
       String prefix = nt.getParsed().getDocumentElement().getPrefix();
 
@@ -232,36 +248,30 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
       File templateDir = new File(Util.buildPath(false, globalConfig.getTemplatesPath(), "/", abstractPath));
       if (templateDir.isDirectory()) {
 
-        Map<String, Object> root = new HashMap<String, Object>();
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        DocumentBuilder builder = factory.newDocumentBuilder();
+        Map<String, Object> root = new HashMap<>();
         Document doc = builder.parse(new InputSource(new StringReader(nt.toXml(true))));
         Element el = doc.getDocumentElement();
         NodeModel.simplify(el);
         NodeModel.useJaxenXPathSupport();
         root.put("notification", el);
 
-        HashSet<String> recipients = new HashSet<String>();
+        HashSet<String> recipients = new HashSet<>();
         for (String email : sub.getEmails()) {
             recipients.add(MAILTO + email);
         }
         root.put("recipients", recipients);
 
-        if (globalConfig.getCardDAVHost() != null && globalConfig.getCardDAVPort() != 0 && globalConfig.getCardDAVContextPath() != null) {
-          HashMap<String, Object> vcards = new HashMap<String, Object>();
-          BasicHttpClient client;
-          try {
-            ArrayList<Header> hdrs = new ArrayList<Header>();
-            BasicHeader h = new BasicHeader(HEADER_ACCEPT, globalConfig.getVCardContentType());
-            hdrs.add(h);
+        if (globalConfig.getCardDAVURI() != null) {
+          HashMap<String, Object> vcards = new HashMap<>();
 
-            client = new BasicHttpClient(globalConfig.getCardDAVHost(), globalConfig.getCardDAVPort(), null, 15 * 1000);
+          PooledHttpClient client;
+          try {
+            client = new PooledHttpClient(new URI(globalConfig.getCardDAVURI()));
 
             XPathExpression exp = xPath.compile("//*[local-name() = 'href']");
             NodeList nl = (NodeList)exp.evaluate(doc, XPathConstants.NODESET);
 
-            HashSet<String> vcardLookups = new HashSet<String>();
+            HashSet<String> vcardLookups = new HashSet<>();
             for (int i = 0; i < nl.getLength(); i++) {
               Node n = nl.item(i);
               String text = n.getTextContent();
@@ -276,13 +286,14 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
             vcardLookups.addAll(recipients);
 
             for (String lookup : vcardLookups) {
-              String path = Util.buildPath(false, globalConfig.getCardDAVContextPath() + "/" + lookup.replace(':', '/'));
+              String path = Util.buildPath(false, "/", lookup.replace(':', '/'));
 
-              final InputStream is = client.get(path + VCARD_SUFFIX, "application/text", hdrs);
-              if (is != null) {
-                ObjectMapper om = new ObjectMapper();
-                @SuppressWarnings("unchecked")
-                ArrayList<Object> hm = om.readValue(is, ArrayList.class);
+              final ResponseHolder resp =
+                      client.get(path + VCARD_SUFFIX,
+                                 "application/text",
+                                 this::processGetJsonVcard);
+              if (!resp.failed) {
+                ArrayList<Object> hm = (ArrayList<Object>)resp.response;
                 vcards.put(lookup, hm);
               }
             }
@@ -292,11 +303,17 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
           }
         }
 
-        if (nt.getNotification() instanceof ResourceChangeType) {
+        doResourceChange: {
+          if (!(nt.getNotification() instanceof ResourceChangeType)) {
+            break doResourceChange;
+          }
           ResourceChangeType chg = (ResourceChangeType)nt.getNotification();
-          BedeworkConnectorConfig cfg = ((BedeworkConnector)action.getConn()).getConnectorConfig();
-          BasicHttpClient cl = getClient(cfg);
-          List<Header> hdrs = getHeaders(cfg, new BedeworkSubscription(action.getSub()));
+          BedeworkConnectorConfig cfg =
+                  ((BedeworkConnector)action.getConn()).getConnectorConfig();
+          PooledHttpClient cl = getSystemClient(cfg);
+          cl.setHeadersFetcher(
+                  new SubHeadersFetcher(cfg,
+                                        new BedeworkSubscription(action.getSub())));
 
           String href = null;
           if (chg.getCreated() != null) {
@@ -307,66 +324,73 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
             href = chg.getUpdated().get(0).getHref();
           }
 
-          if (href != null) {
-            if (chg.getDeleted() == null) {
-              // We only have an event for the templates on a create or update, not on delete.
-              ObjectMapper om = new ObjectMapper();
-              final InputStream is = cl.get(cfg.getSystemUrl() + href, null, hdrs);
-              JsonNode a = om.readValue(is, JsonNode.class);
+          if (href == null) {
+            break doResourceChange;
+          }
+
+          doCreateUpdate: {
+            if (chg.getDeleted() != null) {
+              // We only have an event for the templates on a
+              // create or update, not on delete.
+              break doCreateUpdate;
+            }
+            final ResponseHolder resp = cl.get(href, null,
+                                               this::processGetJsonNode);
+            if (resp.failed) {
+              break doCreateUpdate;
+            }
+            JsonNode a = (JsonNode)resp.response;
               
-              // Check for a recurrence ID on this notification.
-              XPathExpression exp = xPath.compile("//*[local-name() = 'recurrenceid']/text()");
-              String rid = exp.evaluate(doc);
-              if (rid != null && !rid.isEmpty()) {
-                Calendar rcal = Calendar.getInstance();
-                recurIdFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-                rcal.setTime(recurIdFormat.parse(rid));
+            // Check for a recurrence ID on this notification.
+            XPathExpression exp = xPath.compile("//*[local-name() = 'recurrenceid']/text()");
+            String rid = exp.evaluate(doc);
+            if (rid != null && !rid.isEmpty()) {
+              Calendar rcal = Calendar.getInstance();
+              recurIdFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+              rcal.setTime(recurIdFormat.parse(rid));
                 
-                // Find the matching recurrence ID in the JSON, and make that the only vevent object.
-                Calendar c = Calendar.getInstance();
-                ArrayNode vevents = (ArrayNode) a.get(2);
-                for (JsonNode vevent : vevents) {
-                  if (vevent.size() > 1 && vevent.get(1).size() > 1) {
-                    JsonNode n = vevent.get(1).get(0);
-                    if (n.get(0).asText().equals("recurrence-id")) {
-                      if (n.get(1).size() > 0 && n.get(1).get("tzid") != null) {
-                        jsonIdFormatTZ.setTimeZone(TimeZone.getTimeZone(n.get(1).get("tzid").asText()));
-                        c.setTime(jsonIdFormatTZ.parse(n.get(3).asText()));
-                      } else {
-                        jsonIdFormatUTC.setTimeZone(TimeZone.getTimeZone("UTC"));
-                        c.setTime(jsonIdFormatUTC.parse(n.get(3).asText()));
-                      }
-                      if (rcal.compareTo(c) == 0) {
-                        vevents.removeAll();
-                        vevents.add(vevent);
-                        break;
-                      }
+              // Find the matching recurrence ID in the JSON, and make that the only vevent object.
+              Calendar c = Calendar.getInstance();
+              ArrayNode vevents = (ArrayNode) a.get(2);
+              for (JsonNode vevent : vevents) {
+                if (vevent.size() > 1 && vevent.get(1).size() > 1) {
+                  JsonNode n = vevent.get(1).get(0);
+                  if (n.get(0).asText().equals("recurrence-id")) {
+                    if (n.get(1).size() > 0 && n.get(1).get("tzid") != null) {
+                      jsonIdFormatTZ.setTimeZone(TimeZone.getTimeZone(n.get(1).get("tzid").asText()));
+                      c.setTime(jsonIdFormatTZ.parse(n.get(3).asText()));
+                    } else {
+                      jsonIdFormatUTC.setTimeZone(TimeZone.getTimeZone("UTC"));
+                      c.setTime(jsonIdFormatUTC.parse(n.get(3).asText()));
+                    }
+                    if (rcal.compareTo(c) == 0) {
+                      vevents.removeAll();
+                      vevents.add(vevent);
+                      break;
                     }
                   }
                 }
               }
-
-              root.put("vevent", (ArrayList<Object>)om.convertValue(a, ArrayList.class));                
             }
 
-            // TODO: Provide some calendar information to the templates. This is currently the publisher's
-            // calendar, but needs to be fixed to be the subscriber's calendar.
-            String chref = href.substring(0, href.lastIndexOf("/"));
-            hdrs.add(new BasicHeader(HEADER_DEPTH, "0"));
-            int rc = cl.sendRequest("PROPFIND", cfg.getSystemUrl() + chref, hdrs, "text/xml", CALENDAR_PROPFIND.length(), CALENDAR_PROPFIND.getBytes());
-            if (rc == HttpServletResponse.SC_OK || rc == SC_MULTISTATUS) {
-              Document d = builder.parse(new InputSource(cl.getResponseBodyAsStream()));
-              HashMap<String, String> hm = new HashMap<String, String>();
-              XPathExpression exp = xPath.compile("//*[local-name() = 'href']/text()");
-              hm.put("href", exp.evaluate(d));
-              exp = xPath.compile("//*[local-name() = 'displayname']/text()");
-              hm.put("name", (String)exp.evaluate(d));
-              exp = xPath.compile("//*[local-name() = 'calendar-description']/text()");
-              hm.put("description", (String)exp.evaluate(d));
-              root.put("calendar", hm);
-            }
+            final ObjectMapper om = new ObjectMapper();
+            root.put("vevent", (ArrayList<Object>)om.convertValue(a, ArrayList.class));
+          } // doCreateUpdate
+
+          // TODO: Provide some calendar information to the templates. This is currently the publisher's
+          // calendar, but needs to be fixed to be the subscriber's calendar.
+          String chref = href.substring(0, href.lastIndexOf("/"));
+
+          final ResponseHolder resp =
+                  cl.propfind(chref, "0",
+                              CALENDAR_PROPFIND,
+                              this::processCalendarPropfind);
+          if (resp.failed) {
+            break doResourceChange;
           }
-        }
+
+          root.put("calendar", resp.response);
+        } // doResourceChange
 
         if (note.getExtraValues() != null) {
           root.putAll(note.getExtraValues());
@@ -396,24 +420,123 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
     return results;
   }
 
-  private BasicHttpClient getClient(BedeworkConnectorConfig config) throws NoteException {
+  final ResponseHolder processGetJsonVcard(final String path,
+                                           final CloseableHttpResponse resp) {
     try {
-      BasicHttpClient client = new BasicHttpClient(30 * 1000, false);  // followRedirects
-      client.setBaseURI(new URI(config.getSystemUrl()));
+      final int status = HttpUtil.getStatus(resp);
+
+      if (status != SC_OK) {
+        return new ResponseHolder(status,
+                                  "Failed response from server");
+      }
+
+      if (resp.getEntity() == null) {
+        return new ResponseHolder(status,
+                                  "No content in response from server");
+      }
+
+      final InputStream is = resp.getEntity().getContent();
+
+      ObjectMapper om = new ObjectMapper();
+      @SuppressWarnings("unchecked")
+      ArrayList<Object> hm = om.readValue(is, ArrayList.class);
+
+      return new ResponseHolder(hm);
+    } catch (final Throwable t) {
+      return new ResponseHolder(t);
+    }
+  }
+
+  final ResponseHolder processGetJsonNode(final String path,
+                                          final CloseableHttpResponse resp) {
+    try {
+      final int status = HttpUtil.getStatus(resp);
+
+      if (status != SC_OK) {
+        return new ResponseHolder(status,
+                                  "Failed response from server");
+      }
+
+      if (resp.getEntity() == null) {
+        return new ResponseHolder(status,
+                                  "No content in response from server");
+      }
+
+      final InputStream is = resp.getEntity().getContent();
+
+      ObjectMapper om = new ObjectMapper();
+
+      JsonNode a = om.readValue(is, JsonNode.class);
+
+      return new ResponseHolder(a);
+    } catch (final Throwable t) {
+      return new ResponseHolder(t);
+    }
+  }
+
+  final ResponseHolder processCalendarPropfind(final String path,
+                                               final CloseableHttpResponse resp) {
+    try {
+      final int status = HttpUtil.getStatus(resp);
+
+      if (status != SC_OK) {
+        return new ResponseHolder(status,
+                                  "Failed response from server");
+      }
+
+      if (resp.getEntity() == null) {
+        return new ResponseHolder(status,
+                                  "No content in response from server");
+      }
+
+      final InputStream is = resp.getEntity().getContent();
+
+      Document d = builder.parse(new InputSource(is));
+
+      HashMap<String, String> hm = new HashMap<>();
+
+      XPathExpression exp =
+              xPath.compile("//*[local-name() = 'href']/text()");
+      hm.put("href", exp.evaluate(d));
+      exp = xPath.compile("//*[local-name() = 'displayname']/text()");
+      hm.put("name", (String)exp.evaluate(d));
+      exp = xPath.compile("//*[local-name() = 'calendar-description']/text()");
+      hm.put("description", exp.evaluate(d));
+
+      return new ResponseHolder(hm);
+    } catch (final Throwable t) {
+      return new ResponseHolder(t);
+    }
+  }
+
+  private PooledHttpClient getSystemClient(BedeworkConnectorConfig config) throws NoteException {
+    try {
+      final PooledHttpClient client = new PooledHttpClient(new URI(config.getSystemUrl()));
+
       return client;
     } catch (final Throwable t) {
       throw new NoteException(t);
     }
   }
 
-  protected List<Header> getHeaders(BedeworkConnectorConfig config, BedeworkSubscription sub) {
-    List<Header> hdrs = new ArrayList<>(1);
-    hdrs.add(new BasicHeader("X-BEDEWORK-NOTEPR", sub.getPrincipalHref()));
-    hdrs.add(new BasicHeader("X-BEDEWORK-PT", sub.getUserToken()));
-    hdrs.add(new BasicHeader("X-BEDEWORK-NOTE", config.getName() + ":" + config.getToken()));
-    hdrs.add(new BasicHeader("X-BEDEWORK-EXTENSIONS", "true"));
-    hdrs.add(new BasicHeader(HEADER_ACCEPT, CALENDAR_JSON_CONTENT_TYPE));
-    return hdrs;
+  private class SubHeadersFetcher
+          implements HttpUtil.HeadersFetcher {
+    private Headers hdrs = new Headers();
+
+    SubHeadersFetcher(final BedeworkConnectorConfig config,
+                      final BedeworkSubscription sub) {
+      hdrs.add(new BasicHeader("X-BEDEWORK-NOTEPR", sub.getPrincipalHref()));
+      hdrs.add(new BasicHeader("X-BEDEWORK-PT", sub.getUserToken()));
+      hdrs.add(new BasicHeader("X-BEDEWORK-NOTE", config.getName() + ":" + config.getToken()));
+      hdrs.add(new BasicHeader("X-BEDEWORK-EXTENSIONS", "true"));
+      hdrs.add(new BasicHeader(HEADER_ACCEPT, CALENDAR_JSON_CONTENT_TYPE));
+      hdrs.add(new BasicHeader(HEADER_ACCEPT, globalConfig.getVCardContentType()));
+
+    }
+
+    public Headers get() {
+      return hdrs;
+    }
   }
 
   protected String stripMailTo(final String address) {
@@ -458,7 +581,7 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
     }
 
     public List<String> getListVariable(String key) {
-      List<String> result = new ArrayList<String>();
+      List<String> result = new ArrayList<>();
       try {
         Object val = env.getVariable(key);
         if (val != null) {
