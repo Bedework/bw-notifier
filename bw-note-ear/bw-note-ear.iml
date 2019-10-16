@@ -34,12 +34,12 @@
     <orderEntry type="library" scope="RUNTIME" name="Maven: com.sun.xml.fastinfoset:FastInfoset:1.2.16" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: jakarta.activation:jakarta.activation-api:1.2.1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: com.sun.activation:jakarta.activation:1.2.1" level="project" />
-    <orderEntry type="module" module-name="bw-util-config" />
-    <orderEntry type="module" module-name="bw-util-dav" />
-    <orderEntry type="module" module-name="bw-util-http" />
-    <orderEntry type="module" module-name="bw-util-jmx" />
-    <orderEntry type="module" module-name="bw-util-misc" />
-    <orderEntry type="module" module-name="bw-util-security" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-config:4.0.26" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-dav:4.0.26" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-http:4.0.26" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-jmx:4.0.26" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-misc:4.0.26" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-security:4.0.26" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-caldav-util:4.0.7" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-xml-synchws:4.0.8" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-xml-caldav:4.0.8" level="project" />
@@ -64,7 +64,7 @@
     <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.3.2" level="project" />
     <orderEntry type="library" name="Maven: net.sf.ehcache:ehcache:2.10.3" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-access:4.0.7" level="project" />
-    <orderEntry type="module" module-name="bw-util-caching" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-caching:4.0.26" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-hibernate:4.0.22" level="project" />
     <orderEntry type="library" name="Maven: org.apache.derby:derbynet:10.8.2.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.derby:derby:10.8.2.2" level="project" />
@@ -72,9 +72,9 @@
     <orderEntry type="library" name="Maven: log4j:log4j:1.2.15" level="project" />
     <orderEntry type="library" name="Maven: javax.mail:mail:1.4" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-logging:4.0.4" level="project" />
-    <orderEntry type="module" module-name="bw-util-timezones" />
-    <orderEntry type="module" module-name="bw-util-servlet" />
-    <orderEntry type="module" module-name="bw-util-xml" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-timezones:4.0.26" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-servlet:4.0.26" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-xml:4.0.26" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util2-calendar:4.0.5" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-xml-calws-soap:4.0.9" level="project" />
     <orderEntry type="library" name="Maven: javax.jws:javax.jws-api:1.1" level="project" />
