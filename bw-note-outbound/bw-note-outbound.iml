@@ -65,12 +65,12 @@
     <orderEntry type="library" name="Maven: jaxen:jaxen:1.1.6" level="project" />
     <orderEntry type="library" name="Maven: javax.xml.bind:jaxb-api:2.3.0" level="project" />
     <orderEntry type="library" name="Maven: javax.xml.soap:javax.xml.soap-api:1.4.0" level="project" />
-    <orderEntry type="library" name="Maven: org.bedework:bw-util-config:4.1.0-SNAPSHOT" level="project" />
+    <orderEntry type="module" module-name="bw-util-config" />
     <orderEntry type="module" module-name="bw-util-http" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.5.3" level="project" />
     <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.2" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.10.0" level="project" />
-    <orderEntry type="library" name="Maven: org.bedework:bw-util-jmx:4.1.0-SNAPSHOT" level="project" />
+    <orderEntry type="module" module-name="bw-util-jmx" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-misc:4.0.26" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-xml:4.0.26" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-caldav-util:4.0.7" level="project" />
