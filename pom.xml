@@ -20,9 +20,13 @@
     <bw-caldav-util.version>4.0.7</bw-caldav-util.version>
     <bw-access.version>4.0.7</bw-access.version>
     <bw-util.version>4.0.26</bw-util.version>
+    <bw-util-config.version>4.1.0-SNAPSHOT</bw-util-config.version>
     <bw-util-deploy.version>4.0.25</bw-util-deploy.version>
     <bw-util-logging.version>4.0.4</bw-util-logging.version>
     <bw-util-hibernate.version>4.0.22</bw-util-hibernate.version>
+    <bw-util-network.version>4.1.0-SNAPSHOT</bw-util-network.version>
+    <bw-util-security.version>4.1.0-SNAPSHOT</bw-util-security.version>
+    <bw-util-tz.version>4.1.0-SNAPSHOT</bw-util-tz.version>
     <bw-util2.version>4.0.5</bw-util2.version>
     <bw-xml.version>4.0.9</bw-xml.version>
 
@@ -135,13 +139,13 @@
       <dependency>
         <groupId>org.bedework</groupId>
         <artifactId>bw-util-config</artifactId>
-        <version>${bw-util.version}</version>
+        <version>${bw-util-config.version}</version>
       </dependency>
 
       <dependency>
         <groupId>org.bedework</groupId>
         <artifactId>bw-util-dav</artifactId>
-        <version>${bw-util.version}</version>
+        <version>${bw-util-network.version}</version>
       </dependency>
 
       <dependency>
@@ -153,13 +157,13 @@
       <dependency>
         <groupId>org.bedework</groupId>
         <artifactId>bw-util-http</artifactId>
-        <version>${bw-util.version}</version>
+        <version>${bw-util-network.version}</version>
       </dependency>
 
       <dependency>
         <groupId>org.bedework</groupId>
         <artifactId>bw-util-jmx</artifactId>
-        <version>${bw-util.version}</version>
+        <version>${bw-util-config.version}</version>
       </dependency>
 
       <dependency>
@@ -173,25 +177,29 @@
         <artifactId>bw-util-misc</artifactId>
         <version>${bw-util.version}</version>
       </dependency>
+
       <dependency>
         <groupId>org.bedework</groupId>
         <artifactId>bw-util-security</artifactId>
-        <version>${bw-util.version}</version>
+        <version>${bw-util-security.version}</version>
       </dependency>
+
       <dependency>
         <groupId>org.bedework</groupId>
         <artifactId>bw-util-servlet</artifactId>
-        <version>${bw-util.version}</version>
+        <version>${bw-util-network.version}</version>
       </dependency>
+
       <dependency>
         <groupId>org.bedework</groupId>
         <artifactId>bw-util-xml</artifactId>
         <version>${bw-util.version}</version>
       </dependency>
+
       <dependency>
         <groupId>org.bedework</groupId>
-        <artifactId>bw-util-timezones</artifactId>
-        <version>${bw-util.version}</version>
+        <artifactId>bw-util-tz</artifactId>
+        <version>${bw-util-tz.version}</version>
       </dependency>
 
       <dependency>
