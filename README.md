@@ -1,4 +1,4 @@
-## bw-notifier [![Build Status](https://travis-ci.org/Bedework/bw-notifier.svg)](https://travis-ci.org/Bedework/bw-notifier)
+# bw-notifier [![Build Status](https://travis-ci.org/Bedework/bw-notifier.svg)](https://travis-ci.org/Bedework/bw-notifier)
 
 This project provides a notification service for
 [Bedework](https://www.apereo.org/projects/bedework).
@@ -6,16 +6,16 @@ This project provides a notification service for
 This is a service running on the application server which can deliver
 noifications to subscribed users via email.
 
-### Requirements
+## Requirements
 
-1. JDK 8
+1. JDK 11
 2. Maven 3
 
-### Building Locally
+## Building Locally
 
 > mvn clean install
 
-### Releasing
+## Releasing
 
 Releases of this fork are published to Maven Central via Sonatype.
 
@@ -26,11 +26,11 @@ To create a release, you must have:
 
 To perform a new release:
 
-> mvn release:clean release:prepare
+> mvn -P bedework-dev release:clean release:prepare
 
 When prompted, select the desired version; accept the defaults for scm tag and next development version.
 When the build completes, and the changes are committed and pushed successfully, execute:
 
-> mvn release:perform
+> mvn -P bedework-dev release:perform
 
 For full details, see [Sonatype's documentation for using Maven to publish releases](http://central.sonatype.org/pages/apache-maven.html).
