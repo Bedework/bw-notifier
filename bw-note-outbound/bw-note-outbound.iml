@@ -9,7 +9,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: org.bedework:bw-util-hibernate:4.0.19-SNAPSHOT" level="project" />
     <orderEntry type="module" module-name="bw-note-bwconnector" />
     <orderEntry type="library" name="Maven: org.bedework.ical4j:ical4j:2.0.12" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.10" level="project" />
