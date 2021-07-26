@@ -126,8 +126,8 @@ public class NotifyEngine implements Logged, TzGetter {
    */
   public void addNotificationMsg(final NotificationMsg val) throws NoteException {
     try {
-      Action action = new Action(Action.ActionType.notificationMsg,
-                                 val);
+      final Action action = new Action(Action.ActionType.notificationMsg,
+                                       val);
 
       handleAction(action);
     } catch (final Throwable t) {
@@ -138,16 +138,15 @@ public class NotifyEngine implements Logged, TzGetter {
   /** Constructor
    *
    */
-  private NotifyEngine() throws NoteException {
+  private NotifyEngine() {
     System.setProperty("com.sun.xml.ws.transport.http.client.HttpTransportPipe.dump",
                        String.valueOf(debug()));
   }
 
   /**
    * @return the notification engine
-   * @throws NoteException on error
    */
-  public static NotifyEngine getNotifier() throws NoteException {
+  public static NotifyEngine getNotifier() {
     if (notifier != null) {
       return notifier;
     }
@@ -185,7 +184,7 @@ public class NotifyEngine implements Logged, TzGetter {
 
   public static boolean authenticate(final String system,
                               final String token) throws NoteException {
-    NotifyRegistry.Info info = NotifyRegistry.getInfo(system);
+    final NotifyRegistry.Info info = NotifyRegistry.getInfo(system);
 
     return info != null &&
             info.getAuthenticator().authenticate(token);
@@ -208,9 +207,8 @@ public class NotifyEngine implements Logged, TzGetter {
   }
 
   /**
-   * @throws NoteException on error
    */
-  public void updateConfig() throws NoteException {
+  public void updateConfig() {
     if (cfgHolder != null) {
       cfgHolder.putConfig();
     }
@@ -360,7 +358,7 @@ public class NotifyEngine implements Logged, TzGetter {
     }
   }
 
-  public void queueNotification(final Note note) throws NoteException {
+  public void queueNotification(final Note note) {
 
   }
 
@@ -398,7 +396,7 @@ public class NotifyEngine implements Logged, TzGetter {
 
     /* Call stop on each connector
      */
-    for (final Connector conn: NotifyRegistry.getConnectors()) {
+    for (final Connector<?, ?, ?> conn: NotifyRegistry.getConnectors()) {
       info("Stopping connector " + conn.getId());
       try {
         conn.stop();
@@ -483,8 +481,6 @@ public class NotifyEngine implements Logged, TzGetter {
                      getConfig().getPubKeys());
 
       return pwEncrypt;
-    } catch (final NoteException se) {
-      throw se;
     } catch (final Throwable t) {
       t.printStackTrace();
       throw new NoteException(t);
@@ -504,7 +500,7 @@ public class NotifyEngine implements Logged, TzGetter {
   public synchronized ConnectorInstance reserveInstance(final NotifyDb db,
                                                         final Action action) throws NoteException {
     ConnectorInstance cinst;
-    final Connector conn;
+    final Connector<?, ?, ?> conn;
 
     if (action.getSub().reserved()) {
       waitingActions.add(action);
@@ -566,7 +562,8 @@ public class NotifyEngine implements Logged, TzGetter {
 
     final String connectorName = action.getSub().getConnectorName();
 
-    final Connector conn = NotifyRegistry.getConnector(connectorName);
+    final Connector<?, ?, ?> conn =
+            NotifyRegistry.getConnector(connectorName);
     if (conn == null) {
       throw new NoteException("No connector for " +
                                       action.getSub() + "(");
@@ -609,13 +606,13 @@ public class NotifyEngine implements Logged, TzGetter {
    * @return list of adaptors
    * @throws NoteException on error
    */
-  public List<Adaptor> getAdaptors(final Action action) throws NoteException {
+  public List<Adaptor<?>> getAdaptors(final Action action) throws NoteException {
     final Note note = action.getNote();
-    final List<Adaptor> as = new ArrayList<>();
+    final List<Adaptor<?>> as = new ArrayList<>();
     final List<Note.DeliveryMethod> dms = note.getDeliveryMethods();
 
     for (final Note.DeliveryMethod dm: dms) {
-      final Adaptor a = adaptorPool.getAdaptor(dm.toString());
+      final Adaptor<?> a = adaptorPool.getAdaptor(dm.toString());
 
       if (a == null) {
         continue;
@@ -631,8 +628,8 @@ public class NotifyEngine implements Logged, TzGetter {
    * @param adaptors list of adaptors
    * @throws NoteException on error
    */
-  public void releaseAdaptors(final List<Adaptor> adaptors) throws NoteException {
-    for (final Adaptor adaptor: adaptors) {
+  public void releaseAdaptors(final List<Adaptor<?>> adaptors) throws NoteException {
+    for (final Adaptor<?> adaptor: adaptors) {
       adaptorPool.add(adaptor);
     }
   }
@@ -653,7 +650,7 @@ public class NotifyEngine implements Logged, TzGetter {
    *                   Logged methods
    * ==================================================================== */
 
-  private BwLogger logger = new BwLogger();
+  private final BwLogger logger = new BwLogger();
 
   @Override
   public BwLogger getLogger() {

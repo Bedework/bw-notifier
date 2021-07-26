@@ -204,7 +204,7 @@ public class Noteling implements Logged {
   }
 
   private StatusType doOutBound(final Action action) throws NoteException {
-    final List<Adaptor> adaptors =
+    final List<Adaptor<?>> adaptors =
             notifier.getAdaptors(action);
 
     if (Util.isEmpty(adaptors)) {
@@ -226,7 +226,7 @@ public class Noteling implements Logged {
     boolean allOk = true;
 
     try {
-      for (final Adaptor adaptor: adaptors) {
+      for (final Adaptor<?> adaptor: adaptors) {
         if (!adaptor.process(action)) {
           allOk = false;
         }
@@ -256,7 +256,7 @@ public class Noteling implements Logged {
    *                   Logged methods
    * ==================================================================== */
 
-  private BwLogger logger = new BwLogger();
+  private final BwLogger logger = new BwLogger();
 
   @Override
   public BwLogger getLogger() {
