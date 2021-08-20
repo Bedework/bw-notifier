@@ -534,19 +534,20 @@ public class NotifyEngine implements Logged, TzGetter {
   /** Release a subscription after handling a notification.
    *
    * @param sub the subscription
-   * @throws NoteException on error
    */
-  public synchronized void release(final Subscription sub) throws NoteException {
+  public void release(final Subscription sub) {
     if (debug()) {
       debug("release subscription " + sub);
     }
 
     sub.release();
+  }
 
-    final Action action = waitingActions.get(sub);
+  public synchronized void release(final Action action) throws NoteException {
+    final Action waction = waitingActions.get(action.getSub());
 
-    if (action != null) {
-      handleAction(action);
+    if (waction != null) {
+      handleAction(waction);
     }
   }
 

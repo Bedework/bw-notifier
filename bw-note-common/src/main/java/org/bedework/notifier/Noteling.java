@@ -100,6 +100,7 @@ public class Noteling implements Logged {
   public StatusType handleAction(final Action action) throws NoteException {
     try {
       db.startTransaction();
+      db.refresh(action.getSub());
 
       switch (action.getType()) {
         case notificationMsg:
@@ -120,6 +121,7 @@ public class Noteling implements Logged {
       return StatusType.OK;
     } finally {
       db.endTransaction();
+      notifier.release(action);
     }
   }
 

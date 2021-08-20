@@ -159,6 +159,15 @@ public class NotifyDbImpl implements NotifyDb, Logged {
     }
   }
 
+  @Override
+  public void refresh(final Subscription sub) throws NoteException {
+    try {
+      sess.getSession().refresh(sub);
+    } catch (final HibException he) {
+      throw new NoteException(he);
+    }
+  }
+
   private static final String findSubQuery =
           "from " + Subscription.class.getName() +
                   " sub where sub.connectorName=:connName" +

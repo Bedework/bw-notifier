@@ -74,6 +74,13 @@ public interface NotifyDb extends Serializable {
    */
   Subscription get(String id) throws NoteException;
 
+  /** Refresh the subscription
+   *
+   * @param sub subscription
+   * @throws NoteException
+   */
+  void refresh(Subscription sub) throws NoteException;
+
   /** Find any subscription that matches this one. There can only be one with
    * the same endpoints
    *
