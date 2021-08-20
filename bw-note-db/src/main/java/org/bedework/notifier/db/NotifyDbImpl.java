@@ -42,13 +42,13 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Mike Douglass
  */
 public class NotifyDbImpl implements NotifyDb, Logged {
-  private HibernateConfigBase config;
+  private final HibernateConfigBase<?> config;
 
   /** */
   protected boolean open;
 
   /** Incremented we were created for debugging */
-  private static AtomicLong globalSessionCt = new AtomicLong();
+  private static final AtomicLong globalSessionCt = new AtomicLong();
 
   private long sessionCt;
 
@@ -60,7 +60,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
    * @param config configuration
    *
    */
-  public NotifyDbImpl(final HibernateConfigBase config) {
+  public NotifyDbImpl(final HibernateConfigBase<?> config) {
     this.config = config;
   }
 
@@ -93,7 +93,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
         if (!sess.rolledback()) {
           sess.commit();
         }
-      } catch (HibException he) {
+      } catch (final HibException he) {
         throw new NoteException(he);
       }
     } catch (final NoteException ne) {
@@ -161,6 +161,10 @@ public class NotifyDbImpl implements NotifyDb, Logged {
 
   @Override
   public void refresh(final Subscription sub) throws NoteException {
+    if (sub == null) {
+      return;
+    }
+
     try {
       sess.getSession().refresh(sub);
     } catch (final HibException he) {
@@ -255,7 +259,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
       try {
         sess.init(HibSessionFactory.getSessionFactory(
                 config.getHibernateProperties()));
-      } catch (HibException he) {
+      } catch (final HibException he) {
         throw new NoteException(he);
       }
       debug("Open session for " + sessionCt);
@@ -308,7 +312,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
     }
     try {
       sess.beginTransaction();
-    } catch (HibException he) {
+    } catch (final HibException he) {
       throw new NoteException(he);
     }
   }
@@ -317,7 +321,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
     try {
       checkOpen();
       sess.rollback();
-    } catch (HibException he) {
+    } catch (final HibException he) {
       throw new NoteException(he);
     }
   }
@@ -364,7 +368,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
    *                   Logged methods
    * ==================================================================== */
 
-  private BwLogger logger = new BwLogger();
+  private final BwLogger logger = new BwLogger();
 
   @Override
   public BwLogger getLogger() {
