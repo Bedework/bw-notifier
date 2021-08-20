@@ -65,6 +65,10 @@ public class ActionWaiter implements Logged {
   }
 
   public Action get(final Subscription sub) {
+    if (sub == null) {
+      return null;
+    }
+
     final String key = sub.getSubscriptionId();
 
     final List<Action> la = actions.get(key);
