@@ -166,7 +166,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
     }
 
     try {
-      sess.getSession().refresh(sub);
+      sess.getSession().refresh(unwrap(sub));
     } catch (final HibException he) {
       throw new NoteException(he);
     }
