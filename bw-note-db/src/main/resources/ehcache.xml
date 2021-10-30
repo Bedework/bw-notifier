@@ -1,4 +1,4 @@
-<ehcache>
+<ehcache name="bwnotifierChache">
 
     <!-- Sets the path to the directory where cache .data files are created.
 

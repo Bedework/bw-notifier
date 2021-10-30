@@ -26,6 +26,7 @@
       </exclusions>
     </dependency>
 
+    <!-- Wildfly modules
     <dependency>
       <groupId>org.bedework.notifier</groupId>
       <artifactId>bw-note-db</artifactId>
@@ -240,6 +241,7 @@
       <groupId>javax.xml.soap</groupId>
       <artifactId>javax.xml.soap-api</artifactId>
     </dependency>
+    -->
   </dependencies>
 
   <build>
@@ -264,6 +266,7 @@
               <artifactId>bw-note-war</artifactId>
               <contextRoot>/notify</contextRoot>
             </webModule>
+            <!-- Wildfly modules
             <jarModule>
               <groupId>${project.groupId}</groupId>
               <artifactId>bw-note-db</artifactId>
@@ -288,6 +291,7 @@
               <groupId>${project.groupId}</groupId>
               <artifactId>bw-note-servlet</artifactId>
             </jarModule>
+            -->
           </modules>
         </configuration>
       </plugin>
