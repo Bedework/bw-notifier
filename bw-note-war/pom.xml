@@ -27,12 +27,14 @@
         <configuration>
           <!-- In version 2.1-alpha-1, this was incorrectly named warSourceExcludes -->
           <packagingExcludes>WEB-INF/lib/*.jar</packagingExcludes>
+          <!--
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
               <classpathPrefix>lib/</classpathPrefix>
             </manifest>
           </archive>
+          -->
         </configuration>
       </plugin>
     </plugins>
