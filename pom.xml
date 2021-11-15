@@ -3,7 +3,7 @@
   
   <groupId>org.bedework.notifier</groupId>
   <artifactId>bw-notifier</artifactId>
-  <version>4.0.11</version>
+  <version>4.0.12-SNAPSHOT</version>
   
   <packaging>pom</packaging>
   <name>bw-notifier</name>
@@ -71,7 +71,7 @@
     <connection>scm:git:git@github.com:Bedework/bw-notifier.git</connection>
     <developerConnection>scm:git:git@github.com:Bedework/bw-notifier.git</developerConnection>
     <url>https://github.com/Bedework/bw-notifier</url>
-    <tag>bw-notifier-4.0.11</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <issueManagement>
