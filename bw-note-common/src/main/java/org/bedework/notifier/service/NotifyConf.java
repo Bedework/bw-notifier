@@ -31,12 +31,8 @@ import org.bedework.util.jmx.ConfBase;
 import org.bedework.util.jmx.ConfigHolder;
 import org.bedework.util.jmx.InfoLines;
 
-import org.hibernate.cfg.Configuration;
-
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import javax.management.ObjectName;
 
@@ -62,18 +58,22 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
   private String schemaOutFile;
 
-  private Configuration hibCfg;
-
   private class SchemaBuilder extends SchemaThread {
 
     SchemaBuilder(final String outFile,
-                  final boolean export,
-                  final Properties hibConfig) {
-      super(outFile, export, hibConfig);
+                  final boolean export) {
+      super(outFile, export, new HibConfig(getConfig(),
+                                           NotifyConf.class.getClassLoader()));
+      setContextClassLoader(NotifyConf.class.getClassLoader());
     }
 
     @Override
     public void completed(final String status) {
+      if (status.equals(SchemaThread.statusDone)) {
+        NotifyConf.this.setStatus(ConfBase.statusDone);
+      } else {
+        NotifyConf.this.setStatus(ConfBase.statusFailed);
+      }
       setExport(false);
       info("Schema build completed with status " + status);
     }
@@ -83,8 +83,6 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
   private class ProcessorThread extends Thread {
     boolean showedTrace;
-
-    final Object locker = new Object();
 
     /**
      * @param name - for the thread
@@ -115,8 +113,8 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
         if (running) {
           // Wait a bit before restarting
           try {
-            synchronized (locker) {
-              locker.wait (10 * 1000);
+            synchronized (this) {
+              this.wait (10 * 1000);
             }
           } catch (final Throwable t) {
             error(t.getMessage());
@@ -171,51 +169,31 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
     getConfig().setNotelingPoolSize(val);
   }
 
-  /**
-   * @return current size of noteling pool
-   */
   @Override
   public int getNotelingPoolSize() {
     return getConfig().getNotelingPoolSize();
   }
 
-  /**
-   * @param val timeout in millisecs
-   */
   @Override
   public void setNotelingPoolTimeout(final long val) {
     getConfig().setNotelingPoolTimeout(val);
   }
 
-  /**
-   * @return timeout in millisecs
-   */
   @Override
   public long getNotelingPoolTimeout() {
     return getConfig().getNotelingPoolTimeout();
   }
 
-  /** How often we retry when a target is missing
-   *
-   * @param val count
-   */
   @Override
   public void setMissingTargetRetries(final int val) {
     getConfig().setMissingTargetRetries(val);
   }
 
-  /**
-   * @return How often we retry when a target is missing
-   */
   @Override
   public int getMissingTargetRetries() {
     return getConfig().getMissingTargetRetries();
   }
 
-  /** web service push callback uri - null for no service
-   *
-   * @param val    String
-   */
   @Override
   public void setCallbackURI(final String val) {
     getConfig().setCallbackURI(val);
@@ -312,55 +290,31 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
     return getConfig().getPubKeys();
   }
 
-  /**
-   *
-   * @param val    String
-   */
   @Override
   public void setCardDAVURI(final String val) {
     getConfig().setCardDAVURI(val);
   }
 
-  /**
-   *
-   * @return String
-   */
   @Override
   public String getCardDAVURI() {
     return getConfig().getCardDAVURI();
   }
 
-  /**
-   *
-   * @param val    String
-   */
   @Override
   public void setCardDAVPrincipalsPath(final String val) {
     getConfig().setCardDAVPrincipalsPath(val);
   }
 
-  /**
-   *
-   * @return String
-   */
   @Override
   public String getCardDAVPrincipalsPath() {
     return getConfig().getCardDAVPrincipalsPath();
   }
 
-  /**
-   *
-   * @param val    String
-   */
   @Override
   public void setVCardContentType(final String val) {
     getConfig().setVCardContentType(val);
   }
 
-  /**
-   *
-   * @return String
-   */
   @Override
   public String getVCardContentType() {
     return getConfig().getVCardContentType();
@@ -387,16 +341,16 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
   @Override
   public String schema() {
     try {
-      final HibConfig hc = new HibConfig(getConfig());
-
-      buildSchema = new SchemaBuilder(getSchemaOutFile(),
-                                      getExport(),
-                                      hc.getHibConfiguration().getProperties());
+      buildSchema = new SchemaBuilder(
+              getSchemaOutFile(),
+              getExport());
 
       setStatus(statusStopped);
 
+      buildSchema.start();
+
       return "OK";
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       error(t);
 
       return "Exception: " + t.getLocalizedMessage();
@@ -406,7 +360,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
   @Override
   public synchronized List<String> schemaStatus() {
     if (buildSchema == null) {
-      InfoLines infoLines = new InfoLines();
+      final InfoLines infoLines = new InfoLines();
 
       infoLines.addLn("Schema build has not been started");
 
@@ -428,11 +382,11 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
   @Override
   public String listHibernateProperties() {
-    StringBuilder res = new StringBuilder();
+    final StringBuilder res = new StringBuilder();
 
     List<String> ps = getConfig().getHibernateProperties();
 
-    for (String p: ps) {
+    for (final String p: ps) {
       res.append(p);
       res.append("\n");
     }
@@ -442,7 +396,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
   @Override
   public String displayHibernateProperty(final String name) {
-    String val = getConfig().getHibernateProperty(name);
+    final String val = getConfig().getHibernateProperty(name);
 
     if (val != null) {
       return val;
@@ -556,9 +510,6 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
     return cfg;
   }
 
-  /** Save the configuration.
-   *
-   */
   @Override
   public void putConfig() {
     saveConfig();
@@ -567,33 +518,6 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
   /* ====================================================================
    *                   Private methods
    * ==================================================================== */
-
-  private synchronized Configuration getHibConfiguration() {
-    if (hibCfg == null) {
-      try {
-        hibCfg = new Configuration();
-
-        StringBuilder sb = new StringBuilder();
-
-        List<String> ps = getConfig().getHibernateProperties();
-
-        for (String p: ps) {
-          sb.append(p);
-          sb.append("\n");
-        }
-
-        Properties hprops = new Properties();
-        hprops.load(new StringReader(sb.toString()));
-
-        hibCfg.addProperties(hprops).configure();
-      } catch (Throwable t) {
-        // Always bad.
-        error(t);
-      }
-    }
-
-    return hibCfg;
-  }
 
   /**
    * @param val to convert

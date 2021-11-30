@@ -25,7 +25,7 @@
     <orderEntry type="library" name="Maven: org.bedework:bw-util-config:4.1.4" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-logging:5.0.0" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-xml:4.0.31" level="project" />
-    <orderEntry type="library" name="Maven: org.bedework:bw-util-hibernate:4.0.29" level="project" />
+    <orderEntry type="module" module-name="bw-util-hibernate" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-jmx:4.1.4" level="project" />
     <orderEntry type="library" name="Maven: org.apache.derby:derbynet:10.15.2.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.derby:derby:10.15.2.0" level="project" />
