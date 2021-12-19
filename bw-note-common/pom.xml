@@ -1,13 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.bedework.notifier</groupId>
     <artifactId>bw-notifier</artifactId>
-    <version>4.0.12-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
+    <version>5.0.0-SNAPSHOT</version>
   </parent>
+
   <artifactId>bw-note-common</artifactId>
-  <name>bw-note-common</name>
+  <name>Bedework: Notifier - common classes</name>
 
   <dependencies>
     <!-- Internal Project Dependencies -->
@@ -16,6 +17,7 @@
       <artifactId>bw-note-db</artifactId>
       <version>${project.version}</version>
     </dependency>
+
     <dependency>
       <groupId>org.bedework.notifier</groupId>
       <artifactId>bw-note-shared</artifactId>
@@ -26,6 +28,7 @@
       <groupId>org.bedework</groupId>
       <artifactId>bw-xml-appleServer</artifactId>
     </dependency>
+
     <!-- Bedework: Util -->
 
     <dependency>
@@ -42,14 +45,17 @@
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-hibernate</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-http</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-jmx</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-logging</artifactId>
@@ -60,14 +66,17 @@
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-misc</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-security</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-util-tz</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-caldav-util</artifactId>
@@ -94,11 +103,13 @@
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpcore</artifactId>
     </dependency>
+
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <scope>provided</scope>
     </dependency>
+
     <!-- Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>
@@ -114,11 +125,6 @@
     <dependency>
       <groupId>org.freemarker</groupId>
       <artifactId>freemarker</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>jaxen</groupId>
-      <artifactId>jaxen</artifactId>
     </dependency>
 
     <dependency>

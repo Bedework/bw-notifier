@@ -1,14 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.bedework.notifier</groupId>
     <artifactId>bw-notifier</artifactId>
-    <version>4.0.12-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
+
   <artifactId>bw-note-ear</artifactId>
   <packaging>ear</packaging>
-  <name>bw-note-ear</name>
+  <name>Bedework: Notifier - ear</name>
 
   <dependencies>
 
@@ -252,19 +254,12 @@
         <artifactId>maven-ear-plugin</artifactId>
         <version>2.10.1</version>
         <configuration>
-          <!-- Exclude eclipse generated application.xml during mvn package -->
-          <earSourceExcludes>**/application.xml</earSourceExcludes>
-          <defaultLibBundleDir>lib</defaultLibBundleDir>
-          <skinnyWars>true</skinnyWars>
-          <!-- use maven generated application.xml instead -->
-          <includeLibInApplicationXml>false</includeLibInApplicationXml>
-          <generateApplicationXml>true</generateApplicationXml>
-          <unpackTypes>sar,rar,war</unpackTypes>
           <modules>
             <webModule>
               <groupId>${project.groupId}</groupId>
               <artifactId>bw-note-war</artifactId>
               <contextRoot>/notify</contextRoot>
+              <bundleFileName>bw-note-${project.version}.war</bundleFileName>
             </webModule>
             <!-- Wildfly modules
             <jarModule>
@@ -299,19 +294,8 @@
       <plugin>
         <groupId>org.bedework</groupId>
         <artifactId>bw-util-maven-deploy</artifactId>
-        <version>${bw-util-deploy.version}</version>
-        <executions>
-          <execution>
-            <phase>install</phase>
-            <goals>
-              <goal>bw-deploy</goal>
-            </goals>
-          </execution>
-        </executions>
+
         <configuration>
-          <checkonly>${org.bedework.deploy.checkonly}</checkonly>
-          <noversion>true</noversion>
-          <delete>true</delete>
           <earName>bw-notifier</earName>
           <baseDirPath>${project.basedir}/../..</baseDirPath>
           <propsPath>${org.bedework.deployment.properties}</propsPath>
