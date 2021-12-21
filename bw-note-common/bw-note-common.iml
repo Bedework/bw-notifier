@@ -45,7 +45,7 @@
     <orderEntry type="library" name="Maven: javax.jws:javax.jws-api:1.1" level="project" />
     <orderEntry type="module" module-name="bw-xml-caldav" />
     <orderEntry type="module" module-name="bw-xml-calws-soap" />
-    <orderEntry type="library" name="Maven: org.bedework:bw-webdav:5.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="module" module-name="bw-webdav" />
     <orderEntry type="module" module-name="bw-util-servlet" />
     <orderEntry type="library" name="Maven: org.bedework:apache-jdkim-library:0.6" level="project" />
     <orderEntry type="library" name="Maven: org.apache.geronimo.specs:geronimo-activation_1.1_spec:1.0.2" level="project" />
