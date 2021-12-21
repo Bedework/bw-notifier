@@ -16,6 +16,13 @@
   <description>A notification service - used by bedework</description>
   <url>https://github.com/Bedework/bw-notifier</url>
 
+  <scm>
+    <connection>scm:git:git@github.com:Bedework/bw-notifier.git</connection>
+    <developerConnection>scm:git:git@github.com:Bedework/bw-notifier.git</developerConnection>
+    <url>https://github.com/Bedework/bw-notifier</url>
+    <tag>HEAD</tag>
+  </scm>
+
   <modules>
     <module>bw-note-common</module>
     <module>bw-note-war</module>
