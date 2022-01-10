@@ -161,7 +161,7 @@ public class ActionQueue extends Thread implements Logged {
            */
         // XXX Add it to poll queue
       } catch (final InterruptedException ie) {
-        warn("Notification handler shutting down");
+        info("Notification handler shutting down");
         break;
       } catch (final Throwable t) {
         exceptions++;
