@@ -32,5 +32,6 @@
     <module>bw-note-outbound</module>
     <module>bw-note-shared</module>
     <module>bw-note-db</module>
+    <module>bw-wf-note-feature-pack</module>
   </modules>
 </project>
