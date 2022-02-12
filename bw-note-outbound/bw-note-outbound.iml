@@ -12,8 +12,9 @@
     <orderEntry type="module" module-name="bw-note-bwconnector" />
     <orderEntry type="library" name="Maven: org.bedework.ical4j:ical4j:3.0.16" level="project" />
     <orderEntry type="module" module-name="bw-note-common" />
-    <orderEntry type="library" name="Maven: org.bedework.notifier:bw-note-db:5.0.1-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: org.bedework.notifier:bw-note-shared:5.0.1-SNAPSHOT" level="project" />
+    <orderEntry type="module" module-name="bw-note-db" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.13.0" level="project" />
+    <orderEntry type="module" module-name="bw-note-shared" />
     <orderEntry type="module" module-name="bw-xml-appleServer" />
     <orderEntry type="module" module-name="bw-util-dav" />
     <orderEntry type="module" module-name="bw-util-hibernate" />
@@ -23,7 +24,6 @@
     <orderEntry type="library" name="Maven: org.apache.derby:derbytools:10.15.2.0" level="project" />
     <orderEntry type="library" name="Maven: com.h2database:h2:1.4.190" level="project" />
     <orderEntry type="module" module-name="bw-util-logging" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.13.0" level="project" />
     <orderEntry type="module" module-name="bw-util-security" />
     <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.15" level="project" />
     <orderEntry type="module" module-name="bw-util-tz" />

@@ -10,8 +10,8 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="bw-note-common" />
-    <orderEntry type="library" name="Maven: org.bedework.notifier:bw-note-db:5.0.1-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: org.bedework.notifier:bw-note-shared:5.0.1-SNAPSHOT" level="project" />
+    <orderEntry type="module" module-name="bw-note-db" />
+    <orderEntry type="module" module-name="bw-note-shared" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-config:5.0.2-SNAPSHOT" level="project" />
     <orderEntry type="module" module-name="bw-util-xml" />
     <orderEntry type="module" module-name="bw-util-dav" />
