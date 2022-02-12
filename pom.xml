@@ -4,12 +4,12 @@
   <parent>
     <groupId>org.bedework</groupId>
     <artifactId>bedework-parent</artifactId>
-    <version>1-SNAPSHOT</version>
+    <version>7</version>
   </parent>
 
   <groupId>org.bedework.notifier</groupId>
   <artifactId>bw-notifier</artifactId>
-  <version>5.0.0-SNAPSHOT</version>
+  <version>5.0.0</version>
   
   <packaging>pom</packaging>
   <name>Bedework: Notifier - notify users via email etc</name>
@@ -32,6 +32,5 @@
     <module>bw-note-outbound</module>
     <module>bw-note-shared</module>
     <module>bw-note-db</module>
-    <module>bw-wf-note-feature-pack</module>
   </modules>
 </project>

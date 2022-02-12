@@ -10,9 +10,9 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="bw-note-common" />
-    <orderEntry type="module" module-name="bw-note-db" />
-    <orderEntry type="module" module-name="bw-note-shared" />
-    <orderEntry type="module" module-name="bw-util-config" />
+    <orderEntry type="library" name="Maven: org.bedework.notifier:bw-note-db:5.0.1-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework.notifier:bw-note-shared:5.0.1-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-config:5.0.2-SNAPSHOT" level="project" />
     <orderEntry type="module" module-name="bw-util-xml" />
     <orderEntry type="module" module-name="bw-util-dav" />
     <orderEntry type="module" module-name="bw-util-hibernate" />
@@ -24,7 +24,7 @@
     <orderEntry type="module" module-name="bw-util-http" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.5.13" level="project" />
     <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.2" level="project" />
-    <orderEntry type="module" module-name="bw-util-jmx" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-jmx:5.0.2-SNAPSHOT" level="project" />
     <orderEntry type="module" module-name="bw-util-security" />
     <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.15" level="project" />
     <orderEntry type="module" module-name="bw-util-tz" />
