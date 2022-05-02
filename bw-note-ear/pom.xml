@@ -8,7 +8,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>bw-note-ear</artifactId>
+  <artifactId>bw-note</artifactId>
   <packaging>ear</packaging>
   <name>Bedework: Notifier - ear</name>
 
@@ -247,7 +247,7 @@
   </dependencies>
 
   <build>
-    <finalName>bw-notifier-${project.version}</finalName>
+    <finalName>bw-note-${project.version}</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -316,7 +316,7 @@
             <groupId>org.bedework</groupId>
             <artifactId>bw-util-maven-deploy</artifactId>
             <configuration>
-              <earName>bw-notifier</earName>
+              <earName>bw-note</earName>
               <baseDirPath>${project.basedir}/../..</baseDirPath>
               <propsPath>${org.bedework.deployment.properties}</propsPath>
             </configuration>
@@ -341,7 +341,7 @@
             <artifactId>bw-util-maven-deploy</artifactId>
 
             <configuration>
-              <earName>bw-notifier</earName>
+              <earName>bw-note</earName>
               <baseDirPath>${org.bedework.feature-build.deployment.basedir}</baseDirPath>
               <propsPath>${org.bedework.feature-build.deployment.properties}</propsPath>
             </configuration>
