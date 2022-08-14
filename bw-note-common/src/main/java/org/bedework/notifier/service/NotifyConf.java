@@ -488,7 +488,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
       final String res = loadConfig(NotifyConfig.class);
 
-      if (res != null) {
+      if (!"OK".equals(res)) {
         return res;
       }
 
