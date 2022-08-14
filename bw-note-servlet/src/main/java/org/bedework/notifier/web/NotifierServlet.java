@@ -442,7 +442,9 @@ public class NotifierServlet extends HttpServlet
     NotifyConf notifyConf;
 
     Configurator() {
-      super("org.bedework.notify:service=Notify");
+      super("org.bedework.notify:service=Notify",
+            (String)null,
+            null);
     }
 
     @Override
@@ -461,8 +463,7 @@ public class NotifierServlet extends HttpServlet
         notifyConf.start();
 
       /* ------------- Http properties -------------------- */
-        HttpOut ho = new HttpOut("org.bedework.notify.confuri",
-                                 "org.bedework.notify",
+        HttpOut ho = new HttpOut("notify",
                                  "httpConfig");
         register(new ObjectName(ho.getServiceName()), ho);
         ho.loadConfig();

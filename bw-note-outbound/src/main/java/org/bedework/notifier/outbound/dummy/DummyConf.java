@@ -19,6 +19,7 @@
 package org.bedework.notifier.outbound.dummy;
 
 import org.bedework.notifier.outbound.common.AdaptorConf;
+import org.bedework.util.config.ConfigurationStore;
 
 /** This configuration mbean is registered at startup by the main
  * configuration bean NotifyConf.
@@ -28,6 +29,12 @@ import org.bedework.notifier.outbound.common.AdaptorConf;
  */
 public class DummyConf extends AdaptorConf<DummyAdaptorConfig>
     implements DummyConfMBean {
+  public DummyConf(final String serviceName,
+                   final ConfigurationStore store,
+                   final String configName) {
+    super(serviceName, store, configName);
+  }
+
   /* ========================================================================
    * Conf properties
    * ======================================================================== */

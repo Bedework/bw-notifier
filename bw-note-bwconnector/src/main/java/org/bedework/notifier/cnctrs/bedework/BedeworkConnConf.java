@@ -19,6 +19,7 @@
 package org.bedework.notifier.cnctrs.bedework;
 
 import org.bedework.notifier.service.NoteConnConf;
+import org.bedework.util.config.ConfigurationStore;
 
 /** This configuration mbean is registered at startup by the main
  * configuration bean NotifyConf.
@@ -28,6 +29,12 @@ import org.bedework.notifier.service.NoteConnConf;
  */
 public class BedeworkConnConf extends NoteConnConf<BedeworkConnectorConfig>
     implements BedeworkConnConfMBean {
+  public BedeworkConnConf(final String serviceName,
+                          final ConfigurationStore store,
+                          final String configName) {
+    super(serviceName, store, configName);
+  }
+
   /* ========================================================================
    * Conf properties
    * ======================================================================== */

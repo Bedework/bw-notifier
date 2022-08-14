@@ -19,6 +19,7 @@
 package org.bedework.notifier.outbound.email;
 
 import org.bedework.notifier.outbound.common.AdaptorConf;
+import org.bedework.util.config.ConfigurationStore;
 
 import java.util.List;
 
@@ -31,6 +32,12 @@ import java.util.List;
 public class EmailConf extends AdaptorConf<EmailAdaptorConfig> implements EmailConfMBean {
   private String transientUsername;
   private String transientPassword;
+
+  public EmailConf(final String serviceName,
+                   final ConfigurationStore store,
+                   final String configName) {
+    super(serviceName, store, configName);
+  }
 
   /* ========================================================================
    * Conf properties

@@ -42,8 +42,8 @@ import javax.management.ObjectName;
  */
 public class NotifyConf extends ConfBase<NotifyConfig> implements
         NotifyConfMBean, ConfigHolder<NotifyConfig> {
-  /* Name of the property holding the location of the config data */
-  private static final String confuriPname = "org.bedework.notify.confuri";
+  /* Name of the directory holding the config data */
+  private static final String confDirName = "notify";
 
   List<String> connectorNames;
 
@@ -129,9 +129,9 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
   /**
    */
   public NotifyConf() {
-    super("org.bedework.notify:service=NotifyConf");
-    setConfigPname(confuriPname);
-    setPathSuffix("conf");
+    super("org.bedework.notify:service=NotifyConf",
+          confDirName, "conf",
+          "notify-config");
 
     NotifyEngine.setConfigHolder(this);
   }
@@ -486,7 +486,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
     try {
       /* Load up the config */
 
-      final String res = loadOnlyConfig(NotifyConfig.class);
+      final String res = loadConfig(NotifyConfig.class);
 
       if (res != null) {
         return res;
@@ -563,8 +563,12 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
         @SuppressWarnings("unchecked")
         final NoteConnConf<ConnectorConfig> ncc =
-                (NoteConnConf<ConnectorConfig>)makeObject(mbeanClassName);
-        ncc.init(cs, objectName.toString(), connCfg);
+                (NoteConnConf<ConnectorConfig>)makeObject(
+                        mbeanClassName,
+                        objectName.toString(),
+                        cs,
+                        cn);
+        ncc.setConfig(connCfg);
 
         nccs.add(ncc);
         register("connector", cn, ncc);
@@ -610,8 +614,12 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
         @SuppressWarnings("unchecked")
         final AdaptorConf<AdaptorConfig> ncc =
-                (AdaptorConf<AdaptorConfig>)makeObject(mbeanClassName);
-        ncc.init(cs, objectName.toString(), aCfg);
+                (AdaptorConf<AdaptorConfig>)makeObject(
+                        mbeanClassName,
+                        objectName.toString(),
+                        cs,
+                        cn);
+        ncc.setConfig(aCfg);
 
         nccs.add(ncc);
         register("adaptor", cn, ncc);

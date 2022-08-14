@@ -33,18 +33,16 @@ public class AdaptorConf<X extends AdaptorConfig> extends ConfBase<X>
 
   private Connector connector;
 
+  public AdaptorConf(final String serviceName,
+                     final ConfigurationStore store,
+                     final String configName) {
+    super(serviceName, store, configName);
+  }
+
   /**
-   * @param configStore the store
-   * @param serviceName name of the service
    * @param cfg - the configuration
    */
-  public void init(final ConfigurationStore configStore,
-                   final String serviceName,
-                   final X cfg) {
-    setServiceName(serviceName);
-    setStore(configStore);
-    setConfigName(cfg.getName());
-
+  public void setConfig(final X cfg) {
     this.cfg = cfg;
   }
 

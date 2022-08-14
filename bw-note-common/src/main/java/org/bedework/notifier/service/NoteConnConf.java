@@ -35,18 +35,16 @@ public class NoteConnConf<X extends ConnectorConfig> extends ConfBase<X>
 
   private Connector connector;
 
+  public NoteConnConf(final String serviceName,
+                      final ConfigurationStore store,
+                      final String configName) {
+    super(serviceName, store, configName);
+  }
+
   /**
-   * @param configStore the store
-   * @param serviceName our name
    * @param cfg - the configuration
    */
-  public void init(final ConfigurationStore configStore,
-                   final String serviceName,
-                   final X cfg) {
-    setServiceName(serviceName);
-    setStore(configStore);
-    setConfigName(cfg.getName());
-
+  public void setConfig(final X cfg) {
     this.cfg = cfg;
   }
 
