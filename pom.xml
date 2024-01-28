@@ -26,7 +26,6 @@
   <modules>
     <module>bw-note-common</module>
     <module>bw-note-war</module>
-    <module>bw-note-ear</module>
     <module>bw-note-servlet</module>
     <module>bw-note-bwconnector</module>
     <module>bw-note-outbound</module>

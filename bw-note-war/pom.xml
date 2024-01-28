@@ -5,10 +5,28 @@
     <groupId>org.bedework.notifier</groupId>
     <artifactId>bw-notifier</artifactId>
     <version>5.0.1-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>bw-note-war</artifactId>
   <packaging>war</packaging>
   <name>Bedework: Notifier - war</name>
+
+  <properties>
+    <org.bedework.war.dependency>org.bedework.note.servlet</org.bedework.war.dependency>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.bedework</groupId>
+        <artifactId>bw-util-maven-deploy</artifactId>
+
+        <configuration>
+          <warName>${project.artifactId}</warName>
+          <baseDirPath>${project.basedir}/../..</baseDirPath>
+          <propsPath>${org.bedework.deployment.properties}</propsPath>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
