@@ -18,7 +18,7 @@
 */
 package org.bedework.notifier.intf;
 
-/** Definitions for synch classes
+/** Definitions for notifier classes
  *
  *   @author Mike Douglass   douglm  bedework.edu
  */

@@ -56,7 +56,7 @@ public interface Connector<C extends ConnectorInstance,
                            N extends Note,
                            Tconf extends ConnectorConfig> {
 
-  /** Start the connector. A response of null means no synch available.
+  /** Start the connector. A response of null means no notifier available.
    *
    * @param name - name for the connector
    * @param conf configuration
@@ -65,7 +65,7 @@ public interface Connector<C extends ConnectorInstance,
   void init(String name,
             Tconf conf) throws NoteException;
 
-  /** Start the connector. A response of null means no synch available.
+  /** Start the connector. A response of null means no notifier available.
    *
    * <p>The callback uri is unique to the connector. It will be used as a path
    * prefix to allow the callback service to locate the handler for incoming
@@ -223,13 +223,13 @@ public interface Connector<C extends ConnectorInstance,
     }
   }
 
-  /** Will create a notification batch object which will be passed to a synchling for
+  /** Will create a notification batch object which will be passed to a noteling for
    * processing. When processing is complete respond will be called.
    *
    * <p>The resource URI has been stripped of the context element and the
    * element which identifies the connector. What remains is used by the connector
    * to determine a subscription id allowing retrieval of the subscription from
-   * the synch engine.
+   * the notifier engine.
    *
    * @param req http request
    * @param resp http response

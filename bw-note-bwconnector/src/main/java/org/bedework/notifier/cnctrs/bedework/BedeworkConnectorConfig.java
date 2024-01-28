@@ -22,7 +22,7 @@ import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.util.config.ConfInfo;
 import org.bedework.util.misc.ToString;
 
-/** Bedework synch connector config
+/** Bedework notifier connector config
  *
  * @author douglm
  */

@@ -49,7 +49,7 @@ public class NotelingPool implements Logged {
 
   private long gets;
 
-  private long getSynchlingFailures;
+  private long getNotelingFailures;
 
   /** Create a pool with the given size
    *
@@ -76,7 +76,7 @@ public class NotelingPool implements Logged {
     while (getActiveCt() > 0) {
       if ((System.currentTimeMillis() - startTime) > maxWait) {
         warn("**************************************************");
-        warn("Synch shutdown completed with " +
+        warn("Notifier shutdown completed with " +
             getActiveCt() + " active notelings");
         warn("**************************************************");
 
@@ -84,7 +84,7 @@ public class NotelingPool implements Logged {
       }
 
       info("**************************************************");
-      info("Synch shutdown - " +
+      info("Notifier shutdown - " +
            getActiveCt() + " active notelings");
       info("**************************************************");
 
@@ -155,8 +155,8 @@ public class NotelingPool implements Logged {
   /**
    * @return number of get failures
    */
-  public long getGetSynchlingFailures() {
-    return getSynchlingFailures;
+  public long getGetNotelingFailures() {
+    return getNotelingFailures;
   }
 
   /**
@@ -228,10 +228,10 @@ public class NotelingPool implements Logged {
     waitTimes += System.currentTimeMillis() - st;
 
     if (s == null) {
-      getSynchlingFailures++;
+      getNotelingFailures++;
 
       if (throwOnFailure) {
-        throw new NoteTimeout("Synchling pool wait");
+        throw new NoteTimeout("Noteling pool wait");
       }
     } else {
       synchronized (active) {
@@ -257,7 +257,7 @@ public class NotelingPool implements Logged {
     stats.add(new Stat("noteling active", getActiveCt()));
     stats.add(new Stat("noteling gets", getGets()));
     stats.add(new Stat("noteling waitTimes", getWaitTimes()));
-    stats.add(new Stat("noteling get failures", getGetSynchlingFailures()));
+    stats.add(new Stat("noteling get failures", getGetNotelingFailures()));
     stats.add(new Stat("noteling currentMaxSize", getCurrentMaxSize()));
     stats.add(new Stat("noteling currentAvailable", getCurrentAvailable()));
 
@@ -271,7 +271,7 @@ public class NotelingPool implements Logged {
     ts.append("timeout", getTimeout());
     ts.append("gets", getGets());
     ts.append("waitTimes", getWaitTimes());
-    ts.append("getNotelingFailures", getGetSynchlingFailures());
+    ts.append("getNotelingFailures", getGetNotelingFailures());
     ts.append("currentMaxSize", getCurrentMaxSize());
     ts.append("currentAvailable", getCurrentAvailable());
 

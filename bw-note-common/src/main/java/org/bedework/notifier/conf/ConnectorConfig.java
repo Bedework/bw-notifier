@@ -26,7 +26,7 @@ import org.bedework.util.misc.ToString;
  *
  * @author douglm
  */
-@ConfInfo(elementName = "synch-connector")
+@ConfInfo(elementName = "notifier-connector")
 public class ConnectorConfig extends ConfigBase<ConnectorConfig> implements ConnectorConfigI  {
   private String connectorClassName;
 

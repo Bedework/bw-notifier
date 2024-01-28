@@ -41,7 +41,7 @@ public class NoteException extends Throwable {
 
   /**
    */
-  public static String connectorNotStarted = "org.bedework.synch.error.connectorNotStarted";
+  public static String connectorNotStarted = "org.bedework.notifier.error.connectorNotStarted";
 
   /** Constructor
    *

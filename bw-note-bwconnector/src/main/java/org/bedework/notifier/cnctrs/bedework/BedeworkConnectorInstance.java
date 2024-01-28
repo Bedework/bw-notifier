@@ -75,7 +75,7 @@ import javax.xml.namespace.QName;
 
 import static org.apache.http.HttpStatus.SC_OK;
 
-/** Handles bedework synch interactions.
+/** Handles bedework notifier interactions.
  *
  * @author Mike Douglass
  */

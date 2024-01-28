@@ -21,7 +21,7 @@ package org.bedework.notifier.outbound.common;
 import org.bedework.util.jmx.ConfBaseMBean;
 import org.bedework.util.jmx.MBeanInfo;
 
-/** Configure an adaptor for the Bedework synch engine service
+/** Configure an adaptor for the Bedework notifier engine service
  *
  * @author douglm
  */

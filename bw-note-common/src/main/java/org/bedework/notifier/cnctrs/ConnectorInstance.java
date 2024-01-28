@@ -33,7 +33,7 @@ import org.oasis_open.docs.ws_calendar.ns.soap.BaseResponseType;
  * @author Mike Douglass
  */
 public interface ConnectorInstance {
-  /** Called when a subscription is activated on synch engine startup or after
+  /** Called when a subscription is activated on notifier engine startup or after
    * creation of a new subscription.
    *
    * @return status + messages

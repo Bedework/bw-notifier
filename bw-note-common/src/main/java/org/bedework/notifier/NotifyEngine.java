@@ -53,7 +53,6 @@ import java.util.List;
  * @author Mike Douglass
  */
 public class NotifyEngine implements Logged, TzGetter {
-  //private static String appname = "Synch";
   static ConfigHolder<NotifyConfig> cfgHolder;
 
   private transient PwEncryptionIntf pwEncrypt;

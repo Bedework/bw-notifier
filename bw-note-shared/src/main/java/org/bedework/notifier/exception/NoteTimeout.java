@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
 
-/** Forbidden exception thrown by synch classes
+/** Forbidden exception thrown by notifier classes
  *
  *   @author Mike Douglass   douglm@bedework.edu
  */

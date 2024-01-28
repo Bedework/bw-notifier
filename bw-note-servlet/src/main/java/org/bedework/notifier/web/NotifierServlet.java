@@ -130,13 +130,13 @@ public class NotifierServlet extends HttpServlet
         method.doMethod(req, resp);
       }
 //    } catch (WebdavForbidden wdf) {
-  //    sendError(syncher, wdf, resp);
+  //    sendError(notifier, wdf, resp);
     } catch (Throwable t) {
       serverError = handleException(notifier, t, resp, serverError);
     } finally {
       if (notifier != null) {
         try {
-//          syncher.close();
+//          notifier.close();
         } catch (Throwable t) {
           serverError = handleException(notifier, t, resp, serverError);
         }
@@ -181,7 +181,7 @@ public class NotifierServlet extends HttpServlet
   }
 
   /* Return true if it's a server error */
-  private boolean handleException(final NotifyEngine syncher, final Throwable t,
+  private boolean handleException(final NotifyEngine notifier, final Throwable t,
                                   final HttpServletResponse resp,
                                   boolean serverError) {
     if (serverError) {
@@ -197,12 +197,12 @@ public class NotifierServlet extends HttpServlet
           error(se);
           serverError = true;
         }
-        sendError(syncher, t, resp);
+        sendError(notifier, t, resp);
         return serverError;
       }
 
       error(t);
-      sendError(syncher, t, resp);
+      sendError(notifier, t, resp);
       return true;
     } catch (Throwable t1) {
       // Pretty much screwed if we get here
@@ -210,7 +210,7 @@ public class NotifierServlet extends HttpServlet
     }
   }
 
-  private void sendError(final NotifyEngine syncher, final Throwable t,
+  private void sendError(final NotifyEngine notifier, final Throwable t,
                          final HttpServletResponse resp) {
     try {
       if (t instanceof NoteException) {
@@ -223,10 +223,10 @@ public class NotifierServlet extends HttpServlet
           }
           resp.setStatus(se.getStatusCode());
           resp.setContentType("text/xml; charset=UTF-8");
-          if (!emitError(syncher, errorTag, se.getMessage(),
+          if (!emitError(notifier, errorTag, se.getMessage(),
                          resp.getWriter())) {
             StringWriter sw = new StringWriter();
-            emitError(syncher, errorTag, se.getMessage(), sw);
+            emitError(notifier, errorTag, se.getMessage(), sw);
 
             try {
               if (debug()) {
@@ -254,18 +254,18 @@ public class NotifierServlet extends HttpServlet
     }
   }
 
-  private boolean emitError(final NotifyEngine syncher,
+  private boolean emitError(final NotifyEngine notifier,
                             final QName errorTag,
                             final String extra,
                             final Writer wtr) {
     try {
       XmlEmit xml = new XmlEmit();
-//      syncher.addNamespace(xml);
+//      notifier.addNamespace(xml);
 
       xml.startEmit(wtr);
       xml.openTag(WebdavTags.error);
 
-  //    syncher.emitError(errorTag, extra, xml);
+  //    notifier.emitError(errorTag, extra, xml);
 
       xml.closeTag(WebdavTags.error);
       xml.flush();
@@ -303,12 +303,12 @@ public class NotifierServlet extends HttpServlet
   }
 
   /**
-   * @param syncher notify engine
+   * @param notifier notify engine
    * @param name of method
    * @return method
    * @throws NoteException on error
    */
-  public MethodBase getMethod(final NotifyEngine syncher,
+  public MethodBase getMethod(final NotifyEngine notifier,
                               final String name) throws NoteException {
     MethodInfo mi = methods.get(name.toUpperCase());
 
@@ -319,7 +319,7 @@ public class NotifierServlet extends HttpServlet
     try {
       MethodBase mb = mi.getMethodClass().newInstance();
 
-      mb.init(syncher, dumpContent);
+      mb.init(notifier, dumpContent);
 
       return mb;
     } catch (Throwable t) {

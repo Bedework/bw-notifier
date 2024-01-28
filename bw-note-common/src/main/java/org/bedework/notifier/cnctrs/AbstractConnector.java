@@ -29,7 +29,7 @@ import org.bedework.util.logging.Logged;
 
 import java.util.List;
 
-/** A special connector to handle calls to the synch engine via the web context.
+/** A special connector to handle calls to the notifier engine via the web context.
  *
  * <p>This is the way to call the system to add subscriptions, to unsubscribe etc.
  *

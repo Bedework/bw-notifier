@@ -65,8 +65,8 @@ public class NotifyConnector extends AbstractConnector<NotifyConnector,
   @Override
   public void start(final NotifyDb db,
                     final String callbackUri,
-                    final NotifyEngine syncher) throws NoteException {
-    super.start(db, callbackUri, syncher);
+                    final NotifyEngine notifier) throws NoteException {
+    super.start(db, callbackUri, notifier);
 
     stopped = false;
     running = true;
