@@ -346,6 +346,8 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
               getExport());
 
       setStatus(statusStopped);
+        
+      buildSchema.start();
 
       buildSchema.start();
 
