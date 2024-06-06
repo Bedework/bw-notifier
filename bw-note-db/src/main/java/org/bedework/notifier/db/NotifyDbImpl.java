@@ -27,6 +27,8 @@ import org.bedework.util.hibernate.HibSessionImpl;
 import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
 
+import org.hibernate.SessionFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -51,6 +53,10 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   private static final AtomicLong globalSessionCt = new AtomicLong();
 
   private long sessionCt;
+
+  /* Factory used to obtain a session
+   */
+  private static SessionFactory sessionFactory;
 
   /** Current hibernate session - exists only across one user interaction
    */
@@ -239,30 +245,34 @@ public class NotifyDbImpl implements NotifyDb, Logged {
       throw new NoteException("Already open");
     }
 
-    open = true;
-
-    if (sess != null) {
-      warn("Session is not null. Will close");
-      try {
-        endTransaction();
-      } catch (final Throwable ignored) {
+    try {
+      if (sessionFactory == null) {
+        sessionFactory = HibSessionFactory.
+                getSessionFactory(config.getHibernateProperties());
       }
-    }
 
-    sessionCt = globalSessionCt.incrementAndGet();
+      open = true;
 
-    if (sess == null) {
-      if (debug()) {
-        debug("New hibernate session for " + sessionCt);
+      if (sess != null) {
+        warn("Session is not null. Will close");
+        try {
+          endTransaction();
+        } catch (final Throwable ignored) {
+        }
       }
-      sess = new HibSessionImpl();
-      try {
-        sess.init(HibSessionFactory.getSessionFactory(
-                config.getHibernateProperties()));
-      } catch (final HibException he) {
-        throw new NoteException(he);
+
+      sessionCt = globalSessionCt.incrementAndGet();
+
+      if (sess == null) {
+        if (debug()) {
+          debug("New hibernate session for " + sessionCt);
+        }
+        sess = new HibSessionImpl();
+        sess.init(sessionFactory);
+        debug("Open session for " + sessionCt);
       }
-      debug("Open session for " + sessionCt);
+    } catch (final HibException he) {
+      throw new NoteException(he);
     }
 
     beginTransaction();

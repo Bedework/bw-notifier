@@ -90,10 +90,14 @@ For full details, see [Sonatype's documentation for using Maven to publish relea
 * Update library versions
 * Changes for schema build fixes.
 
-### 5.0.0
+### 5.0.1
 * Update library versions
 * Simplify the configuration utilities.
 * Replace "synch" with "notifier" adn rename some methods. (Notifier was copied to a large extent from synch engine).
 * Make notifier a war only. Ear screws up classpath so hibernate doesn't work
 * Remove bw-xml 
+
+#### 5.0.2
+* Upgrade library versions
+* Fix needed to deal with util.hibernate bug relating to static sessionFactory variable.
 
