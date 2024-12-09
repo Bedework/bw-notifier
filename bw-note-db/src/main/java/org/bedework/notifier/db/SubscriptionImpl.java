@@ -72,7 +72,6 @@ import java.util.UUID;
  *
  * @author Mike Douglass
  */
-@SuppressWarnings("rawtypes")
 public class SubscriptionImpl extends DbItem<Subscription>
         implements Subscription {
   private String subscriptionId;
@@ -109,7 +108,7 @@ public class SubscriptionImpl extends DbItem<Subscription>
    *
    */
   public static SubscriptionImpl make() {
-    SubscriptionImpl si = new SubscriptionImpl();
+    final SubscriptionImpl si = new SubscriptionImpl();
 
     si.setSubscriptionId(UUID.randomUUID().toString());
 
@@ -328,7 +327,7 @@ public class SubscriptionImpl extends DbItem<Subscription>
 
   @Override
   public String toString() {
-    ToString ts = new ToString(this);
+    final ToString ts = new ToString(this);
 
     toStringSegment(ts);
 

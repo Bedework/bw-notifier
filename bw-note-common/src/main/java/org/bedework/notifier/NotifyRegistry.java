@@ -29,9 +29,8 @@ public class NotifyRegistry implements Logged {
      *
      * @param token an opaque token
      * @return true for ok
-     * @throws NoteException on error
-     */
-    boolean authenticate(final String token) throws NoteException;
+       */
+    boolean authenticate(String token);
   }
 
   public static class ConnectorEntry {
@@ -99,7 +98,7 @@ public class NotifyRegistry implements Logged {
   }
 
   public static List<Connector> getConnectors() {
-    List<Connector> conns = new ArrayList<>();
+    final List<Connector> conns = new ArrayList<>();
 
     for (final ConnectorEntry ce: registry.values()) {
       conns.add(ce.getConnector());
@@ -107,7 +106,7 @@ public class NotifyRegistry implements Logged {
     return conns;
   }
 
-  public void registerConnectors(final NotifyConfig config) throws NoteException {
+  public void registerConnectors(final NotifyConfig config) {
     this.config = config;
     final List<NoteConnConf> connectorConfs = config.getConnectorConfs();
 
@@ -125,11 +124,11 @@ public class NotifyRegistry implements Logged {
   }
 
   public void startConnectors(final NotifyDb db,
-                              final NotifyEngine notifier) throws NoteException {
+                              final NotifyEngine notifier) {
     final String callbackUriBase = config.getCallbackURI();
 
     for (final String id: registry.keySet()) {
-      Connector conn = getConnector(id);
+      final Connector conn = getConnector(id);
 
       conn.start(db,
                  callbackUriBase + id + "/",
@@ -154,9 +153,9 @@ public class NotifyRegistry implements Logged {
   }
 
   private void registerConnector(final String name,
-                                 final ConnectorConfig conf) throws NoteException {
+                                 final ConnectorConfig conf) {
     try {
-      Class cl = Class.forName(conf.getConnectorClassName());
+      final Class<?> cl = Class.forName(conf.getConnectorClassName());
 
       if (registry.containsKey(name)) {
         throw new NoteException("Connector " + name + " already registered");
@@ -174,11 +173,11 @@ public class NotifyRegistry implements Logged {
     }
   }
 
-  /* ====================================================================
+  /* ==============================================================
    *                   Logged methods
-   * ==================================================================== */
+   * ============================================================== */
 
-  private BwLogger logger = new BwLogger();
+  private final BwLogger logger = new BwLogger();
 
   @Override
   public BwLogger getLogger() {

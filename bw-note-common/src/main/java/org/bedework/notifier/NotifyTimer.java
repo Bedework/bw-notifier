@@ -111,10 +111,9 @@ public class NotifyTimer implements Logged {
    *
    * @param action the action
    * @param when the date/time
-   * @throws NoteException on error
    */
   public void schedule(final Action action,
-                       final Date when) throws NoteException {
+                       final Date when) {
     if (debug()){
       debug("reschedule " + action.getSub().getSubscriptionId() + " for " + when);
     }
@@ -127,10 +126,9 @@ public class NotifyTimer implements Logged {
    *
    * @param action the action
    * @param delay - delay in milliseconds before subscription is processed.
-   * @throws NoteException on error
    */
   public void schedule(final Action action,
-                       final long delay) throws NoteException {
+                       final long delay) {
     if (debug()){
       debug("reschedule " + action.getSub().getSubscriptionId() +
                     " in " + delay + " millisecs");
@@ -159,7 +157,7 @@ public class NotifyTimer implements Logged {
    * @return List of Stat
    */
   public List<Stat> getStats() {
-    final List<Stat> stats = new ArrayList<Stat>();
+    final List<Stat> stats = new ArrayList<>();
 
     stats.add(new Stat("waiting", getWaitingCt()));
     stats.add(new Stat("max waiting", getMaxWaitingCt()));
@@ -167,11 +165,11 @@ public class NotifyTimer implements Logged {
     return stats;
   }
 
-  /* ====================================================================
+  /* ==============================================================
    *                   Logged methods
-   * ==================================================================== */
+   * ============================================================== */
 
-  private BwLogger logger = new BwLogger();
+  private final BwLogger logger = new BwLogger();
 
   @Override
   public BwLogger getLogger() {

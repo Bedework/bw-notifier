@@ -19,7 +19,6 @@
 package org.bedework.notifier.outbound.dummy;
 
 import org.bedework.notifier.Action;
-import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.outbound.common.AbstractAdaptor;
 
 /** The interface implemented by destination adaptors. A destination
@@ -31,7 +30,7 @@ import org.bedework.notifier.outbound.common.AbstractAdaptor;
 public class DummyAdaptor extends AbstractAdaptor<DummyConf> {
 
   @Override
-  public boolean process(final Action action) throws NoteException {
+  public boolean process(final Action action) {
     info("Call to process: " + action.getNote());
     return false;
   }

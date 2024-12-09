@@ -34,7 +34,7 @@ public class NoteTimeout extends NoteException {
   }
 
   /** Constructor
-   * @param msg
+   * @param msg a message
    */
   public NoteTimeout(final String msg) {
     super(HttpServletResponse.SC_GATEWAY_TIMEOUT, msg);
@@ -42,7 +42,7 @@ public class NoteTimeout extends NoteException {
 
   /** Constructor
    *
-   * @param errorTag
+   * @param errorTag xml tag
    */
   public NoteTimeout(final QName errorTag) {
     super(HttpServletResponse.SC_GATEWAY_TIMEOUT, errorTag);
@@ -50,8 +50,8 @@ public class NoteTimeout extends NoteException {
 
   /** Constructor
    *
-   * @param errorTag
-   * @param msg
+   * @param errorTag xml tag
+   * @param msg a message
    */
   public NoteTimeout(final QName errorTag,
                      final String msg) {

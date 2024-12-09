@@ -59,8 +59,7 @@ public class BedeworkConnector
     BedeworkConnectorConfig conf;
 
     @Override
-    public boolean authenticate(final String token)
-            throws NoteException {
+    public boolean authenticate(final String token) {
       return (token != null) && (conf.getToken() != null) &&
               token.equals(conf.getToken());
     }
@@ -74,7 +73,7 @@ public class BedeworkConnector
   @Override
   public void start(final NotifyDb db,
                     final String callbackUri,
-                    final NotifyEngine notifier) throws NoteException {
+                    final NotifyEngine notifier) {
     super.start(db, callbackUri, notifier);
 
     initSpecialNotifications(db);
@@ -95,8 +94,7 @@ public class BedeworkConnector
 
   @Override
   public Subscription subscribe(final NotifyDb db,
-                                final Map<?, ?> vals)
-          throws NoteException {
+                                final Map<?, ?> vals) {
     /* We require an href - the principal owning the
      * notifications.
      *
@@ -111,7 +109,7 @@ public class BedeworkConnector
                                        must("href", vals));
     final List<String> emails = mustList("emailAddresses", vals);
 
-    Subscription theSub =
+    final Subscription theSub =
             db.find(getConnectorName(), href);
     if (theSub == null) {
       if (debug()) {
@@ -172,7 +170,7 @@ public class BedeworkConnector
                                        must("href", vals));
     final List<String> emails = mayList("emailAddresses", vals);
 
-    Subscription theSub = db.find(getConnectorName(), href);
+    final Subscription theSub = db.find(getConnectorName(), href);
     if (theSub == null) {
       return null;
     }
@@ -223,7 +221,7 @@ public class BedeworkConnector
 
   @Override
   public BedeworkConnectorInstance getConnectorInstance(final NotifyDb db,
-                                                        final Subscription sub) throws NoteException {
+                                                        final Subscription sub) {
     if (!running) {
       return null;
     }
@@ -232,7 +230,7 @@ public class BedeworkConnector
                                          this, rewrap(sub));
   }
 
-  private BedeworkSubscription rewrap(final Subscription sub) throws NoteException {
+  private BedeworkSubscription rewrap(final Subscription sub) {
     if (sub instanceof BedeworkSubscription) {
       return (BedeworkSubscription)sub;
     }
@@ -244,13 +242,14 @@ public class BedeworkConnector
     return new BedeworkSubscription(sub);
   }
 
-  class BedeworkNotificationBatch extends NotificationBatch<Note> {
+  public static class BedeworkNotificationBatch
+          extends NotificationBatch<Note> {
   }
 
   @Override
   public BedeworkNotificationBatch handleCallback(final HttpServletRequest req,
                                      final HttpServletResponse resp,
-                                     final List<String> resourceUri) throws NoteException {
+                                     final List<String> resourceUri) {
     return null;
   }
 
@@ -261,7 +260,7 @@ public class BedeworkConnector
   }
 
   @Override
-  public void stop() throws NoteException {
+  public void stop() {
     stopped = true;
   }
 
@@ -294,7 +293,7 @@ public class BedeworkConnector
    *                   Private methods
    * ==================================================================== */
 
-  private void initSpecialNotifications(final NotifyDb db) throws NoteException {
+  private void initSpecialNotifications(final NotifyDb db) {
     try {
       if (config.getSystemNotificationHref() == null) {
         return;

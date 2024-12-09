@@ -41,7 +41,7 @@ public class NotelingPool implements Logged {
 
   private ArrayBlockingQueue<Noteling> pool;
 
-  private Map<Long, Noteling> active = new HashMap<>();
+  private final Map<Long, Noteling> active = new HashMap<>();
 
   private long timeout; // millisecs
 
@@ -56,11 +56,10 @@ public class NotelingPool implements Logged {
    * @param notifier the engine
    * @param size of pool
    * @param timeout - millisecs
-   * @throws NoteException on error
    */
   public void start(final NotifyEngine notifier,
                     final int size,
-                    final long timeout) throws NoteException {
+                    final long timeout) {
     this.notifier = notifier;
     this.timeout = timeout;
     resize(size);
@@ -70,8 +69,8 @@ public class NotelingPool implements Logged {
    */
   public void stop() {
     long maxWait = 1000 * 90; // 90 seconds - needs to be longer than longest poll interval
-    long startTime = System.currentTimeMillis();
-    long delay = 1000 * 5; // 5 sec delay
+    final long startTime = System.currentTimeMillis();
+    final long delay = 1000 * 5; // 5 sec delay
 
     while (getActiveCt() > 0) {
       if ((System.currentTimeMillis() - startTime) > maxWait) {
@@ -90,7 +89,7 @@ public class NotelingPool implements Logged {
 
       try {
         wait(delay);
-      } catch (InterruptedException ie) {
+      } catch (final InterruptedException ie) {
         maxWait = 0; // Force exit
       }
     }
@@ -99,11 +98,10 @@ public class NotelingPool implements Logged {
   /** Resize the pool
    *
    * @param size of pool
-   * @throws NoteException on error
    */
-  public void resize(final int size) throws NoteException {
-    ArrayBlockingQueue<Noteling> oldPool = getPool();
-    pool = new ArrayBlockingQueue<Noteling>(size);
+  public void resize(final int size) {
+    final ArrayBlockingQueue<Noteling> oldPool = getPool();
+    pool = new ArrayBlockingQueue<>(size);
     int oldSize = 0;
 
     if (oldPool != null) {
@@ -163,7 +161,7 @@ public class NotelingPool implements Logged {
    * @return current size of pool
    */
   public int getCurrentMaxSize() {
-    ArrayBlockingQueue<Noteling> thePool = pool;
+    final ArrayBlockingQueue<Noteling> thePool = pool;
     if (thePool == null) {
       return 0;
     }
@@ -176,7 +174,7 @@ public class NotelingPool implements Logged {
    * @return current avail
    */
   public int getCurrentAvailable() {
-    ArrayBlockingQueue<Noteling> thePool = pool;
+    final ArrayBlockingQueue<Noteling> thePool = pool;
     if (thePool == null) {
       return 0;
     }
@@ -187,9 +185,8 @@ public class NotelingPool implements Logged {
   /** Put a noteling back in the pool if there's room else discard it
    *
    * @param s Noteling
-   * @throws NoteException on error
    */
-  public void add(final Noteling s) throws NoteException {
+  public void add(final Noteling s) {
     synchronized (active) {
       active.remove(s.getNotelingId());
     }
@@ -201,21 +198,20 @@ public class NotelingPool implements Logged {
    * @return a Noteling
    * @throws NoteException if none available
    */
-  public Noteling get() throws NoteException {
+  public Noteling get() {
     return get(true);
   }
 
   /** Get a noteling from the pool if possible. Return null if timed out
    *
    * @return a Noteling or null
-   * @throws NoteException on error
    */
-  public Noteling getNoException() throws NoteException {
+  public Noteling getNoException() {
     return get(false);
   }
 
-  private Noteling get(final boolean throwOnFailure) throws NoteException {
-    Noteling s = null;
+  private Noteling get(final boolean throwOnFailure) {
+    final Noteling s;
     gets++;
     final long st = System.currentTimeMillis();
 
@@ -251,7 +247,7 @@ public class NotelingPool implements Logged {
    * @return List of Stat
    */
   public List<Stat> getStats() {
-    List<Stat> stats = new ArrayList<Stat>();
+    final List<Stat> stats = new ArrayList<>();
 
     stats.add(new Stat("noteling get timeout", getTimeout()));
     stats.add(new Stat("noteling active", getActiveCt()));
@@ -278,11 +274,11 @@ public class NotelingPool implements Logged {
     return ts.toString();
   }
 
-  /* ====================================================================
+  /* ==============================================================
    *                   Logged methods
-   * ==================================================================== */
+   * ============================================================== */
 
-  private BwLogger logger = new BwLogger();
+  private final BwLogger logger = new BwLogger();
 
   @Override
   public BwLogger getLogger() {

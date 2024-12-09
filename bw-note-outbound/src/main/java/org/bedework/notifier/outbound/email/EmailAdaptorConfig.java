@@ -145,8 +145,7 @@ public class EmailAdaptorConfig extends AdaptorConfig
   }
 
   @Override
-  @ConfInfo(collectionElementName = "subject",
-          elementType = "java.lang.String")
+  @ConfInfo(collectionElementName = "subject")
   public List<String> getSubjects() {
     return subjects;
   }

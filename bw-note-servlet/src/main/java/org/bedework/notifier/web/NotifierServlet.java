@@ -62,7 +62,7 @@ public class NotifierServlet extends HttpServlet
 
   /** Table of methods - set at init
    */
-  protected HashMap<String, MethodInfo> methods = new HashMap<String, MethodInfo>();
+  protected HashMap<String, MethodInfo> methods = new HashMap<>();
 
   /* Try to serialize requests from a single session
    * This is very imperfect.
@@ -72,7 +72,7 @@ public class NotifierServlet extends HttpServlet
     int waiting;
   }
 
-  private static volatile HashMap<String, Waiter> waiters = new HashMap<String, Waiter>();
+  private static final HashMap<String, Waiter> waiters = new HashMap<>();
 
   @Override
   public void init(final ServletConfig config) throws ServletException {
@@ -86,7 +86,7 @@ public class NotifierServlet extends HttpServlet
   @Override
   protected void service(final HttpServletRequest req,
                          HttpServletResponse resp)
-      throws ServletException, IOException {
+      throws IOException {
     NotifyEngine notifier = null;
     boolean serverError = false;
 
@@ -117,52 +117,51 @@ public class NotifierServlet extends HttpServlet
         methodName = req.getMethod();
       }
 
-      MethodBase method = getMethod(notifier, methodName);
+      final MethodBase method = getMethod(notifier, methodName);
 
       if (method == null) {
         info("No method for '" + methodName + "'");
 
-        // ================================================================
+        // ==========================================================
         //     Set the correct response
-        // ================================================================
+        // ==========================================================
       } else {
         method.init(notifier, dumpContent);
         method.doMethod(req, resp);
       }
 //    } catch (WebdavForbidden wdf) {
   //    sendError(notifier, wdf, resp);
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       serverError = handleException(notifier, t, resp, serverError);
     } finally {
       if (notifier != null) {
         try {
 //          notifier.close();
-        } catch (Throwable t) {
+        } catch (final Throwable t) {
           serverError = handleException(notifier, t, resp, serverError);
         }
       }
 
       try {
         tryWait(req, false);
-      } catch (Throwable t) {}
+      } catch (final Throwable ignored) {}
 
       if (debug() && dumpContent &&
-          (resp instanceof CharArrayWrappedResponse)) {
+          (resp instanceof final CharArrayWrappedResponse wresp)) {
         /* instanceof check because we might get a subsequent exception before
          * we wrap the response
          */
-        CharArrayWrappedResponse wresp = (CharArrayWrappedResponse)resp;
 
         if (wresp.getUsedOutputStream()) {
           debug("------------------------ response written to output stream -------------------");
         } else {
-          String str = wresp.toString();
+          final String str = wresp.toString();
 
           debug("------------------------ Dump of response -------------------");
           debug(str);
           debug("---------------------- End dump of response -----------------");
 
-          byte[] bs = str.getBytes();
+          final byte[] bs = str.getBytes();
           resp = (HttpServletResponse)wresp.getResponse();
           debug("contentLength=" + bs.length);
           resp.setContentLength(bs.length);
@@ -172,11 +171,11 @@ public class NotifierServlet extends HttpServlet
 
       /* WebDAV is stateless - toss away the session */
       try {
-        HttpSession sess = req.getSession(false);
+        final HttpSession sess = req.getSession(false);
         if (sess != null) {
           sess.invalidate();
         }
-      } catch (Throwable t) {}
+      } catch (final Throwable ignored) {}
     }
   }
 
@@ -189,10 +188,8 @@ public class NotifierServlet extends HttpServlet
     }
 
     try {
-      if (t instanceof NoteException) {
-        NoteException se = (NoteException)t;
-
-        int status = se.getStatusCode();
+      if (t instanceof final NoteException se) {
+        final int status = se.getStatusCode();
         if (status == HttpServletResponse.SC_INTERNAL_SERVER_ERROR) {
           error(se);
           serverError = true;
@@ -204,7 +201,7 @@ public class NotifierServlet extends HttpServlet
       error(t);
       sendError(notifier, t, resp);
       return true;
-    } catch (Throwable t1) {
+    } catch (final Throwable t1) {
       // Pretty much screwed if we get here
       return true;
     }
@@ -213,9 +210,8 @@ public class NotifierServlet extends HttpServlet
   private void sendError(final NotifyEngine notifier, final Throwable t,
                          final HttpServletResponse resp) {
     try {
-      if (t instanceof NoteException) {
-        NoteException se = (NoteException)t;
-        QName errorTag = se.getErrorTag();
+      if (t instanceof final NoteException se) {
+        final QName errorTag = se.getErrorTag();
 
         if (errorTag != null) {
           if (debug()) {
@@ -225,7 +221,7 @@ public class NotifierServlet extends HttpServlet
           resp.setContentType("text/xml; charset=UTF-8");
           if (!emitError(notifier, errorTag, se.getMessage(),
                          resp.getWriter())) {
-            StringWriter sw = new StringWriter();
+            final StringWriter sw = new StringWriter();
             emitError(notifier, errorTag, se.getMessage(), sw);
 
             try {
@@ -233,7 +229,7 @@ public class NotifierServlet extends HttpServlet
                 debug("setStatus(" + se.getStatusCode() + ")");
               }
               resp.sendError(se.getStatusCode(), sw.toString());
-            } catch (Throwable t1) {
+            } catch (final Throwable ignored) {
             }
           }
         } else {
@@ -249,7 +245,7 @@ public class NotifierServlet extends HttpServlet
         resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                        t.getMessage());
       }
-    } catch (Throwable t1) {
+    } catch (final Throwable ignored) {
       // Pretty much screwed if we get here
     }
   }
@@ -259,7 +255,7 @@ public class NotifierServlet extends HttpServlet
                             final String extra,
                             final Writer wtr) {
     try {
-      XmlEmit xml = new XmlEmit();
+      final XmlEmit xml = new XmlEmit();
 //      notifier.addNamespace(xml);
 
       xml.startEmit(wtr);
@@ -271,7 +267,7 @@ public class NotifierServlet extends HttpServlet
       xml.flush();
 
       return true;
-    } catch (Throwable t1) {
+    } catch (final Throwable t1) {
       // Pretty much screwed if we get here
       return false;
     }
@@ -306,23 +302,22 @@ public class NotifierServlet extends HttpServlet
    * @param notifier notify engine
    * @param name of method
    * @return method
-   * @throws NoteException on error
    */
   public MethodBase getMethod(final NotifyEngine notifier,
-                              final String name) throws NoteException {
-    MethodInfo mi = methods.get(name.toUpperCase());
+                              final String name) {
+    final MethodInfo mi = methods.get(name.toUpperCase());
 
 //    if ((mi == null) || (getAnonymous() && mi.getRequiresAuth())) {
   //    return null;
     //}
 
     try {
-      MethodBase mb = mi.getMethodClass().newInstance();
+      final MethodBase mb = mi.getMethodClass().newInstance();
 
       mb.init(notifier, dumpContent);
 
       return mb;
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       if (debug()) {
         error(t);
       }
@@ -330,11 +325,11 @@ public class NotifierServlet extends HttpServlet
     }
   }
 
-  private void tryWait(final HttpServletRequest req, final boolean in) throws Throwable {
-    Waiter wtr = null;
+  private void tryWait(final HttpServletRequest req, final boolean in) {
+    Waiter wtr;
     synchronized (waiters) {
       //String key = req.getRequestedSessionId();
-      String key = req.getRemoteUser();
+      final String key = req.getRemoteUser();
       if (key == null) {
         return;
       }
@@ -365,7 +360,11 @@ public class NotifierServlet extends HttpServlet
           debug("in: waiters=" + wtr.waiting);
         }
 
-        wtr.wait();
+        try {
+          wtr.wait();
+        } catch (final InterruptedException e) {
+          throw new RuntimeException(e);
+        }
       }
       wtr.waiting--;
       wtr.active = true;
@@ -378,8 +377,8 @@ public class NotifierServlet extends HttpServlet
 
   @Override
   public void sessionDestroyed(final HttpSessionEvent se) {
-    HttpSession session = se.getSession();
-    String sessid = session.getId();
+    final HttpSession session = se.getSession();
+    final String sessid = session.getId();
     if (sessid == null) {
       return;
     }
@@ -395,19 +394,19 @@ public class NotifierServlet extends HttpServlet
    */
   public void dumpRequest(final HttpServletRequest req) {
     try {
-      Enumeration names = req.getHeaderNames();
+      final Enumeration<String> hnames = req.getHeaderNames();
 
       String title = "Request headers";
 
       debug(title);
 
-      while (names.hasMoreElements()) {
-        String key = (String)names.nextElement();
-        String val = req.getHeader(key);
+      while (hnames.hasMoreElements()) {
+        final String key = hnames.nextElement();
+        final String val = req.getHeader(key);
         debug("  " + key + " = \"" + val + "\"");
       }
 
-      names = req.getParameterNames();
+      final Enumeration<String> pnames = req.getParameterNames();
 
       title = "Request parameters";
 
@@ -425,12 +424,12 @@ public class NotifierServlet extends HttpServlet
 
       debug(title);
 
-      while (names.hasMoreElements()) {
-        String key = (String)names.nextElement();
-        String val = req.getParameter(key);
+      while (pnames.hasMoreElements()) {
+        final String key = pnames.nextElement();
+        final String val = req.getParameter(key);
         debug("  " + key + " = \"" + val + "\"");
       }
-    } catch (Throwable t) {
+    } catch (final Throwable ignored) {
     }
   }
 
@@ -438,7 +437,7 @@ public class NotifierServlet extends HttpServlet
    *                         JMX support
    */
 
-  class Configurator extends ConfBase {
+  static class Configurator extends ConfBase {
     NotifyConf notifyConf;
 
     Configurator() {
@@ -463,11 +462,11 @@ public class NotifierServlet extends HttpServlet
         notifyConf.start();
 
       /* ------------- Http properties -------------------- */
-        HttpOut ho = new HttpOut("notify",
-                                 "httpConfig");
+        final HttpOut ho = new HttpOut("notify",
+                                       "httpConfig");
         register(new ObjectName(ho.getServiceName()), ho);
         ho.loadConfig();
-      } catch (Throwable t){
+      } catch (final Throwable t){
         t.printStackTrace();
       }
     }
@@ -477,13 +476,13 @@ public class NotifierServlet extends HttpServlet
       try {
         notifyConf.stop();
         ConfBase.getManagementContext().stop();
-      } catch (Throwable t){
+      } catch (final Throwable t){
         t.printStackTrace();
       }
     }
   }
 
-  private Configurator conf = new Configurator();
+  private final Configurator conf = new Configurator();
 
   @Override
   public void contextInitialized(final ServletContextEvent sce) {
@@ -495,11 +494,11 @@ public class NotifierServlet extends HttpServlet
     conf.stop();
   }
 
-  /* ====================================================================
+  /* ==============================================================
    *                   Logged methods
-   * ==================================================================== */
+   * ============================================================== */
 
-  private BwLogger logger = new BwLogger();
+  private final BwLogger logger = new BwLogger();
 
   @Override
   public BwLogger getLogger() {

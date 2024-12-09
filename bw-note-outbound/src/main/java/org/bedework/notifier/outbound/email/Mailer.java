@@ -38,13 +38,13 @@ import javax.mail.internet.MimeMultipart;
 public class Mailer implements Logged {
   EmailConf config;
 
-  public Mailer(final EmailConf config) throws NoteException {
+  public Mailer(final EmailConf config) {
     super();
     this.config = config;
   }
 
-  public void send(final BaseEmailMessage email) throws NoteException {
-    Session session = getSession();
+  public void send(final BaseEmailMessage email) {
+    final Session session = getSession();
 
     final MimeMessage msg = new MimeMessage(session);
     try {
@@ -76,8 +76,8 @@ public class Mailer implements Logged {
       if (debug()) {
         debug("About to get transport");
       }
-      Transport transport = session.getTransport(config.getProtocol());
-      try {
+      try (final Transport transport =
+                   session.getTransport(config.getProtocol())) {
         if (debug()) {
           debug("About to connect");
         }
@@ -96,7 +96,10 @@ public class Mailer implements Logged {
         if (username != null && pw != null) {
           if (config.getServerUri() != null) {
             if (config.getServerPort() != null) {
-              transport.connect(config.getServerUri(), Integer.parseInt(config.getServerPort()), username, pw);
+              transport.connect(config.getServerUri(),
+                                Integer.parseInt(
+                                        config.getServerPort()),
+                                username, pw);
             } else {
               transport.connect(config.getServerUri(), username, pw);
             }
@@ -117,8 +120,6 @@ public class Mailer implements Logged {
         if (debug()) {
           debug("Message sent");
         }
-      } finally {
-        transport.close();
       }
       if (debug()) {
         debug("Message sent");
@@ -128,7 +129,7 @@ public class Mailer implements Logged {
     }
   }
 
-  private Session getSession() throws NoteException {
+  private Session getSession() {
     final Properties props = new Properties();
 
     //  add handlers for main MIME types
@@ -144,11 +145,11 @@ public class Mailer implements Logged {
     return Session.getDefaultInstance(props);
   }
 
-  /* ====================================================================
+  /* ==============================================================
    *                   Logged methods
-   * ==================================================================== */
+   * ============================================================== */
 
-  private BwLogger logger = new BwLogger();
+  private final BwLogger logger = new BwLogger();
 
   @Override
   public BwLogger getLogger() {

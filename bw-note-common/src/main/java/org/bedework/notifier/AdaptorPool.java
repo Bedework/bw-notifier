@@ -64,10 +64,9 @@ public class AdaptorPool implements Logged {
    *
    * @param notifier the engine
    * @param timeout - millisecs
-   * @throws NoteException
    */
   public AdaptorPool(final NotifyEngine notifier,
-                     final long timeout) throws NoteException {
+                     final long timeout) {
     this.notifier = notifier;
     this.timeout = timeout;
   }
@@ -82,9 +81,8 @@ public class AdaptorPool implements Logged {
    *
    * @param type of adaptor
    * @return adaptor or null.
-   * @throws NoteException on error
    */
-  public Adaptor getAdaptor(final String type) throws NoteException {
+  public Adaptor getAdaptor(final String type) {
     try {
       final AdaptorState as = adaptorMap.get(type);
 
@@ -92,10 +90,10 @@ public class AdaptorPool implements Logged {
         return null;
       }
 
-      Adaptor a = null;
+      final Adaptor a;
 
       if ((as.pool.size() + as.active.size()) < as.conf.getMaxInstances()) {
-        final Class cl = Class.forName(as.conf.getAdaptorClassName());
+        final Class<?> cl = Class.forName(as.conf.getAdaptorClassName());
 
         a = (Adaptor)cl.newInstance();
 
@@ -209,9 +207,8 @@ public class AdaptorPool implements Logged {
   /** Put a adaptor back in the pool if there's room else discard it
    *
    * @param adaptor the adaptor to return
-   * @throws NoteException
    */
-  public void add(final Adaptor adaptor) throws NoteException {
+  public void add(final Adaptor adaptor) {
     AdaptorState as = adaptorMap.get(adaptor.getType());
 
     if (as == null) {
@@ -226,7 +223,7 @@ public class AdaptorPool implements Logged {
     as.pool.offer(adaptor);
   }
 
-  public void registerAdaptors() throws NoteException {
+  public void registerAdaptors() {
     final List<AdaptorConf> adaptorConfs = NotifyEngine.getConfig().getAdaptorConfs();
 
     /* Register the adaptors */
@@ -239,7 +236,7 @@ public class AdaptorPool implements Logged {
     }
   }
 
-  private void registerAdaptor(final AdaptorConf conf) throws NoteException {
+  private void registerAdaptor(final AdaptorConf conf) {
     try {
       final String type = conf.getType();
 
@@ -250,10 +247,10 @@ public class AdaptorPool implements Logged {
       final AdaptorState as = new AdaptorState();
 
       as.conf = conf;
-      as.pool = new ArrayBlockingQueue<Adaptor>(conf.getMaxInstances());
+      as.pool = new ArrayBlockingQueue<>(conf.getMaxInstances());
 
       adaptorMap.put(type, as);
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       throw new NoteException(t);
     }
   }
@@ -263,7 +260,7 @@ public class AdaptorPool implements Logged {
    * @return List of Stat
    */
   public List<Stat> getStats() {
-    List<Stat> stats = new ArrayList<Stat>();
+    final List<Stat> stats = new ArrayList<>();
 
     stats.add(new Stat("adaptor get timeout", getTimeout()));
     stats.add(new Stat("adaptor active", getActiveCt()));
@@ -290,11 +287,11 @@ public class AdaptorPool implements Logged {
     return ts.toString();
   }
 
-  /* ====================================================================
+  /* ==============================================================
    *                   Logged methods
-   * ==================================================================== */
+   * ============================================================== */
 
-  private BwLogger logger = new BwLogger();
+  private final BwLogger logger = new BwLogger();
 
   @Override
   public BwLogger getLogger() {

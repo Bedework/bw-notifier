@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.w3c.dom.Document;
 
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -58,17 +59,15 @@ public abstract class MethodBase extends JsonUtil implements Logged {
 
   /** Called at each request
    *
-   * @throws NoteException on error
    */
-  public abstract void init() throws NoteException;
+  public abstract void init();
 
-  private SimpleDateFormat httpDateFormatter =
+  private final SimpleDateFormat httpDateFormatter =
       new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss ");
 
   /**
    * @param req http request
    * @param resp http response
-   * @throws NoteException on error
    */
   public abstract void doMethod(HttpServletRequest req,
                                 HttpServletResponse resp)
@@ -77,9 +76,9 @@ public abstract class MethodBase extends JsonUtil implements Logged {
   /** Allow servlet to create method.
    */
   public static class MethodInfo {
-    private Class<? extends MethodBase> methodClass;
+    private final Class<? extends MethodBase> methodClass;
 
-    private boolean requiresAuth;
+    private final boolean requiresAuth;
 
     /**
      * @param methodClass class
@@ -113,10 +112,9 @@ public abstract class MethodBase extends JsonUtil implements Logged {
    *
    * @param notifier the engine
    * @param dumpContent should we dump content for trace
-   * @throws NoteException on error
    */
   public void init(final NotifyEngine notifier,
-                   final boolean dumpContent) throws NoteException {
+                   final boolean dumpContent) {
     this.notifier = notifier;
     this.dumpContent = dumpContent;
 //    xml = notifier.getXmlEmit();
@@ -138,9 +136,8 @@ public abstract class MethodBase extends JsonUtil implements Logged {
   /** Get notifier db
    *
    * @return NotifyDb
-   * @throws NoteException on error
    */
-  public NotifyDb getDb() throws NoteException {
+  public NotifyDb getDb() {
     if (db != null) {
       return db;
     }
@@ -160,13 +157,11 @@ public abstract class MethodBase extends JsonUtil implements Logged {
    *
    * @param req      Servlet request object
    * @return List    Path elements of fixed up uri
-   * @throws NoteException on error
    */
-  public List<String> getResourceUri(final HttpServletRequest req)
-      throws NoteException {
+  public List<String> getResourceUri(final HttpServletRequest req) {
     String uri = req.getServletPath();
 
-    if ((uri == null) || (uri.length() == 0)) {
+    if ((uri == null) || (uri.isEmpty())) {
       /* No path specified - set it to root. */
       uri = "/";
     }
@@ -176,22 +171,21 @@ public abstract class MethodBase extends JsonUtil implements Logged {
 
   /** Return a path, broken into its elements, after "." and ".." are removed.
    * If the parameter path attempts to go above the root we return null.
-   *
+   * <p>
    * Other than the backslash thing why not use URI?
    *
    * @param path      String path to be fixed
    * @return String[]   fixed path broken into elements
-   * @throws NoteException on error
    */
-  public static List<String> fixPath(final String path) throws NoteException {
+  public static List<String> fixPath(final String path) {
     if (path == null) {
       return null;
     }
 
     String decoded;
     try {
-      decoded = URLDecoder.decode(path, "UTF8");
-    } catch (Throwable t) {
+      decoded = URLDecoder.decode(path, StandardCharsets.UTF_8);
+    } catch (final Throwable t) {
       throw new NoteException("bad path: " + path);
     }
 
@@ -199,38 +193,39 @@ public abstract class MethodBase extends JsonUtil implements Logged {
       return (null);
     }
 
-    /** Make any backslashes into forward slashes.
+    /* Make any backslashes into forward slashes.
      */
     if (decoded.indexOf('\\') >= 0) {
       decoded = decoded.replace('\\', '/');
     }
 
-    /** Ensure a leading '/'
+    /* Ensure a leading '/'
      */
     if (!decoded.startsWith("/")) {
       decoded = "/" + decoded;
     }
 
-    /** Remove all instances of '//'.
+    /* Remove all instances of '//'.
      */
-    while (decoded.indexOf("//") >= 0) {
+    while (decoded.contains("//")) {
       decoded = decoded.replaceAll("//", "/");
     }
 
-    /** Somewhere we may have /./ or /../
+    /* Somewhere we may have /./ or /../
      */
 
-    StringTokenizer st = new StringTokenizer(decoded, "/");
+    final StringTokenizer st = new StringTokenizer(decoded, "/");
 
-    ArrayList<String> al = new ArrayList<String>();
+    final ArrayList<String> al = new ArrayList<>();
     while (st.hasMoreTokens()) {
-      String s = st.nextToken();
+      final String s = st.nextToken();
 
       if (s.equals(".")) {
-        // ignore
-      } else if (s.equals("..")) {
+        continue;// ignore
+      }
+      if (s.equals("..")) {
         // Back up 1
-        if (al.size() == 0) {
+        if (al.isEmpty()) {
           // back too far
           return null;
         }
@@ -246,7 +241,7 @@ public abstract class MethodBase extends JsonUtil implements Logged {
 
   /*
   protected void addStatus(final int status,
-                           final String message) throws NoteException {
+                           final String message) {
     try {
       if (message == null) {
 //        message = WebdavStatusCode.getMessage(status);
@@ -261,7 +256,7 @@ public abstract class MethodBase extends JsonUtil implements Logged {
   }
   */
 
-  protected void addHeaders(final HttpServletResponse resp) throws NoteException {
+  protected void addHeaders(final HttpServletResponse resp) {
     // This probably needs changes
 /*
     StringBuilder methods = new StringBuilder();
@@ -279,8 +274,7 @@ public abstract class MethodBase extends JsonUtil implements Logged {
   }
 
   protected Map<?, ?> getJson(final HttpServletRequest req,
-                              final HttpServletResponse resp)
-          throws NoteException {
+                              final HttpServletResponse resp) {
     final int len = req.getContentLength();
     if (len == 0) {
       return null;
@@ -288,7 +282,7 @@ public abstract class MethodBase extends JsonUtil implements Logged {
 
     try {
       return (Map<?, ?>)om.readValue(req.getInputStream(), Object.class);
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       throw new NoteException(t);
     }
@@ -299,18 +293,17 @@ public abstract class MethodBase extends JsonUtil implements Logged {
    * @param req        Servlet request object
    * @param resp       Servlet response object for bad status
    * @return Document  Parsed body or null for no body
-   * @exception NoteException Some error occurred.
    */
   protected Document parseContent(final HttpServletRequest req,
                                   final HttpServletResponse resp)
       throws NoteException {
-    int len = req.getContentLength();
+    final int len = req.getContentLength();
     if (len == 0) {
       return null;
     }
 
     try {
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       factory.setNamespaceAware(true);
 
       //DocumentBuilder builder = factory.newDocumentBuilder();
@@ -343,11 +336,11 @@ public abstract class MethodBase extends JsonUtil implements Logged {
     }
   }
 
-  /* ====================================================================
+  /* ==============================================================
    *                   Logged methods
-   * ==================================================================== */
+   * ============================================================== */
 
-  private BwLogger logger = new BwLogger();
+  private final BwLogger logger = new BwLogger();
 
   @Override
   public BwLogger getLogger() {

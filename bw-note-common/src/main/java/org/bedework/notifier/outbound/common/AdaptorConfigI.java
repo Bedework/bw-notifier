@@ -29,7 +29,7 @@ public interface AdaptorConfigI {
    *
    * @param val    String
    */
-  void setAdaptorClassName(final String val);
+  void setAdaptorClassName(String val);
 
   /** Class name
    *
@@ -42,7 +42,7 @@ public interface AdaptorConfigI {
    *
    * @param val    String
    */
-  void setMbeanClassName(final String val);
+  void setMbeanClassName(String val);
 
   /** Class name
    *
@@ -54,7 +54,7 @@ public interface AdaptorConfigI {
   /**
    * @param val the type of adaptor
    */
-  void setType(final String val);
+  void setType(String val);
 
   /**
    * @return the type of adaptor
@@ -65,7 +65,7 @@ public interface AdaptorConfigI {
   /**
    * @param val the max number of instances
    */
-  void setMaxInstances(final int val);
+  void setMaxInstances(int val);
 
   /**
    * @return the max number of instances

@@ -18,7 +18,6 @@
 */
 package org.bedework.notifier.db;
 
-import org.bedework.notifier.exception.NoteException;
 import org.bedework.util.misc.ToString;
 
 import java.util.Map;
@@ -59,7 +58,7 @@ public class SubscriptionWrapper implements Subscription {
     return subscription;
   }
 
-  public void init(final Map vals) throws NoteException {
+  public void init(final Map vals) {
   }
 
   /** Our generated subscriptionId.
@@ -250,7 +249,7 @@ public class SubscriptionWrapper implements Subscription {
 
   @Override
   public String toString() {
-    ToString ts = new ToString(this);
+    final ToString ts = new ToString(this);
 
     toStringSegment(ts);
 

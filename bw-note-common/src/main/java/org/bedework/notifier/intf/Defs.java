@@ -23,22 +23,22 @@ package org.bedework.notifier.intf;
  *   @author Mike Douglass   douglm  bedework.edu
  */
 public interface Defs {
-  /* ========================================================================
+  /* ==============================================================
    * X-properties we generate
-   * ======================================================================== */
+   * ============================================================== */
 
   /** Common prefix */
-  public static final String xpMSPrefix = "X-BEDEWORK-EXSYNC-";
+  String xpMSPrefix = "X-BEDEWORK-EXSYNC-";
 
   /** Exchange tzid */
-  public static final String xpMSTzid = xpMSPrefix + "TZID";
+  String xpMSTzid = xpMSPrefix + "TZID";
 
   /** Exchange start tzid */
-  public static final String xpMSStartTzid = xpMSPrefix + "STARTTZID";
+  String xpMSStartTzid = xpMSPrefix + "STARTTZID";
 
   /** Exchange end tzid */
-  public static final String xpMSEndTzid = xpMSPrefix + "ENDTZID";
+  String xpMSEndTzid = xpMSPrefix + "ENDTZID";
 
   /** Exchange end tzid */
-  public static final String xpMSLastmod = xpMSPrefix + "LASTMOD";
+  String xpMSLastmod = xpMSPrefix + "LASTMOD";
 }

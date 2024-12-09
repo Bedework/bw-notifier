@@ -22,7 +22,6 @@ import org.bedework.notifier.Action.ActionType;
 import org.bedework.notifier.cnctrs.ConnectorInstance;
 import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.Subscription;
-import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.notifier.outbound.common.Adaptor;
 import org.bedework.util.logging.BwLogger;
@@ -69,9 +68,8 @@ public class Noteling implements Logged {
   /** Constructor
    *
    * @param notifier the notifier engine
-   * @throws NoteException on error
    */
-  public Noteling(final NotifyEngine notifier) throws NoteException {
+  public Noteling(final NotifyEngine notifier) {
     this.notifier = notifier;
     db = NotifyEngine.getNewDb();
 
@@ -95,9 +93,8 @@ public class Noteling implements Logged {
    *
    * @param action - the action to take
    * @return OK for all handled fine. ERROR - discard. WARN - retry.
-   * @throws NoteException on error
    */
-  public StatusType handleAction(final Action action) throws NoteException {
+  public StatusType handleAction(final Action action) {
     try {
       db.startTransaction();
       db.refresh(action.getSub());
@@ -129,7 +126,7 @@ public class Noteling implements Logged {
    *                        private Notification methods
    * ==================================================================== */
 
-  private void handleNotificationMsg(final Action action) throws NoteException {
+  private void handleNotificationMsg(final Action action) {
     final NotificationMsg msg = action.getMsg();
 
     final Subscription sub = db.find(msg.getSystem(),
@@ -150,7 +147,7 @@ public class Noteling implements Logged {
     notifier.handleAction(action);
   }
 
-  private StatusType handleCheck(final Action action) throws NoteException {
+  private StatusType handleCheck(final Action action) {
     try {
       final ConnectorInstance ci = notifier.reserveInstance(db,
                                                             action);
@@ -175,7 +172,7 @@ public class Noteling implements Logged {
     return StatusType.OK;
   }
 
-  private void handleProcessItem(final Action action) throws NoteException {
+  private void handleProcessItem(final Action action) {
     try {
       final ConnectorInstance ci = notifier.reserveInstance(db,
                                                             action);
@@ -205,7 +202,7 @@ public class Noteling implements Logged {
     }
   }
 
-  private StatusType doOutBound(final Action action) throws NoteException {
+  private StatusType doOutBound(final Action action) {
     final List<Adaptor<?>> adaptors =
             notifier.getAdaptors(action);
 

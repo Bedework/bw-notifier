@@ -34,8 +34,4 @@ public class DummyConf extends AdaptorConf<DummyAdaptorConfig>
                    final String configName) {
     super(serviceName, store, configName);
   }
-
-  /* ========================================================================
-   * Conf properties
-   * ======================================================================== */
 }

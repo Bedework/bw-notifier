@@ -19,7 +19,6 @@
 package org.bedework.notifier.cnctrs;
 
 import org.bedework.notifier.db.NotifyDb;
-import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.util.misc.ToString;
 
@@ -37,15 +36,13 @@ public interface ConnectorInstance {
    * creation of a new subscription.
    *
    * @return status + messages
-   * @throws NoteException on error
    */
-  BaseResponseType open() throws NoteException;
+  BaseResponseType open();
 
   /**
    * @return the connector for this instance
-   * @throws NoteException on error
    */
-  Connector getConnector() throws NoteException;
+  Connector getConnector();
 
   /** Called before a resynch takes place to determine if the end point has
    * changed and needs resynch. Only the source end of a subscription will be
@@ -54,15 +51,14 @@ public interface ConnectorInstance {
    * probably always return false.
    *
    * @return true if a change occurred
-   * @throws NoteException on error
    */
-  boolean changed() throws NoteException;
+  boolean changed();
 
 
   /** Information used to list notifications
    * This information is only valid in the context of a given subscription.
    */
-  public static class ItemInfo {
+  class ItemInfo {
     /** */
     public String href;
 
@@ -101,17 +97,15 @@ public interface ConnectorInstance {
    * @param db to allow updates
    * @param resource we are looking for
    * @return false if nothing to do.
-   * @throws NoteException on error
    */
-  boolean check(NotifyDb db, String resource) throws NoteException;
+  boolean check(NotifyDb db, String resource);
 
   /** Fetch the next resource - return null if none.
    *
    * @param db to allow updates
    * @return response
-   * @throws NoteException on error
    */
-  Note nextItem(NotifyDb db) throws NoteException;
+  Note nextItem(NotifyDb db);
 
   /** Finished processing of an item. Do whatever is required - e.g.
    * set an update date or delete the notification.
@@ -119,8 +113,7 @@ public interface ConnectorInstance {
    * @param db to allow updates
    * @param note - specifyng the item to be updated
    * @return true OK -false check status
-   * @throws NoteException on error
    */
   boolean completeItem(NotifyDb db,
-                       Note note) throws NoteException;
+                       Note note);
 }

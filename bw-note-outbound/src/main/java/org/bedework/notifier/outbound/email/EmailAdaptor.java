@@ -33,6 +33,7 @@ import org.bedework.util.http.HttpUtil;
 import org.bedework.util.http.PooledHttpClient;
 import org.bedework.util.http.PooledHttpClient.ResponseHolder;
 import org.bedework.util.misc.Util;
+import org.bedework.util.xml.XmlUtil;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,7 +44,6 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.DefaultObjectWrapperBuilder;
 import freemarker.template.Template;
-import freemarker.template.TemplateHashModel;
 import freemarker.template.TemplateModelException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.message.BasicHeader;
@@ -73,8 +73,6 @@ import java.util.regex.Pattern;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -109,30 +107,19 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
           "</D:propfind>";
   private static final XPath xPath = XPathFactory.newInstance().newXPath();
 
-  private static final FilenameFilter templateFilter = new FilenameFilter() {
-    public boolean accept(File dir, String name) {
-      return name.endsWith(".ftl");
-    }
-  };
+  private static final FilenameFilter templateFilter = (dir, name) -> name.endsWith(".ftl");
 
   final static String processorType = "email";
 
   private Mailer mailer;
-  private DocumentBuilder builder;
+  private final DocumentBuilder builder;
 
   public EmailAdaptor() {
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    try {
-      builder = factory.newDocumentBuilder();
-    } catch (ParserConfigurationException e) {
-      error(e);
-      throw new RuntimeException(e);
-    }
+    builder = XmlUtil.getSafeDocumentBuilder(true);
   }
 
   @Override
-  public boolean process(final Action action) throws NoteException {
+  public boolean process(final Action action) {
     final Note note = action.getNote();
     final NotificationType nt = note.getNotification();
     final EmailSubscription sub = EmailSubscription.rewrap(action.getSub());
@@ -164,9 +151,9 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
     }
     email.setSubject(subject);
 
-    List<TemplateResult> results = applyTemplates(action);
-    for (TemplateResult result : results) {
-      String from = result.getStringVariable("from");
+    final List<TemplateResult> results = applyTemplates(action);
+    for (final TemplateResult result: results) {
+      final String from = result.getStringVariable("from");
       if (from != null) {
         email.setFrom(from);
       }
@@ -195,7 +182,7 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
       email.addBody(contentType, result.getValue());
     }
 
-    if (email.getTos().size() == 0) {
+    if (email.getTos().isEmpty()) {
             /* The subscription will define one or more recipients */
       for (final String emailAddress: sub.getEmails()) {
         email.addTo(stripMailTo(emailAddress));
@@ -203,7 +190,7 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
 
     }
     try {
-      if (email.getBodies().keySet().size() > 0) {
+      if (!email.getBodies().isEmpty()) {
         getMailer().send(email);
 
         pt.setDtstamp(getDtstamp());
@@ -223,19 +210,19 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
     return false;
   }
 
-  private Mailer getMailer() throws NoteException {
+  private Mailer getMailer() {
     if (mailer == null) {
       mailer = new Mailer(getConfig());
     }
     return mailer;
   }
 
-  private List<TemplateResult> applyTemplates(final Action action) throws NoteException {
+  private List<TemplateResult> applyTemplates(final Action action) {
     final Note note = action.getNote();
     final NotificationType nt = note.getNotification();
     final EmailSubscription sub = EmailSubscription.rewrap(action.getSub());
 
-    List<TemplateResult> results = new ArrayList<>();
+    final List<TemplateResult> results = new ArrayList<>();
     try {
       String prefix = nt.getParsed().getDocumentElement().getPrefix();
 
@@ -245,35 +232,38 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
 
       final String abstractPath = Util.buildPath(false, Note.DeliveryMethod.email.toString(), "/", prefix, "/", nt.getNotification().getElementName().getLocalPart());
 
-      File templateDir = new File(Util.buildPath(false, globalConfig.getTemplatesPath(), "/", abstractPath));
+      final File templateDir =
+              new File(Util.buildPath(false,
+                                      globalConfig.getTemplatesPath(), "/", abstractPath));
       if (templateDir.isDirectory()) {
 
-        Map<String, Object> root = new HashMap<>();
-        Document doc = builder.parse(new InputSource(new StringReader(nt.toXml(true))));
-        Element el = doc.getDocumentElement();
+        final Map<String, Object> root = new HashMap<>();
+        final Document doc =
+                builder.parse(new InputSource(new StringReader(nt.toXml(true))));
+        final Element el = doc.getDocumentElement();
         NodeModel.simplify(el);
         NodeModel.useJaxenXPathSupport();
         root.put("notification", el);
 
-        HashSet<String> recipients = new HashSet<>();
-        for (String email : sub.getEmails()) {
+        final HashSet<String> recipients = new HashSet<>();
+        for (final String email: sub.getEmails()) {
             recipients.add(MAILTO + email);
         }
         root.put("recipients", recipients);
 
         if (globalConfig.getCardDAVURI() != null) {
-          HashMap<String, Object> vcards = new HashMap<>();
+          final HashMap<String, Object> vcards = new HashMap<>();
 
-          PooledHttpClient client;
+          final PooledHttpClient client;
           try {
             client = new PooledHttpClient(new URI(globalConfig.getCardDAVURI()));
 
-            XPathExpression exp = xPath.compile("//*[local-name() = 'href']");
-            NodeList nl = (NodeList)exp.evaluate(doc, XPathConstants.NODESET);
+            final XPathExpression exp = xPath.compile("//*[local-name() = 'href']");
+            final NodeList nl = (NodeList)exp.evaluate(doc, XPathConstants.NODESET);
 
-            HashSet<String> vcardLookups = new HashSet<>();
+            final HashSet<String> vcardLookups = new HashSet<>();
             for (int i = 0; i < nl.getLength(); i++) {
-              Node n = nl.item(i);
+              final Node n = nl.item(i);
               String text = n.getTextContent();
 
               text = pMailto.matcher(text).replaceFirst(MAILTO);
@@ -285,15 +275,15 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
             // Get vCards for recipients too. They may not be referenced in the notification.
             vcardLookups.addAll(recipients);
 
-            for (String lookup : vcardLookups) {
-              String path = Util.buildPath(false, "/", lookup.replace(':', '/'));
+            for (final String lookup: vcardLookups) {
+              final String path = Util.buildPath(false, "/", lookup.replace(':', '/'));
 
-              final ResponseHolder resp =
+              final ResponseHolder<?> resp =
                       client.get(path + VCARD_SUFFIX,
                                  "application/text",
                                  this::processGetJsonVcard);
               if (!resp.failed) {
-                ArrayList<Object> hm = (ArrayList<Object>)resp.response;
+                final ArrayList<Object> hm = (ArrayList<Object>)resp.response;
                 vcards.put(lookup, hm);
               }
             }
@@ -304,13 +294,12 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
         }
 
         doResourceChange: {
-          if (!(nt.getNotification() instanceof ResourceChangeType)) {
+          if (!(nt.getNotification() instanceof final ResourceChangeType chg)) {
             break doResourceChange;
           }
-          ResourceChangeType chg = (ResourceChangeType)nt.getNotification();
-          BedeworkConnectorConfig cfg =
+          final BedeworkConnectorConfig cfg =
                   ((BedeworkConnector)action.getConn()).getConnectorConfig();
-          PooledHttpClient cl = getSystemClient(cfg);
+          final PooledHttpClient cl = getSystemClient(cfg);
           cl.setHeadersFetcher(
                   new SubHeadersFetcher(cfg,
                                         new BedeworkSubscription(action.getSub())));
@@ -320,7 +309,8 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
             href = chg.getCreated().getHref();
           } else if (chg.getDeleted() != null) {
             href = chg.getDeleted().getHref();
-          } else if (chg.getUpdated() != null && chg.getUpdated().size() > 0) {
+          } else if (chg.getUpdated() != null && !chg.getUpdated()
+                                                     .isEmpty()) {
             href = chg.getUpdated().get(0).getHref();
           }
 
@@ -334,29 +324,31 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
               // create or update, not on delete.
               break doCreateUpdate;
             }
-            final ResponseHolder resp = cl.get(href, null,
-                                               this::processGetJsonNode);
+            final ResponseHolder<?> resp =
+                    cl.get(href, null,
+                           this::processGetJsonNode);
             if (resp.failed) {
               break doCreateUpdate;
             }
-            JsonNode a = (JsonNode)resp.response;
+            final JsonNode a = (JsonNode)resp.response;
               
             // Check for a recurrence ID on this notification.
-            XPathExpression exp = xPath.compile("//*[local-name() = 'recurrenceid']/text()");
-            String rid = exp.evaluate(doc);
+            final XPathExpression exp =
+                    xPath.compile("//*[local-name() = 'recurrenceid']/text()");
+            final String rid = exp.evaluate(doc);
             if (rid != null && !rid.isEmpty()) {
-              Calendar rcal = Calendar.getInstance();
+              final Calendar rcal = Calendar.getInstance();
               recurIdFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
               rcal.setTime(recurIdFormat.parse(rid));
                 
               // Find the matching recurrence ID in the JSON, and make that the only vevent object.
-              Calendar c = Calendar.getInstance();
-              ArrayNode vevents = (ArrayNode) a.get(2);
-              for (JsonNode vevent : vevents) {
+              final Calendar c = Calendar.getInstance();
+              final ArrayNode vevents = (ArrayNode) a.get(2);
+              for (final JsonNode vevent : vevents) {
                 if (vevent.size() > 1 && vevent.get(1).size() > 1) {
-                  JsonNode n = vevent.get(1).get(0);
+                  final JsonNode n = vevent.get(1).get(0);
                   if (n.get(0).asText().equals("recurrence-id")) {
-                    if (n.get(1).size() > 0 && n.get(1).get("tzid") != null) {
+                    if (!n.get(1).isEmpty() && n.get(1).get("tzid") != null) {
                       jsonIdFormatTZ.setTimeZone(TimeZone.getTimeZone(n.get(1).get("tzid").asText()));
                       c.setTime(jsonIdFormatTZ.parse(n.get(3).asText()));
                     } else {
@@ -379,9 +371,9 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
 
           // TODO: Provide some calendar information to the templates. This is currently the publisher's
           // calendar, but needs to be fixed to be the subscriber's calendar.
-          String chref = href.substring(0, href.lastIndexOf("/"));
+          final String chref = href.substring(0, href.lastIndexOf("/"));
 
-          final ResponseHolder resp =
+          final ResponseHolder<?> resp =
                   cl.propfind(chref, "0",
                               CALENDAR_PROPFIND,
                               this::processCalendarPropfind);
@@ -396,21 +388,28 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
           root.putAll(note.getExtraValues());
         }
 
-        DefaultObjectWrapper wrapper = new DefaultObjectWrapperBuilder(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS).build();
-        root.put("timezone", (TemplateHashModel) wrapper.getStaticModels().get("java.util.TimeZone"));
+        final DefaultObjectWrapper wrapper = new DefaultObjectWrapperBuilder(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS).build();
+        root.put("timezone",
+                 wrapper.getStaticModels().get("java.util.TimeZone"));
 
         // Sort files so the user can control the order of content types/body parts of the email by template file name.
-        File[] templates = templateDir.listFiles(templateFilter);
+        final File[] templates = templateDir.listFiles(templateFilter);
         Arrays.sort(templates);
-        for (File f : templates) {
-          Template template = fmConfig.getTemplate(Util.buildPath(false, abstractPath, "/", f.getName()));
-          Writer out = new StringWriter();
-          Environment env = template.createProcessingEnvironment(root, out);
+        for (final File f: templates) {
+          final Template template =
+                  fmConfig.getTemplate(Util.buildPath(false, abstractPath, "/", f.getName()));
+          final Writer out = new StringWriter();
+          final Environment env =
+                  template.createProcessingEnvironment(root, out);
           env.process();
 
-          TemplateResult r = new TemplateResult(f.getName(), out.toString(), env);
+          final TemplateResult r =
+                  new TemplateResult(f.getName(), out.toString(),
+                                     env);
           if (!r.getBooleanVariable("skip")) {
-            results.add(new TemplateResult(f.getName(), out.toString(), env));
+            results.add(
+                    new TemplateResult(f.getName(), out.toString(),
+                                       env));
           }
         }
       }
@@ -420,100 +419,98 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
     return results;
   }
 
-  final ResponseHolder processGetJsonVcard(final String path,
-                                           final CloseableHttpResponse resp) {
+  final ResponseHolder<?> processGetJsonVcard(final String path,
+                                              final CloseableHttpResponse resp) {
     try {
       final int status = HttpUtil.getStatus(resp);
 
       if (status != SC_OK) {
-        return new ResponseHolder(status,
-                                  "Failed response from server");
+        return new ResponseHolder<>(status,
+                                    "Failed response from server");
       }
 
       if (resp.getEntity() == null) {
-        return new ResponseHolder(status,
-                                  "No content in response from server");
+        return new ResponseHolder<>(status,
+                                    "No content in response from server");
       }
 
       final InputStream is = resp.getEntity().getContent();
 
-      ObjectMapper om = new ObjectMapper();
-      @SuppressWarnings("unchecked")
-      ArrayList<Object> hm = om.readValue(is, ArrayList.class);
+      final ObjectMapper om = new ObjectMapper();
+      @SuppressWarnings("unchecked") final ArrayList<Object> hm = om.readValue(is, ArrayList.class);
 
-      return new ResponseHolder(hm);
+      return new ResponseHolder<>(hm);
     } catch (final Throwable t) {
-      return new ResponseHolder(t);
+      return new ResponseHolder<>(t);
     }
   }
 
-  final ResponseHolder processGetJsonNode(final String path,
+  final ResponseHolder<?> processGetJsonNode(final String path,
                                           final CloseableHttpResponse resp) {
     try {
       final int status = HttpUtil.getStatus(resp);
 
       if (status != SC_OK) {
-        return new ResponseHolder(status,
-                                  "Failed response from server");
+        return new ResponseHolder<>(status,
+                                    "Failed response from server");
       }
 
       if (resp.getEntity() == null) {
-        return new ResponseHolder(status,
-                                  "No content in response from server");
+        return new ResponseHolder<>(status,
+                                    "No content in response from server");
       }
 
       final InputStream is = resp.getEntity().getContent();
 
-      ObjectMapper om = new ObjectMapper();
+      final ObjectMapper om = new ObjectMapper();
 
-      JsonNode a = om.readValue(is, JsonNode.class);
+      final JsonNode a = om.readValue(is, JsonNode.class);
 
-      return new ResponseHolder(a);
+      return new ResponseHolder<>(a);
     } catch (final Throwable t) {
-      return new ResponseHolder(t);
+      return new ResponseHolder<>(t);
     }
   }
 
-  final ResponseHolder processCalendarPropfind(final String path,
+  final ResponseHolder<?> processCalendarPropfind(final String path,
                                                final CloseableHttpResponse resp) {
     try {
       final int status = HttpUtil.getStatus(resp);
 
       if (status != SC_OK) {
-        return new ResponseHolder(status,
-                                  "Failed response from server");
+        return new ResponseHolder<>(status,
+                                    "Failed response from server");
       }
 
       if (resp.getEntity() == null) {
-        return new ResponseHolder(status,
-                                  "No content in response from server");
+        return new ResponseHolder<>(status,
+                                    "No content in response from server");
       }
 
       final InputStream is = resp.getEntity().getContent();
 
-      Document d = builder.parse(new InputSource(is));
+      final Document d = builder.parse(new InputSource(is));
 
-      HashMap<String, String> hm = new HashMap<>();
+      final HashMap<String, String> hm = new HashMap<>();
 
       XPathExpression exp =
               xPath.compile("//*[local-name() = 'href']/text()");
       hm.put("href", exp.evaluate(d));
       exp = xPath.compile("//*[local-name() = 'displayname']/text()");
-      hm.put("name", (String)exp.evaluate(d));
+      hm.put("name", exp.evaluate(d));
       exp = xPath.compile("//*[local-name() = 'calendar-description']/text()");
       hm.put("description", exp.evaluate(d));
 
-      return new ResponseHolder(hm);
+      return new ResponseHolder<>(hm);
     } catch (final Throwable t) {
-      return new ResponseHolder(t);
+      return new ResponseHolder<>(t);
     }
   }
 
-  private PooledHttpClient getSystemClient(BedeworkConnectorConfig config) throws NoteException {
+  private PooledHttpClient getSystemClient(
+          final BedeworkConnectorConfig config) {
     try {
-      final PooledHttpClient client = new PooledHttpClient(new URI(config.getSystemUrl()));
-
-      return client;
+      return new PooledHttpClient(new URI(config.getSystemUrl()));
     } catch (final Throwable t) {
       throw new NoteException(t);
     }
@@ -521,7 +518,7 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
 
   private class SubHeadersFetcher
           implements HttpUtil.HeadersFetcher {
-    private Headers hdrs = new Headers();
+    private final Headers hdrs = new Headers();
 
     SubHeadersFetcher(final BedeworkConnectorConfig config,
                       final BedeworkSubscription sub) {
@@ -543,12 +540,14 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
     return pMailto.matcher(address).replaceFirst("");
   }
 
-  public class TemplateResult {
+  public static class TemplateResult {
     String templateName;
     String value;
     Environment env;
 
-    protected TemplateResult(String templateName, String value, Environment env) {
+    protected TemplateResult(final String templateName,
+                             final String value,
+                             final Environment env) {
       this.templateName = templateName;
       this.value = value;
       this.env = env;
@@ -558,36 +557,36 @@ public class EmailAdaptor extends AbstractAdaptor<EmailConf> {
       return value;
     }
 
-    public String getStringVariable(String key) {
+    public String getStringVariable(final String key) {
       try {
-        Object val = env.getVariable(key);
+        final Object val = env.getVariable(key);
         if (val != null) {
           return val.toString();
         }
-      } catch (TemplateModelException tme) {
+      } catch (final TemplateModelException ignored) {
       }
       return null;
     }
 
-    public Boolean getBooleanVariable(String key) {
+    public Boolean getBooleanVariable(final String key) {
       try {
-        Object val = env.getVariable(key);
+        final Object val = env.getVariable(key);
         if (val != null) {
           return Boolean.valueOf(val.toString());
         }
-      } catch (TemplateModelException tme) {
+      } catch (final TemplateModelException ignored) {
       }
       return false;
     }
 
-    public List<String> getListVariable(String key) {
+    public List<String> getListVariable(final String key) {
       List<String> result = new ArrayList<>();
       try {
-        Object val = env.getVariable(key);
+        final Object val = env.getVariable(key);
         if (val != null) {
-          result = Arrays.asList(val.toString().split("\\s*;\\s*"));;
+          result = Arrays.asList(val.toString().split("\\s*;\\s*"));
         }
-      } catch (TemplateModelException tme) {
+      } catch (final TemplateModelException ignored) {
       }
       return result;
     }

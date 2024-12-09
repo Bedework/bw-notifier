@@ -47,7 +47,7 @@ public class Note {
 
   private final NotificationType notification;
 
-  private Map extraValues;
+  private Map<String, ?> extraValues;
 
   public enum DeliveryMethod {
     email,
@@ -107,14 +107,14 @@ public class Note {
    *
    * @param val extra template values
    */
-  public void setExtraValues(final Map val) {
+  public void setExtraValues(final Map<String, ?> val) {
     extraValues = val;
   }
 
   /**
    * @return extra template values
    */
-  public Map getExtraValues() {
+  public Map<String, ?> getExtraValues() {
     return extraValues;
   }
 

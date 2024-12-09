@@ -50,8 +50,7 @@ public class NotifyConnector extends AbstractConnector<NotifyConnector,
     ConnectorConfig conf;
 
     @Override
-    public boolean authenticate(final String token)
-            throws NoteException {
+    public boolean authenticate(final String token) {
       return false;
     }
   }
@@ -65,7 +64,7 @@ public class NotifyConnector extends AbstractConnector<NotifyConnector,
   @Override
   public void start(final NotifyDb db,
                     final String callbackUri,
-                    final NotifyEngine notifier) throws NoteException {
+                    final NotifyEngine notifier) {
     super.start(db, callbackUri, notifier);
 
     stopped = false;
@@ -119,7 +118,7 @@ public class NotifyConnector extends AbstractConnector<NotifyConnector,
 
   @Override
   public NotifyConnectorInstance getConnectorInstance(final NotifyDb db,
-                                                      final Subscription sub) throws NoteException {
+                                                      final Subscription sub) {
     return null;
   }
 
@@ -127,11 +126,11 @@ public class NotifyConnector extends AbstractConnector<NotifyConnector,
   @Override
   public NotificationBatch handleCallback(final HttpServletRequest req,
                                           final HttpServletResponse resp,
-                                          final List<String> resourceUri) throws NoteException {
+                                          final List<String> resourceUri) {
     try {
       // Resource uri unused for the moment - must be null or zero length (or "/")
 
-      if (resourceUri.size() > 0) {
+      if (!resourceUri.isEmpty()) {
         resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         return null;
       }
@@ -140,7 +139,7 @@ public class NotifyConnector extends AbstractConnector<NotifyConnector,
       return null;
 //    } catch (NoteException se) {
  //     throw se;
-    } catch(Throwable t) {
+    } catch(final Throwable t) {
       throw new NoteException(t);
     }
   }
@@ -158,12 +157,8 @@ public class NotifyConnector extends AbstractConnector<NotifyConnector,
       }
 //    } catch (NoteException se) {
   //    throw se;
-    } catch(Throwable t) {
+    } catch(final Throwable t) {
       throw new NoteException(t);
     }
   }
-
-  /* ====================================================================
-   *                   Private methods
-   * ==================================================================== */
 }

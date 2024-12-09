@@ -25,7 +25,7 @@ package org.bedework.notifier;
 public interface NotifyDefs {
   /** and does it tell us when something changes or do we have to ask?
    */
-  public enum NotifyKind {
+  enum NotifyKind {
     /** we have to ask */
     poll,
 
@@ -33,5 +33,5 @@ public interface NotifyDefs {
     notify
   }
 
-  public static final String namespace = "oeg.bedework.namespace.notify";
+  String namespace = "oeg.bedework.namespace.notify";
 }

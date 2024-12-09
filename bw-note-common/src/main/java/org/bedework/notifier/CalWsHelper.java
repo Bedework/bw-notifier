@@ -20,6 +20,7 @@ package org.bedework.notifier;
 
 import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
+import org.bedework.util.xml.XmlUtil;
 
 import org.w3c.dom.Document;
 
@@ -30,7 +31,6 @@ import java.io.Writer;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.OutputKeys;
@@ -53,27 +53,29 @@ public class CalWsHelper implements Logged {
    * @throws Throwable on error
    */
   public void traceSoap(final Object o) throws Throwable {
-    SOAPMessage msg = marshal(o, "org.oasis_open.docs.ns.wscal.calws_soap");
+    final SOAPMessage msg =
+            marshal(o, "org.oasis_open.docs.ns.wscal.calws_soap");
 
     /* SOAP marshaller doesn't appear to form
     msg.writeTo(pstate.traceOut);
     */
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
     msg.writeTo(baos);
 
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+    final var bais = new ByteArrayInputStream(baos.toByteArray());
 
-    StreamSource src = new StreamSource(bais);
+    final StreamSource src = new StreamSource(bais);
 
-    Transformer serializer= SAXTransformerFactory.newInstance().newTransformer();
+    final Transformer serializer =
+            SAXTransformerFactory.newInstance().newTransformer();
     serializer.setOutputProperty(OutputKeys.INDENT, "yes");
 
     //serializer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
     serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
     //serializer.setOutputProperty("{http://xml.customer.org/xslt}indent-amount", "2");
 
-    Writer wtr = new StringWriter();
-    StreamResult res =  new StreamResult(wtr);
+    final Writer wtr = new StringWriter();
+    final StreamResult res =  new StreamResult(wtr);
     serializer.transform(src, res);
 
     trace(wtr.toString());
@@ -91,15 +93,13 @@ public class CalWsHelper implements Logged {
       soapMsgFactory = MessageFactory.newInstance();
     }
 
-    JAXBContext jc = JAXBContext.newInstance(jaxbContextPath);
+    final JAXBContext jc = JAXBContext.newInstance(jaxbContextPath);
 
-    Marshaller marshaller = jc.createMarshaller();
+    final Marshaller marshaller = jc.createMarshaller();
 
-    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-    dbf.setNamespaceAware(true);
-    Document doc = dbf.newDocumentBuilder().newDocument();
+    final Document doc = XmlUtil.safeNewDocument(true);
 
-    SOAPMessage msg = soapMsgFactory.createMessage();
+    final SOAPMessage msg = soapMsgFactory.createMessage();
     msg.getSOAPBody().addDocument(doc);
 
     marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
@@ -109,11 +109,11 @@ public class CalWsHelper implements Logged {
     return msg;
   }
 
-  /* ====================================================================
+  /* ===============================================================
    *                   Logged methods
-   * ==================================================================== */
+   * ============================================================== */
 
-  private BwLogger logger = new BwLogger();
+  private final BwLogger logger = new BwLogger();
 
   @Override
   public BwLogger getLogger() {

@@ -64,27 +64,27 @@ public interface NotifyConfMBean
   /** Create or dump new schema. If export and drop set will try to drop tables.
    * Export and create will create a schema in the db and export, drop, create
    * will drop tables, and try to create a new schema.
-   *
+   * <p>
    * The export and drop flags will all be reset to false after this,
    * whatever the result. This avoids accidental damage to the db.
    *
    * @return Completion message
    */
   @MBeanInfo("Start build of the database schema. Set export flag to write to db.")
-  public String schema();
+  String schema();
 
   /** Returns status of the schema build.
    *
    * @return Completion messages
    */
   @MBeanInfo("Status of the database schema build.")
-  public List<String> schemaStatus();
+  List<String> schemaStatus();
 
   /**
    * @param value dialect
    */
   @MBeanInfo("Set the hibernate dialect")
-  void setHibernateDialect(@MBeanInfo("value: a valid hibernate dialect class") final String value);
+  void setHibernateDialect(@MBeanInfo("value: a valid hibernate dialect class") String value);
 
   /**
    * @return Completion messages
@@ -105,30 +105,30 @@ public interface NotifyConfMBean
    * @return value
    */
   @MBeanInfo("Display the named hibernate property")
-  String displayHibernateProperty(@MBeanInfo("name") final String name);
+  String displayHibernateProperty(@MBeanInfo("name") String name);
 
   /** Remove the named property
    *
    * @param name property name
    */
   @MBeanInfo("Remove the named hibernate property")
-  void removeHibernateProperty(@MBeanInfo("name") final String name);
+  void removeHibernateProperty(@MBeanInfo("name") String name);
 
   /**
    * @param name property name
    * @param value property value
    */
   @MBeanInfo("Add a hibernate property")
-  void addHibernateProperty(@MBeanInfo("name") final String name,
-                            @MBeanInfo("value") final String value);
+  void addHibernateProperty(@MBeanInfo("name") String name,
+                            @MBeanInfo("value") String value);
 
   /**
    * @param name property name
    * @param value property value
    */
   @MBeanInfo("Set a hibernate property")
-  void setHibernateProperty(@MBeanInfo("name") final String name,
-                            @MBeanInfo("value") final String value);
+  void setHibernateProperty(@MBeanInfo("name") String name,
+                            @MBeanInfo("value") String value);
 
   /** List connector names
    *

@@ -39,11 +39,11 @@ public class SerializableProperties {
   protected SerializableProperties() {
   }
 
-  public void init(final Map vals) throws NoteException {
+  public void init(final Map vals) {
     this.vals = vals;
   }
 
-  public void setProperties(final String val) throws NoteException {
+  public void setProperties(final String val) {
     if (val == null) {
       vals = null;
     } else {
@@ -54,10 +54,9 @@ public class SerializableProperties {
   /** This will be called to serialize the values for the db.
    *
    * @return json serialized value
-   * @throws NoteException
    */
   @JsonIgnore
-  public String getProperties() throws NoteException {
+  public String getProperties() {
     return asString();
   }
 
@@ -78,7 +77,7 @@ public class SerializableProperties {
    *                   Json methods
    * ============================================================== */
 
-  protected Map<?, ?> asMap(final String val) throws NoteException {
+  protected Map<?, ?> asMap(final String val) {
     try {
       init((Map)om.readValue(val, Object.class));
       return vals;
@@ -87,7 +86,7 @@ public class SerializableProperties {
     }
   }
 
-  protected String asString() throws NoteException {
+  protected String asString() {
     final StringWriter sw = new StringWriter();
 
     try {
@@ -99,7 +98,7 @@ public class SerializableProperties {
   }
 
   @JsonIgnore
-  protected Map<?, ?> getMap(final String name) throws NoteException {
+  protected Map<?, ?> getMap(final String name) {
     final Object val = vals.get(name);
 
     if (val == null) {
@@ -144,29 +143,29 @@ public class SerializableProperties {
    *                   get methods
    * ============================================================== */
 
-  public String must(final String name) throws NoteException {
+  public String must(final String name) {
     return JsonUtil.must(name, vals);
   }
 
-  public List<String> mustList(final String name) throws NoteException {
+  public List<String> mustList(final String name) {
     //noinspection unchecked
     return JsonUtil.mustList(name, vals);
   }
 
-  public String may(final String name) throws NoteException {
+  public String may(final String name) {
     return JsonUtil.may(name, vals);
   }
 
-  public List mayList(final String name) throws NoteException {
+  public List mayList(final String name) {
     return JsonUtil.mayList(name, vals);
   }
 
   public List mayList(final String name,
-                      final Map theVals) throws NoteException {
+                      final Map theVals) {
     return JsonUtil.mayList(name, theVals);
   }
 
-  protected int mayInt(final String name) throws NoteException {
+  protected int mayInt(final String name) {
     final Object val = vals.get(name);
 
     if (val == null) {
@@ -179,7 +178,7 @@ public class SerializableProperties {
     }
   }
 
-  protected boolean mayBool(final String name) throws NoteException {
+  protected boolean mayBool(final String name) {
     final Object val = vals.get(name);
 
     if (val == null) {

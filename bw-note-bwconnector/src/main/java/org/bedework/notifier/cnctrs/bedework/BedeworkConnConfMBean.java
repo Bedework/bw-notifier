@@ -30,7 +30,7 @@ public interface BedeworkConnConfMBean extends NoteConnConfMBean {
   /**
    * @param val system notification principal
    */
-  void setSystemNotificationHref(final String val);
+  void setSystemNotificationHref(String val);
 
   /**
    * @return system notification principal
@@ -41,7 +41,7 @@ public interface BedeworkConnConfMBean extends NoteConnConfMBean {
   /**
    * @param val system url
    */
-  void setSystemUrl(final String val);
+  void setSystemUrl(String val);
 
   /**
    * @return system notification principal
@@ -52,7 +52,7 @@ public interface BedeworkConnConfMBean extends NoteConnConfMBean {
   /**
    * @param val token for authentication
    */
-  void setToken(final String val);
+  void setToken(String val);
 
   /**
    * @return token
@@ -64,25 +64,25 @@ public interface BedeworkConnConfMBean extends NoteConnConfMBean {
    *
    * @param val    int seconds
    */
-  public void setRetryInterval(final int val);
+  void setRetryInterval(int val);
 
   /** retryInterval - seconds
    *
    * @return int seconds
    */
   @MBeanInfo("retryInterval - seconds")
-  public int getRetryInterval();
+  int getRetryInterval();
 
   /** KeepAliveInterval - seconds
    *
    * @param val    int seconds
    */
-  public void setKeepAliveInterval(final int val);
+  void setKeepAliveInterval(int val);
 
   /** KeepAliveInterval - seconds
    *
    * @return int seconds
    */
   @MBeanInfo("KeepAliveInterval - seconds")
-  public int getKeepAliveInterval();
+  int getKeepAliveInterval();
 }

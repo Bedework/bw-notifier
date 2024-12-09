@@ -20,7 +20,6 @@ package org.bedework.notifier.outbound.common;
 
 import org.bedework.notifier.Action;
 import org.bedework.notifier.conf.NotifyConfig;
-import org.bedework.notifier.exception.NoteException;
 
 /** The interface implemented by destination adaptors. A destination
  * may be an email address or sms.
@@ -37,10 +36,9 @@ public interface Adaptor<Conf extends AdaptorConf> {
   /**
    * @param globalConfig the notifier engine config
    * @param conf the configuration
-   * @throws NoteException on error
    */
   void setConf(NotifyConfig globalConfig,
-               Conf conf) throws NoteException;
+               Conf conf);
 
   /**
    * @return the configuration
@@ -53,12 +51,10 @@ public interface Adaptor<Conf extends AdaptorConf> {
   String getType();
 
   /** Process a notification
-   *
    * TODO - better status
    *
    * @param action containing the notification to process
    * @return true if processed ok
-   * @throws NoteException on error
    */
-  boolean process(Action action) throws NoteException;
+  boolean process(Action action);
 }

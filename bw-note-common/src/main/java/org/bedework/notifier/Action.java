@@ -162,7 +162,7 @@ public class Action {
     return retries;
   }
 
-  public void setRetries(int retries) {
+  public void setRetries(final int retries) {
     this.retries = retries;
   }
 

@@ -93,7 +93,7 @@ public class ConnectorConfig extends ConfigBase<ConnectorConfig> implements Conn
 
   @Override
   public String toString() {
-    ToString ts = new ToString(this);
+    final ToString ts = new ToString(this);
 
     toStringSegment(ts);
 

@@ -384,7 +384,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
   public String listHibernateProperties() {
     final StringBuilder res = new StringBuilder();
 
-    List<String> ps = getConfig().getHibernateProperties();
+    final List<String> ps = getConfig().getHibernateProperties();
 
     for (final String p: ps) {
       res.append(p);

@@ -19,7 +19,6 @@
 package org.bedework.notifier.cnctrs;
 
 import org.bedework.notifier.db.Subscription;
-import org.bedework.notifier.exception.NoteException;
 import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
 
@@ -40,7 +39,7 @@ public abstract class AbstractConnectorInstance
   }
 
   @Override
-  public BaseResponseType open() throws NoteException {
+  public BaseResponseType open() {
     return null;
   }
 
@@ -64,11 +63,11 @@ public abstract class AbstractConnectorInstance
    *
    */
 
-  /* ====================================================================
+  /* ==============================================================
    *                   Logged methods
-   * ==================================================================== */
+   * ============================================================== */
 
-  private BwLogger logger = new BwLogger();
+  private final BwLogger logger = new BwLogger();
 
   @Override
   public BwLogger getLogger() {

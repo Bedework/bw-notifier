@@ -42,6 +42,7 @@ import net.fortuna.ical4j.model.TimeZone;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /** Notification processor.
  * <p>The notification processor manages the notification service.
@@ -121,9 +122,8 @@ public class NotifyEngine implements Logged, TzGetter {
   /**
    *
    * @param val add some messages to the queue
-   * @throws NoteException on error
    */
-  public void addNotificationMsg(final NotificationMsg val) throws NoteException {
+  public void addNotificationMsg(final NotificationMsg val) {
     try {
       final Action action = new Action(Action.ActionType.notificationMsg,
                                        val);
@@ -177,12 +177,12 @@ public class NotifyEngine implements Logged, TzGetter {
     return cfgHolder.getConfig();
   }
 
-  public static NotifyDb getNewDb() throws NoteException {
+  public static NotifyDb getNewDb() {
     return new NotifyDbImpl(getConfig());
   }
 
   public static boolean authenticate(final String system,
-                              final String token) throws NoteException {
+                              final String token) {
     final NotifyRegistry.Info info = NotifyRegistry.getInfo(system);
 
     return info != null &&
@@ -191,9 +191,8 @@ public class NotifyEngine implements Logged, TzGetter {
 
   /**
    * @return configuration store
-   * @throws NoteException on error
    */
-  public static ConfigurationStore getConfigStore() throws NoteException {
+  public static ConfigurationStore getConfigStore() {
     if (cfgHolder == null) {
       return null;
     }
@@ -227,9 +226,8 @@ public class NotifyEngine implements Logged, TzGetter {
 
   /** Start notify process.
    *
-   * @throws NoteException on error
    */
-  public void start() throws NoteException {
+  public void start() {
     try {
       if (starting || running) {
         warn("Start called when already starting or running");
@@ -306,9 +304,8 @@ public class NotifyEngine implements Logged, TzGetter {
   /* * Reschedule all subscriptions. This might blow things up at the
    * moment. It should do a paged request and space them out.
    *
-   * @throws NoteException on error
    * /
-  public void reschedule() throws NoteException {
+  public void reschedule() {
     try {
       db.open();
       List<Subscription> rescheduleList = db.getAll();
@@ -341,9 +338,8 @@ public class NotifyEngine implements Logged, TzGetter {
   /** Reschedule an action for retry.
    *
    * @param act the action
-   * @throws NoteException on error
    */
-  public void reschedule(final Action act) throws NoteException {
+  public void reschedule(final Action act) {
     if (act.getRetries() < 10) {
       act.setRetries(act.getRetries()+1);
       if (debug()) {
@@ -431,26 +427,22 @@ public class NotifyEngine implements Logged, TzGetter {
 
   /**
    * @param action to take
-   * @throws NoteException on error
    */
-  public void handleAction(final Action action) throws NoteException {
+  public void handleAction(final Action action) {
     setConnectors(action);
-    switch (action.getType()) {
-      case notificationMsg: fetchItems:
-        actionInHandler.queueAction(action);
-        break;
-      default:
-        actionOutHandler.queueAction(action);
-        break;
+    if (Objects.requireNonNull(
+            action.getType()) == Action.ActionType.notificationMsg) {
+      actionInHandler.queueAction(action);
+    } else {
+      actionOutHandler.queueAction(action);
     }
   }
 
   /**
    * @param val to decrypt
    * @return decrypted string
-   * @throws NoteException on error
    */
-  public String decrypt(final String val) throws NoteException {
+  public String decrypt(final String val) {
     try {
       return getEncrypter().decrypt(val);
     } catch (final NoteException se) {
@@ -462,9 +454,8 @@ public class NotifyEngine implements Logged, TzGetter {
 
   /**
    * @return en/decryptor
-   * @throws NoteException on error
    */
-  public PwEncryptionIntf getEncrypter() throws NoteException {
+  public PwEncryptionIntf getEncrypter() {
     if (pwEncrypt != null) {
       return pwEncrypt;
     }
@@ -494,10 +485,9 @@ public class NotifyEngine implements Logged, TzGetter {
    * @param db - for db interactions
    * @param action an action
    * @return ConnectorInstance or throws Exception
-   * @throws NoteException on error
    */
   public synchronized ConnectorInstance reserveInstance(final NotifyDb db,
-                                                        final Action action) throws NoteException {
+                                                        final Action action) {
     ConnectorInstance cinst;
     final Connector<?, ?, ?> conn;
 
@@ -542,7 +532,7 @@ public class NotifyEngine implements Logged, TzGetter {
     sub.release();
   }
 
-  public synchronized void release(final Action action) throws NoteException {
+  public synchronized void release(final Action action) {
     final Action waction = waitingActions.get(action.getSub());
 
     if (waction != null) {
@@ -553,9 +543,8 @@ public class NotifyEngine implements Logged, TzGetter {
   /** When we start up a new subscription we implant a Connector in the object.
    *
    * @param action an action
-   * @throws NoteException on error
    */
-  public void setConnectors(final Action action) throws NoteException {
+  public void setConnectors(final Action action) {
     if ((action.getSub() == null) || (action.getConn() != null)) {
       return;
     }
@@ -576,10 +565,9 @@ public class NotifyEngine implements Logged, TzGetter {
    * as a request is usually hanging on this.
    *
    * @param notes
-   * @throws NoteException on error
    * /
   public void handleNotifications(
-            final NotificationBatch<Notification> notes) throws NoteException {
+            final NotificationBatch<Notification> notes) {
     for (Notification note: notes.getNotifications()) {
       db.open();
       Noteling nl = null;
@@ -604,9 +592,8 @@ public class NotifyEngine implements Logged, TzGetter {
   /**
    * @param action an action that needs outbound adaptors
    * @return list of adaptors
-   * @throws NoteException on error
    */
-  public List<Adaptor<?>> getAdaptors(final Action action) throws NoteException {
+  public List<Adaptor<?>> getAdaptors(final Action action) {
     final Note note = action.getNote();
     final List<Adaptor<?>> as = new ArrayList<>();
     final List<Note.DeliveryMethod> dms = note.getDeliveryMethods();
@@ -626,9 +613,8 @@ public class NotifyEngine implements Logged, TzGetter {
 
   /**
    * @param adaptors list of adaptors
-   * @throws NoteException on error
    */
-  public void releaseAdaptors(final List<Adaptor<?>> adaptors) throws NoteException {
+  public void releaseAdaptors(final List<Adaptor<?>> adaptors) {
     for (final Adaptor<?> adaptor: adaptors) {
       adaptorPool.add(adaptor);
     }
@@ -636,9 +622,8 @@ public class NotifyEngine implements Logged, TzGetter {
 
   /**
    * @param sub a subscription
-   * @throws NoteException on error
    */
-  public void addNotificationMsg(final Subscription sub) throws NoteException {
+  public void addNotificationMsg(final Subscription sub) {
     /* Queue a message to process it */
     addNotificationMsg(
             new NotificationMsg(sub.getConnectorName(),

@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public class JsonUtil {
   public static String must(final String name,
-                            final Map theVals) throws NoteException {
+                            final Map theVals) {
     Object val = theVals.get(name);
 
     if (val == null) {
@@ -44,7 +44,7 @@ public class JsonUtil {
   }
 
   public static String may(final String name,
-                           final Map theVals) throws NoteException {
+                           final Map theVals) {
     Object val = theVals.get(name);
 
     if (val == null) {
@@ -57,23 +57,23 @@ public class JsonUtil {
     }
   }
 
-  public static List mustList(final String name,
-                              final Map theVals) throws NoteException {
-    Object val = theVals.get(name);
+  public static List<String> mustList(final String name,
+                              final Map theVals) {
+    final Object val = theVals.get(name);
 
     if (val == null) {
       throw new NoteException("missing value: " + name);
     }
     try {
-      return (List)val;
+      return (List<String>)val;
     } catch (final Throwable t) {
       throw new NoteException(t);
     }
   }
 
   public static List mayList(final String name,
-                             final Map theVals) throws NoteException {
-    Object val = theVals.get(name);
+                             final Map theVals) {
+    final Object val = theVals.get(name);
 
     if (val == null) {
       return null;

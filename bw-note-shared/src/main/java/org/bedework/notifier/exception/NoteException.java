@@ -27,10 +27,10 @@ import javax.xml.namespace.QName;
  *
  *   @author Mike Douglass   douglm@bedework.edu
  */
-public class NoteException extends Throwable {
+public class NoteException extends RuntimeException {
   /** > 0 if set
    */
-  int statusCode = -1;
+  int statusCode;
   QName errorTag;
 
   /** */
@@ -45,29 +45,23 @@ public class NoteException extends Throwable {
 
   /** Constructor
    *
-   * @param s
+   * @param msg a message
    */
-  public NoteException(final String s) {
-    super(s);
-    if (statusCode < 0) {
-      statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-    }
+  public NoteException(final String msg) {
+    super(msg);
   }
 
   /** Constructor
    *
-   * @param t
+   * @param t Throwable
    */
   public NoteException(final Throwable t) {
     super(t);
-    if (statusCode < 0) {
-      statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-    }
   }
 
   /** Constructor
    *
-   * @param st
+   * @param st a status
    */
   public NoteException(final int st) {
     statusCode = st;
@@ -75,8 +69,8 @@ public class NoteException extends Throwable {
 
   /** Constructor
    *
-   * @param st
-   * @param msg
+   * @param st a status
+   * @param msg a message
    */
   public NoteException(final int st,
                        final String msg) {
@@ -86,7 +80,7 @@ public class NoteException extends Throwable {
 
   /** Constructor
    *
-   * @param errorTag
+   * @param errorTag xml tag
    */
   public NoteException(final QName errorTag) {
     statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
@@ -95,8 +89,8 @@ public class NoteException extends Throwable {
 
   /** Constructor
    *
-   * @param st
-   * @param errorTag
+   * @param st a status
+   * @param errorTag xml tag
    */
   public NoteException(final int st,
                        final QName errorTag) {
@@ -106,9 +100,9 @@ public class NoteException extends Throwable {
 
   /** Constructor
    *
-   * @param st
-   * @param errorTag
-   * @param msg
+   * @param st a status
+   * @param errorTag xml tag
+   * @param msg a message
    */
   public NoteException(final int st,
                        final QName errorTag,

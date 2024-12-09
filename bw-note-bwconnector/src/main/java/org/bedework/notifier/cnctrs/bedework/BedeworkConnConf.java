@@ -35,9 +35,9 @@ public class BedeworkConnConf extends NoteConnConf<BedeworkConnectorConfig>
     super(serviceName, store, configName);
   }
 
-  /* ========================================================================
+  /* ==============================================================
    * Conf properties
-   * ======================================================================== */
+   * ============================================================== */
 
   @Override
   public void setSystemNotificationHref(final String val) {

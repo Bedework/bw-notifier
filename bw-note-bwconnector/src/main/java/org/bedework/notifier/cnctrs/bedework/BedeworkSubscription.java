@@ -21,7 +21,6 @@ package org.bedework.notifier.cnctrs.bedework;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.db.SubscriptionImpl;
 import org.bedework.notifier.db.SubscriptionWrapper;
-import org.bedework.notifier.exception.NoteException;
 import org.bedework.util.misc.ToString;
 
 import java.util.ArrayList;
@@ -47,19 +46,19 @@ public class BedeworkSubscription extends SubscriptionWrapper {
 
   private List<String> noteHrefs;
 
-  public BedeworkSubscription() throws NoteException {
+  public BedeworkSubscription() {
     super(SubscriptionImpl.make());
   }
 
-  public BedeworkSubscription(final Subscription sub) throws NoteException {
+  public BedeworkSubscription(final Subscription sub) {
     super(sub);
     init(getSubi().getVals());
   }
 
   @Override
-  public void init(final Map vals) throws NoteException {
+  public void init(final Map vals) {
     super.init(vals);
-    SubscriptionImpl subi = getSubi();
+    final SubscriptionImpl subi = getSubi();
 
     setUserToken(subi.must("userToken"));
     setEmails(subi.mustList("emails"));

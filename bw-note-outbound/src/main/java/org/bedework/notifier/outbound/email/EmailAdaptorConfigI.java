@@ -36,7 +36,7 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
    *
    * @param val the protocol
    */
-  void setProtocol(final String val);
+  void setProtocol(String val);
 
   /**
    * @return String
@@ -49,7 +49,7 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
    *
    * @param val uri
    */
-  void setServerUri(final String val);
+  void setServerUri(String val);
 
   /**
    * @return String
@@ -60,7 +60,7 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
   /**
    * @param val port
    */
-  void setServerPort(final String val);
+  void setServerPort(String val);
 
   /**
    * @return String
@@ -71,7 +71,7 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
   /**
    * @param val start tls
    */
-  void setStarttls(final boolean val);
+  void setStarttls(boolean val);
 
   /**
    * @return flag
@@ -82,7 +82,7 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
   /**
    * @param val server Username
    */
-  void setServerUsername(final String val);
+  void setServerUsername(String val);
 
   @MBeanInfo("User name if authentication is required.")
   String getServerUsername();
@@ -90,7 +90,7 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
   /**
    * @param val server Password
    */
-  void setServerPassword(final String val);
+  void setServerPassword(String val);
 
   /**
    * @return password
@@ -103,7 +103,7 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
    *
    * @param val from for message
    */
-  void setFrom(final String val);
+  void setFrom(String val);
 
   /**
    * @return String
@@ -114,7 +114,7 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
   /**
    * @param val for messages
    */
-  void setLocale(final String val);
+  void setLocale(String val);
 
   /**
    * @return String
@@ -127,7 +127,7 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
    *
    * @param val from for message
    */
-  void setDefaultSubject(final String val);
+  void setDefaultSubject(String val);
 
   /**
    * @return String
@@ -144,8 +144,8 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
    * @param name of notification
    * @param val subject
    */
-  void addSubject(final String name,
-                  final String val);
+  void addSubject(String name,
+                  String val);
 
   /** Get a subject
    *
@@ -153,13 +153,13 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
    * @return value or null
    */
   @ConfInfo(dontSave = true)
-  String getSubject(final String name);
+  String getSubject(String name);
 
   /** Remove a subject
    *
    * @param name of notification
    */
-  void removeSubject(final String name);
+  void removeSubject(String name);
 
   /** Set a hibernate property
    *
@@ -167,6 +167,6 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
    * @param val of property
    */
   @ConfInfo(dontSave = true)
-  void setSubject(final String name,
-                  final String val);
+  void setSubject(String name,
+                  String val);
 }

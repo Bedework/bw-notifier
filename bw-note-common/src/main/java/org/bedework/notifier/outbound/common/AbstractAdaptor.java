@@ -68,7 +68,7 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
 
   @Override
   public void setConf(final NotifyConfig globalConfig,
-                      final Conf conf) throws NoteException {
+                      final Conf conf) {
     this.globalConfig = globalConfig;
     this.conf = conf;
 
@@ -78,7 +78,7 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
       fmConfig.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
       fmConfig.setDefaultEncoding("UTF-8");
 
-      File templateDir = new File(globalConfig.getTemplatesPath());
+      final File templateDir = new File(globalConfig.getTemplatesPath());
       fmConfig.setDirectoryForTemplateLoading(templateDir);
     } catch (final Throwable t) {
       throw new NoteException(t);
@@ -95,11 +95,11 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
   }
 
   @Override
-  public abstract boolean process(final Action action) throws NoteException;
+  public abstract boolean process(final Action action);
 
-    /* ====================================================================
+    /* ============================================================
      *                   Protected methods
-     * ==================================================================== */
+     * ============================================================ */
 
   protected String getDtstamp() {
     return new DtStamp().getValue();
@@ -158,11 +158,11 @@ public abstract class AbstractAdaptor<Conf extends AdaptorConf>
     }
   }
 
-  /* ====================================================================
+  /* ==============================================================
    *                   Logged methods
-   * ==================================================================== */
+   * ============================================================== */
 
-  private BwLogger logger = new BwLogger();
+  private final BwLogger logger = new BwLogger();
 
   @Override
   public BwLogger getLogger() {

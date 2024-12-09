@@ -21,7 +21,6 @@ package org.bedework.notifier.outbound.email;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.db.SubscriptionImpl;
 import org.bedework.notifier.db.SubscriptionWrapper;
-import org.bedework.notifier.exception.NoteException;
 import org.bedework.util.misc.ToString;
 
 import java.util.ArrayList;
@@ -40,16 +39,16 @@ public class EmailSubscription extends SubscriptionWrapper {
   // For the moment send everything by email
   private List<String> emails = new ArrayList<>();
 
-  public EmailSubscription() throws NoteException {
+  public EmailSubscription() {
     super(SubscriptionImpl.make());
   }
 
-  public EmailSubscription(final Subscription sub) throws NoteException {
+  public EmailSubscription(final Subscription sub) {
     super(sub);
     init(getSubi().getVals());
   }
 
-  public static EmailSubscription rewrap(final Subscription sub) throws NoteException {
+  public static EmailSubscription rewrap(final Subscription sub) {
     if (sub instanceof EmailSubscription) {
       return (EmailSubscription)sub;
     }
@@ -62,9 +61,9 @@ public class EmailSubscription extends SubscriptionWrapper {
   }
 
   @Override
-  public void init(final Map vals) throws NoteException {
+  public void init(final Map vals) {
     super.init(vals);
-    SubscriptionImpl subi = getSubi();
+    final SubscriptionImpl subi = getSubi();
 
     setEmails(subi.mustList("emails"));
   }

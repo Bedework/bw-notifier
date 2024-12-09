@@ -26,24 +26,24 @@ import org.bedework.util.jmx.MBeanInfo;
  * @author douglm
  */
 public interface NoteConnConfMBean extends ConfBaseMBean {
-  /* ========================================================================
+  /* ==============================================================
    * Status
-   * ======================================================================== */
+   * ============================================================== */
 
   /**
    * @return status message
    */
   String getStatus();
 
-  /* ========================================================================
+  /* ==============================================================
    * Config properties
-   * ======================================================================== */
+   * ============================================================== */
 
   /** Class name
    *
    * @param val    String
    */
-  void setConnectorClassName(final String val);
+  void setConnectorClassName(String val);
 
   /** Class name
    *
@@ -56,7 +56,7 @@ public interface NoteConnConfMBean extends ConfBaseMBean {
    *
    * @param val    String
    */
-  void setMbeanClassName(final String val);
+  void setMbeanClassName(String val);
 
   /** Class name
    *
@@ -69,7 +69,7 @@ public interface NoteConnConfMBean extends ConfBaseMBean {
    *
    * @param val    int seconds
    */
-  void setReadOnly(final boolean val);
+  void setReadOnly(boolean val);
 
   /** Read only?
    *
@@ -82,7 +82,7 @@ public interface NoteConnConfMBean extends ConfBaseMBean {
    *
    * @param val    boolean
    */
-  void setTrustLastmod(final boolean val);
+  void setTrustLastmod(boolean val);
 
   /** Can we trust the lastmod from this connector?
    *
@@ -90,8 +90,4 @@ public interface NoteConnConfMBean extends ConfBaseMBean {
    */
   @MBeanInfo("Can we trust the lastmod from this connector?")
   boolean getTrustLastmod();
-
-  /* ========================================================================
-   * Operations
-   * ======================================================================== */
 }

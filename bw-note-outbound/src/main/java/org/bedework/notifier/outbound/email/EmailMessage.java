@@ -27,7 +27,8 @@ public class EmailMessage extends BaseEmailMessage {
 
   private Map<String, String> tags;
 
-  public EmailMessage(String from, Map<String, String> tags) {
+  public EmailMessage(final String from,
+                      final Map<String, String> tags) {
     setFrom(from);
     setTags(tags);
   }
@@ -36,21 +37,21 @@ public class EmailMessage extends BaseEmailMessage {
     return tags;
   }
 
-  public void setTags(Map<String, String> tags) {
+  public void setTags(final Map<String, String> tags) {
     this.tags = tags;
   }
 
   @Override
-  protected String transform(String content) {
+  protected String transform(final String content) {
     String result = content;
     if (getTags() != null) {
-      for (Map.Entry<String, String> entry : getTags().entrySet()) {
-        String key = entry.getKey().trim();
+      for (final var entry: getTags().entrySet()) {
+        final String key = entry.getKey().trim();
         String value = entry.getValue();
         if (value == null) {
           value = "";
         }
-        Pattern p = Pattern.compile(TAG + key + TAG);
+        final Pattern p = Pattern.compile(TAG + key + TAG);
         result = p.matcher(result).replaceAll(value);
       }
     }

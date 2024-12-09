@@ -29,17 +29,17 @@ public abstract class BaseEmailMessage {
   public static final String CONTENT_TYPE_HTML = "text/html";
 
   private String from;
-  private Set<String> tos = new HashSet<String>();
-  private Set<String> ccs = new HashSet<String>();
-  private Set<String> bccs = new HashSet<String>();
+  private final Set<String> tos = new HashSet<>();
+  private final Set<String> ccs = new HashSet<>();
+  private final Set<String> bccs = new HashSet<>();
   private String subject;
-  private LinkedHashMap<String, String> bodies = new LinkedHashMap<String, String>();
+  private final LinkedHashMap<String, String> bodies = new LinkedHashMap<>();
 
   public String getFrom() {
     return from;
   }
 
-  public void setFrom(String from) {
+  public void setFrom(final String from) {
     this.from = from;
   }
 
@@ -47,7 +47,7 @@ public abstract class BaseEmailMessage {
     return tos;
   }
 
-  public void addTo(String to) {
+  public void addTo(final String to) {
     this.tos.add(to);
   }
 
@@ -55,7 +55,7 @@ public abstract class BaseEmailMessage {
     return ccs;
   }
 
-  public void addCc(String cc) {
+  public void addCc(final String cc) {
     this.ccs.add(cc);
   }
 
@@ -63,7 +63,7 @@ public abstract class BaseEmailMessage {
     return bccs;
   }
 
-  public void addBcc(String bcc) {
+  public void addBcc(final String bcc) {
     this.bccs.add(bcc);
   }
 
@@ -71,7 +71,7 @@ public abstract class BaseEmailMessage {
     return subject;
   }
 
-  public void setSubject(String subject) {
+  public void setSubject(final String subject) {
     this.subject = transform(subject);
   }
 
@@ -79,7 +79,7 @@ public abstract class BaseEmailMessage {
     return bodies;
   }
 
-  public void addBody(String type, String content) {
+  public void addBody(final String type, final String content) {
     this.bodies.put(type, transform(content));
   }
 

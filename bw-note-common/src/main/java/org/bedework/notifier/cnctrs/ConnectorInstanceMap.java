@@ -47,14 +47,16 @@ public class ConnectorInstanceMap<CI extends ConnectorInstance> {
 
     @Override
     public boolean equals(final Object o) {
-      Key that = (Key)o;
+      if (!(o instanceof final Key that)) {
+        return false;
+      }
 
       return sub.equals(that.sub);
     }
 
     @Override
     public String toString() {
-      ToString ts = new ToString(this);
+      final ToString ts = new ToString(this);
 
       ts.append("sub", sub);
 
@@ -62,17 +64,16 @@ public class ConnectorInstanceMap<CI extends ConnectorInstance> {
     }
   }
 
-  private Map<Key, CI> theMap = new HashMap<Key, CI>();
+  private final Map<Key, CI> theMap = new HashMap<>();
 
   /** Add a connector
    *
      * @param sub subscription
      * @param cinst connector instance
-   * @throws NoteException on error
    */
   public synchronized void add(final Subscription sub,
-                               final CI cinst) throws NoteException {
-    Key key = new Key(sub);
+                               final CI cinst) {
+    final Key key = new Key(sub);
 
     if (theMap.containsKey(key)) {
       throw new NoteException("instance already in map for " + key);
@@ -85,9 +86,8 @@ public class ConnectorInstanceMap<CI extends ConnectorInstance> {
    *
    * @param sub subscription
    * @return CI or null
-   * @throws NoteException on error
    */
-  public synchronized CI find(final Subscription sub) throws NoteException {
+  public synchronized CI find(final Subscription sub) {
     return theMap.get(new Key(sub));
   }
 
@@ -95,9 +95,8 @@ public class ConnectorInstanceMap<CI extends ConnectorInstance> {
   /** Remove a connector
    *
    * @param sub subscription
-   * @throws NoteException on error
    */
-  public synchronized void remove(final Subscription sub) throws NoteException {
+  public synchronized void remove(final Subscription sub) {
     theMap.remove(new Key(sub));
   }
 }

@@ -18,8 +18,6 @@
 */
 package org.bedework.notifier.db;
 
-import org.bedework.notifier.exception.NoteException;
-
 import java.io.Serializable;
 import java.util.List;
 
@@ -36,9 +34,8 @@ import java.util.List;
 public interface NotifyDb extends Serializable {
   /**
    * @return true if we had to open it. False if already open
-   * @throws NoteException
    */
-  boolean startTransaction() throws NoteException;
+  boolean startTransaction();
 
   /**
    * @return true for open
@@ -46,9 +43,8 @@ public interface NotifyDb extends Serializable {
   boolean isOpen();
 
   /**
-   * @throws NoteException
    */
-  void endTransaction() throws NoteException;
+  void endTransaction();
 
   /* ====================================================================
    *                   Subscription Object methods
@@ -56,30 +52,26 @@ public interface NotifyDb extends Serializable {
 
   /**
    * @return list of subscriptions
-   * @throws NoteException
    */
-  List<Subscription> getAll() throws NoteException;
+  List<Subscription> getAll();
 
   /**
-   * @throws NoteException
    */
-  void clearTransients() throws NoteException;
+  void clearTransients();
 
   /** The notify engine generates a unique subscription id
    * for each subscription. This is used as a key for each subscription.
    *
    * @param id - unique id
    * @return a matching subscription or null
-   * @throws NoteException
    */
-  Subscription get(String id) throws NoteException;
+  Subscription get(String id);
 
   /** Refresh the subscription
    *
    * @param sub subscription
-   * @throws NoteException
    */
-  void refresh(Subscription sub) throws NoteException;
+  void refresh(Subscription sub);
 
   /** Find any subscription that matches this one. There can only be one with
    * the same endpoints
@@ -87,38 +79,33 @@ public interface NotifyDb extends Serializable {
    * @param conName name of connector
    * @param principalHref of subscription
    * @return matching subscriptions
-   * @throws NoteException
    */
   Subscription find(String conName,
-                    String principalHref) throws NoteException;
+                    String principalHref);
 
   /** Find any subscription that matches this one. There can only be one with
    * the same endpoints
    *
    * @param sub subscription
    * @return matching subscriptions
-   * @throws NoteException
    */
-  Subscription find(Subscription sub) throws NoteException;
+  Subscription find(Subscription sub);
 
   /** Add the subscription.
    *
    * @param sub subscription
-   * @throws NoteException
    */
-  void add(Subscription sub) throws NoteException;
+  void add(Subscription sub);
 
   /** Update the persisted state of the subscription.
    *
    * @param sub subscription
-   * @throws NoteException
    */
-  void update(Subscription sub) throws NoteException;
+  void update(Subscription sub);
 
   /** Delete the subscription.
    *
    * @param sub subscription
-   * @throws NoteException
    */
-  void delete(Subscription sub) throws NoteException;
+  void delete(Subscription sub);
 }

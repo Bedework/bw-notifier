@@ -71,7 +71,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   }
 
   @Override
-  public boolean startTransaction() throws NoteException {
+  public boolean startTransaction() {
     if (isOpen()) {
       return false;
     }
@@ -87,7 +87,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   }
 
   @Override
-  public void endTransaction() throws NoteException {
+  public void endTransaction() {
     try {
       checkOpen();
 
@@ -124,7 +124,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
 
   @Override
   @SuppressWarnings("unchecked")
-  public List<Subscription> getAll() throws NoteException {
+  public List<Subscription> getAll() {
     try {
       sess.createQuery(getAllQuery);
 
@@ -139,7 +139,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
           " sub where sub.transientSub = true";
 
   @Override
-  public void clearTransients() throws NoteException {
+  public void clearTransients() {
     try {
       sess.createQuery(clearTransientQuery);
 
@@ -154,7 +154,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
                   " sub where sub.subscriptionId=:subid";
 
   @Override
-  public Subscription get(final String id) throws NoteException {
+  public Subscription get(final String id) {
     try {
       sess.createQuery(getSubQuery);
       sess.setString("subid", id);
@@ -166,7 +166,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   }
 
   @Override
-  public void refresh(final Subscription sub) throws NoteException {
+  public void refresh(final Subscription sub) {
     if (sub == null) {
       return;
     }
@@ -185,7 +185,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
 
   @Override
   public Subscription find(final String conName,
-                           final String principalHref) throws NoteException {
+                           final String principalHref) {
     try {
       sess.createQuery(findSubQuery);
       sess.setString("connName", conName);
@@ -198,13 +198,13 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   }
 
   @Override
-  public Subscription find(final Subscription sub) throws NoteException {
+  public Subscription find(final Subscription sub) {
     return find(sub.getConnectorName(),
                 sub.getPrincipalHref());
   }
 
   @Override
-  public void add(final Subscription sub) throws NoteException {
+  public void add(final Subscription sub) {
     try {
       sess.save(unwrap(sub));
     } catch (final HibException he) {
@@ -213,7 +213,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   }
 
   @Override
-  public void update(final Subscription sub) throws NoteException {
+  public void update(final Subscription sub) {
     try {
       sess.update(unwrap(sub));
     } catch (final HibException he) {
@@ -222,7 +222,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   }
 
   @Override
-  public void delete(final Subscription sub) throws NoteException {
+  public void delete(final Subscription sub) {
     try {
       sess.delete(unwrap(sub));
     } catch (final HibException he) {
@@ -234,13 +234,13 @@ public class NotifyDbImpl implements NotifyDb, Logged {
    *                   Session methods
    * ==================================================================== */
 
-  protected void checkOpen() throws NoteException {
+  protected void checkOpen() {
     if (!isOpen()) {
       throw new NoteException("Session call when closed");
     }
   }
 
-  protected synchronized void openSession() throws NoteException {
+  protected synchronized void openSession() {
     if (isOpen()) {
       throw new NoteException("Already open");
     }
@@ -278,7 +278,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
     beginTransaction();
   }
 
-  protected synchronized void closeSession() throws NoteException {
+  protected synchronized void closeSession() {
     if (!isOpen()) {
       if (debug()) {
         debug("Close for " + sessionCt + " closed session");
@@ -314,7 +314,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
     }
   }
 
-  protected void beginTransaction() throws NoteException {
+  protected void beginTransaction() {
     checkOpen();
 
     if (debug()) {
@@ -327,7 +327,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
     }
   }
 
-  protected void rollbackTransaction() throws NoteException {
+  protected void rollbackTransaction() {
     try {
       checkOpen();
       sess.rollback();

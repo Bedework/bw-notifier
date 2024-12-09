@@ -27,24 +27,24 @@ import org.bedework.util.jmx.MBeanInfo;
  */
 public interface AdaptorConfMBean extends ConfBaseMBean,
         AdaptorConfigI {
-  /* ========================================================================
+  /* ==============================================================
    * Status
-   * ======================================================================== */
+   * ============================================================== */
 
   /**
    * @return status message
    */
   String getStatus();
 
-  /* ========================================================================
+  /* ==============================================================
    * Config properties
-   * ======================================================================== */
+   * ============================================================== */
 
   /** Class name
    *
    * @param val    String
    */
-  void setAdaptorClassName(final String val);
+  void setAdaptorClassName(String val);
 
   /** Class name
    *
@@ -57,7 +57,7 @@ public interface AdaptorConfMBean extends ConfBaseMBean,
    *
    * @param val    String
    */
-  void setMbeanClassName(final String val);
+  void setMbeanClassName(String val);
 
   /** Class name
    *

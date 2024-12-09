@@ -27,14 +27,14 @@ import org.bedework.util.jmx.MBeanInfo;
  */
 @ConfInfo(elementName = "note-confinfo")
 public interface NotifyConfProperties {
-  /* ========================================================================
+  /* ==============================================================
    * Config properties
-   * ======================================================================== */
+   * ============================================================== */
 
   /**
    * @param val current size of noteling pool
    */
-  void setNotelingPoolSize(final int val);
+  void setNotelingPoolSize(int val);
 
   /**
    * @return current size of noteling pool
@@ -45,7 +45,7 @@ public interface NotifyConfProperties {
   /**
    * @param val timeout in millisecs
    */
-  void setNotelingPoolTimeout(final long val);
+  void setNotelingPoolTimeout(long val);
 
   /**
    * @return timeout in millisecs
@@ -57,7 +57,7 @@ public interface NotifyConfProperties {
    *
    * @param val How often we retry when a target is missing
    */
-  void setMissingTargetRetries(final int val);
+  void setMissingTargetRetries(int val);
 
   /**
    * @return How often we retry when a target is missing
@@ -69,7 +69,7 @@ public interface NotifyConfProperties {
    *
    * @param val    String
    */
-  void setCallbackURI(final String val);
+  void setCallbackURI(String val);
 
   /** web service push callback uri - null for no service
    *
@@ -82,7 +82,7 @@ public interface NotifyConfProperties {
    *
    * @param val Timezone server location
    */
-  void setTimezonesURI(final String val);
+  void setTimezonesURI(String val);
 
   /** Timezone server location
    *
@@ -95,7 +95,7 @@ public interface NotifyConfProperties {
    *
    * @param val path to templates
    */
-  void setTemplatesPath(final String val);
+  void setTemplatesPath(String val);
 
   /**
    *
@@ -108,7 +108,7 @@ public interface NotifyConfProperties {
    *
    * @param val    String
    */
-  void setKeystore(final String val);
+  void setKeystore(String val);
 
   /** Path to keystore - null for use default
    *
@@ -121,7 +121,7 @@ public interface NotifyConfProperties {
    *
    * @param val    String
    */
-  void setPrivKeys(final String val);
+  void setPrivKeys(String val);
 
   /**
    *
@@ -134,7 +134,7 @@ public interface NotifyConfProperties {
    *
    * @param val    String
    */
-  void setPubKeys(final String val);
+  void setPubKeys(String val);
 
   /**
    *
@@ -147,7 +147,7 @@ public interface NotifyConfProperties {
    *
    * @param val    String
    */
-  void setCardDAVURI(final String val);
+  void setCardDAVURI(String val);
 
   /**
    *
@@ -160,7 +160,7 @@ public interface NotifyConfProperties {
    *
    * @param val    String
    */
-  void setCardDAVPrincipalsPath(final String val);
+  void setCardDAVPrincipalsPath(String val);
 
   /**
    *
@@ -173,7 +173,7 @@ public interface NotifyConfProperties {
    *
    * @param val    String
    */
-  void setVCardContentType(final String val);
+  void setVCardContentType(String val);
 
   /**
    *

@@ -45,29 +45,29 @@ public class NotifyConnectorInstance extends AbstractConnectorInstance {
   }
 
   @Override
-  public BaseResponseType open() throws NoteException {
+  public BaseResponseType open() {
     return null;
   }
 
   @Override
-  public boolean changed() throws NoteException {
+  public boolean changed() {
     return false;
   }
 
   @Override
   public boolean check(final NotifyDb db,
-                       final String resource) throws NoteException {
+                       final String resource) {
     throw new NoteException("Uncallable");
   }
 
   @Override
-  public Note nextItem(final NotifyDb db) throws NoteException {
+  public Note nextItem(final NotifyDb db) {
     throw new NoteException("Uncallable");
   }
 
   @Override
   public boolean completeItem(final NotifyDb db,
-                              final Note item) throws NoteException {
+                              final Note item) {
     throw new NoteException("Uncallable");
   }
 }

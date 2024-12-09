@@ -153,7 +153,7 @@ public class NotifyConfPropertiesImpl extends HibernateConfigBase<NotifyConfProp
   }
 
   @Override
-  public void setCardDAVURI(String cardDAVURI) {
+  public void setCardDAVURI(final String cardDAVURI) {
     this.cardDAVURI = cardDAVURI;
   }
 
@@ -163,7 +163,7 @@ public class NotifyConfPropertiesImpl extends HibernateConfigBase<NotifyConfProp
   }
 
   @Override
-  public void setCardDAVPrincipalsPath(String cardDAVPrincipalsPath) {
+  public void setCardDAVPrincipalsPath(final String cardDAVPrincipalsPath) {
     this.cardDAVPrincipalsPath = cardDAVPrincipalsPath;
   }
 
@@ -173,7 +173,7 @@ public class NotifyConfPropertiesImpl extends HibernateConfigBase<NotifyConfProp
   }
 
   @Override
-  public void setVCardContentType(String vCardContentType) {
+  public void setVCardContentType(final String vCardContentType) {
     this.vCardContentType = vCardContentType;
   }
 }

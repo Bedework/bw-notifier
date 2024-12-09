@@ -24,7 +24,6 @@ import org.bedework.notifier.NotifyRegistry;
 import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.db.Subscription;
-import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 
 import org.oasis_open.docs.ws_calendar.ns.soap.StatusType;
@@ -60,10 +59,9 @@ public interface Connector<C extends ConnectorInstance,
    *
    * @param name - name for the connector
    * @param conf configuration
-   * @throws NoteException on error
    */
   void init(String name,
-            Tconf conf) throws NoteException;
+            Tconf conf);
 
   /** Start the connector. A response of null means no notifier available.
    *
@@ -79,11 +77,10 @@ public interface Connector<C extends ConnectorInstance,
    * @param db for db interactions
    * @param callbackUri callback
    * @param notifier the engine
-   * @throws NoteException on error
    */
   void start(NotifyDb db,
              String callbackUri,
-             NotifyEngine notifier) throws NoteException;
+             NotifyEngine notifier);
 
   NotifyRegistry.Info getInfo();
 
@@ -92,20 +89,18 @@ public interface Connector<C extends ConnectorInstance,
    * @param db for db interactions
    * @param vals the parsed Json subscription message
    * @return a filled in Subscription
-   * @throws NoteException on error
    */
   Subscription subscribe(NotifyDb db,
-                         Map<?, ?> vals) throws NoteException;
+                         Map<?, ?> vals);
 
   /**
    *
    * @param db for db interactions
    * @param vals the parsed Json unsubscribe message
    * @return cirrent subscription.
-   * @throws NoteException on error
    */
   Subscription unsubscribe(NotifyDb db,
-                           Map<?, ?> vals) throws NoteException;
+                           Map<?, ?> vals);
 
   /**
    * @return a useful status message
@@ -175,10 +170,9 @@ public interface Connector<C extends ConnectorInstance,
    * @param db - the db object
    * @param sub - the subscription
    * @return null for none else a connector instance.
-   * @throws NoteException on error
    */
   C getConnectorInstance(NotifyDb db,
-                         Subscription sub) throws NoteException;
+                         Subscription sub);
 
   /** Far end may send a batch of notifications. These should not be batched
    * arbitrarily. One batch per message and response.
@@ -186,7 +180,7 @@ public interface Connector<C extends ConnectorInstance,
    * @param <N> Note class
    */
   static class NotificationBatch<N extends Note> {
-    private List<N> notifications = new ArrayList<N>();
+    private final List<N> notifications = new ArrayList<>();
 
     private StatusType status;
     private String message;
@@ -235,23 +229,20 @@ public interface Connector<C extends ConnectorInstance,
    * @param resp http response
    * @param resourceUri - elements of the path with context and connector id removed
    * @return Notification with 1 or more Notification items or null for no action.
-   * @throws NoteException on error
    */
   NotificationBatch<N> handleCallback(HttpServletRequest req,
                                       HttpServletResponse resp,
-                                      List<String> resourceUri) throws NoteException;
+                                      List<String> resourceUri);
 
   /** Will respond to a notification.
    *
    * @param resp http response
    * @param notifications from handleCallback.
-   * @throws NoteException on error
    */
   void respondCallback(HttpServletResponse resp,
-                       NotificationBatch<N> notifications) throws NoteException;
+                       NotificationBatch<N> notifications);
 
   /** Shut down the connector
-   * @throws NoteException on error
    */
-  void stop() throws NoteException;
+  void stop();
 }

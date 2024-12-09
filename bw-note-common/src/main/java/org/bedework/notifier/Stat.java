@@ -25,8 +25,8 @@ import java.io.Serializable;
  * @author douglm
  */
 public class Stat implements Serializable {
-  private String name;
-  private String value;
+  private final String name;
+  private final String value;
 
   /**
    * @param name of stat

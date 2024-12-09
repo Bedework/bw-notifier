@@ -99,15 +99,7 @@ public class IpAddrInfo extends DbItem<IpAddrInfo> {
       return -1;
     }
 
-    if (getOrder() < that.getOrder()) {
-      return -1;
-    }
-
-    if (getOrder() > that.getOrder()) {
-      return 1;
-    }
-
-    return 0;
+    return Integer.compare(getOrder(), that.getOrder());
   }
 
   @Override
@@ -124,7 +116,7 @@ public class IpAddrInfo extends DbItem<IpAddrInfo> {
 
   @Override
   public String toString() {
-    ToString ts = new ToString(this);
+    final ToString ts = new ToString(this);
 
     toStringSegment(ts);
 

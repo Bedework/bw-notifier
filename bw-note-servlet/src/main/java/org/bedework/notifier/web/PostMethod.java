@@ -34,17 +34,16 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class PostMethod extends MethodBase {
   @Override
-  public void init() throws NoteException {
+  public void init() {
   }
 
-  @SuppressWarnings({"unchecked"})
   @Override
   public void doMethod(final HttpServletRequest req,
-                       final HttpServletResponse resp) throws NoteException {
+                       final HttpServletResponse resp) {
     try {
       getDb().startTransaction();
 
-      List<String> resourceUri = getResourceUri(req);
+      final List<String> resourceUri = getResourceUri(req);
 
       if (Util.isEmpty(resourceUri)) {
         throw new NoteException("Bad resource url - no connector specified");
@@ -81,7 +80,7 @@ public class PostMethod extends MethodBase {
 
   private void processNotification(final HttpServletRequest req,
                                    final HttpServletResponse resp,
-                                   final List<String> resourceUri) throws NoteException {
+                                   final List<String> resourceUri) {
     /* A system is telling us there are notifications we need to
      * take care of.
      *
@@ -125,7 +124,7 @@ public class PostMethod extends MethodBase {
 
   private void processSubscribe(final HttpServletRequest req,
                                 final HttpServletResponse resp,
-                                final List<String> resourceUri) throws NoteException {
+                                final List<String> resourceUri) {
     /* We have a subscription message for a user.
      * Eventually this will have information about which type of
      * notifications and how they are to be sent. For the moment we
@@ -146,7 +145,7 @@ public class PostMethod extends MethodBase {
         return;
       }
 
-      Subscription sub = NotifyRegistry.
+      final Subscription sub = NotifyRegistry.
               getConnector(system).subscribe(getDb(), vals);
 
       if (sub == null) {
@@ -168,7 +167,7 @@ public class PostMethod extends MethodBase {
 
   private void processUnsubscribe(final HttpServletRequest req,
                                   final HttpServletResponse resp,
-                                  final List<String> resourceUri) throws NoteException {
+                                  final List<String> resourceUri) {
     /* We have an unsubscribe message for a user.
      */
 
@@ -183,7 +182,7 @@ public class PostMethod extends MethodBase {
         return;
       }
 
-      Subscription sub = NotifyRegistry.
+      final Subscription sub = NotifyRegistry.
               getConnector(system).unsubscribe(getDb(), vals);
 
       if (sub == null) {

@@ -28,7 +28,7 @@ public interface ConnectorConfigI {
    *
    * @param val    String
    */
-  void setConnectorClassName(final String val);
+  void setConnectorClassName(String val);
 
   /** Class name
    *
@@ -40,7 +40,7 @@ public interface ConnectorConfigI {
    *
    * @param val    String
    */
-  void setMbeanClassName(final String val);
+  void setMbeanClassName(String val);
 
   /** Class name
    *
@@ -52,7 +52,7 @@ public interface ConnectorConfigI {
    *
    * @param val    int seconds
    */
-  void setReadOnly(final boolean val);
+  void setReadOnly(boolean val);
 
   /** Read only?
    *
@@ -64,7 +64,7 @@ public interface ConnectorConfigI {
    *
    * @param val    boolean
    */
-  void setTrustLastmod(final boolean val);
+  void setTrustLastmod(boolean val);
 
   /** Can we trust the lastmod from this connector?
    *

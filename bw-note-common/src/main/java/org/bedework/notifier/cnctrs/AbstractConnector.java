@@ -22,7 +22,6 @@ import org.bedework.notifier.NotifyEngine;
 import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.notifier.db.JsonUtil;
 import org.bedework.notifier.db.NotifyDb;
-import org.bedework.notifier.exception.NoteException;
 import org.bedework.notifier.notifications.Note;
 import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
@@ -74,7 +73,7 @@ public abstract class AbstractConnector<T,
 
   @Override
   public void init(final String name,
-                      final Tconf config) throws NoteException {
+                      final Tconf config) {
     connectorName = name;
     this.config = config;
   }
@@ -82,14 +81,14 @@ public abstract class AbstractConnector<T,
   @Override
   public void start(final NotifyDb db,
                     final String callbackUri,
-                    final NotifyEngine notifier) throws NoteException {
+                    final NotifyEngine notifier) {
     this.notifier = notifier;
     this.callbackUri = callbackUri;
   }
 
   @Override
   public String getStatus() {
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
 
     if (isManager()) {
       sb.append("(Manager): ");
@@ -146,15 +145,15 @@ public abstract class AbstractConnector<T,
   }
 
   @Override
-  public void stop() throws NoteException {
+  public void stop() {
     running = false;
   }
 
-  /* ====================================================================
+  /* ==============================================================
    *                   Logged methods
-   * ==================================================================== */
+   * ============================================================== */
 
-  private BwLogger logger = new BwLogger();
+  private final BwLogger logger = new BwLogger();
 
   @Override
   public BwLogger getLogger() {

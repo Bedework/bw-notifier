@@ -18,7 +18,6 @@
 */
 package org.bedework.notifier.db;
 
-import org.bedework.notifier.exception.NoteException;
 import org.bedework.util.misc.ToString;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -77,9 +76,8 @@ public interface Subscription extends Comparable<Subscription> {
   /**
    *
    * @param vals from json
-   * @throws NoteException
    */
-  void init(Map vals) throws NoteException;
+  void init(Map vals);
 
   /** Our generated subscriptionId.
    *

@@ -44,7 +44,7 @@ public class ActionWaiter implements Logged {
 
   private int maxWaiting;
 
-  private Deque<List<Action>> freeLists = new ArrayDeque<>(maxFree);
+  private final Deque<List<Action>> freeLists = new ArrayDeque<>(maxFree);
 
   public void add(final Action action) {
     final String key = action.getSub().getSubscriptionId();
@@ -52,7 +52,7 @@ public class ActionWaiter implements Logged {
     List<Action> la = actions.get(key);
 
     if (la == null) {
-      if (freeLists.size() > 0) {
+      if (!freeLists.isEmpty()) {
         la = freeLists.pop();
       } else {
         la = new ArrayList<>();
@@ -120,11 +120,11 @@ public class ActionWaiter implements Logged {
     return ts.toString();
   }
 
-  /* ====================================================================
+  /* ==============================================================
    *                   Logged methods
-   * ==================================================================== */
+   * ============================================================== */
 
-  private BwLogger logger = new BwLogger();
+  private final BwLogger logger = new BwLogger();
 
   @Override
   public BwLogger getLogger() {

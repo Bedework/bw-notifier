@@ -24,7 +24,7 @@ package org.bedework.notifier.outbound;
  *
  */
 public interface OutDefs {
-  public final static String outboundDummy = "dummy";
+  String outboundDummy = "dummy";
 
-  public final static String outboundEmail = "email";
+  String outboundEmail = "email";
 }
