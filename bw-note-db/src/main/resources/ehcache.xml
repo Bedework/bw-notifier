@@ -1,76 +1,34 @@
-<ehcache name="bwnotifierCache">
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.ehcache.org/v3"
+        xmlns:jsr107="http://www.ehcache.org/v3/jsr107"
+        xsi:schemaLocation="
+            http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.0.xsd
+            http://www.ehcache.org/v3/jsr107 http://www.ehcache.org/schema/ehcache-107-ext-3.0.xsd">
 
-    <!-- Sets the path to the directory where cache .data files are created.
+    <service>
+        <jsr107:defaults enable-management="true" enable-statistics="true"/>
+    </service>
 
-         If the path is a Java System Property it is replaced by
-         its value in the running VM.
+    <cache alias="bwnotifier.default-update-timestamps-region">
+        <expiry>
+            <none />
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
 
-         The following properties are translated:
-         user.home - User's home directory
-         user.dir - User's current working directory
-         java.io.tmpdir - Default temp file path -->
-    <diskStore path="java.io.tmpdir"/>
-
-
-    <!--Default Cache configuration. These will applied to caches programmatically created through
-        the CacheManager.
-
-        The following attributes are required for defaultCache:
-
-        maxInMemory       - Sets the maximum number of objects that will be created in memory
-        eternal           - Sets whether elements are eternal. If eternal,  timeouts are ignored and the element
-                            is never expired.
-        timeToIdleSeconds - Sets the time to idle for an element before it expires. Is only used
-                            if the element is not eternal. Idle time is now - last accessed time
-        timeToLiveSeconds - Sets the time to live for an element before it expires. Is only used
-                            if the element is not eternal. TTL is now - creation time
-        overflowToDisk    - Sets whether elements can overflow to disk when the in-memory cache
-                            has reached the maxInMemory limit.
-
-        -->
-  
-    <defaultCache
-        maxElementsInMemory="1000"
-        eternal="false"
-        timeToIdleSeconds="300"
-        timeToLiveSeconds="600"
-        overflowToDisk="false"
-        />
-
-    <!--Predefined caches.  Add your cache configuration settings here.
-        If you do not have a configuration for your cache a WARNING will be issued when the
-        CacheManager starts
-
-        The following attributes are required for defaultCache:
-
-        name              - Sets the name of the cache. This is used to identify the cache. It must be unique.
-        maxInMemory       - Sets the maximum number of objects that will be created in memory
-        eternal           - Sets whether elements are eternal. If eternal,  timeouts are ignored and the element
-                            is never expired.
-        timeToIdleSeconds - Sets the time to idle for an element before it expires. Is only used
-                            if the element is not eternal. Idle time is now - last accessed time
-        timeToLiveSeconds - Sets the time to live for an element before it expires. Is only used
-                            if the element is not eternal. TTL is now - creation time
-        overflowToDisk    - Sets whether elements can overflow to disk when the in-memory cache
-                            has reached the maxInMemory limit.
-
-        -->
-
-    <!-- ===================================================================
-         Notifier caching
-         =================================================================== -->
-<!--
-
--->
+    <cache-template name="notedefaults">
+        <expiry>
+            <tti unit="minutes">5</tti>
+        </expiry>
+        <heap>100</heap>
+    </cache-template>
 
     <!-- Subscriptions cache
         -->
-    <cache name="bwnotifier.org.bedework.notifier.db.SubscriptionImpl"
-        maxElementsInMemory="10"
-        eternal="false"
-        timeToIdleSeconds="300"
-        timeToLiveSeconds="600"
-        overflowToDisk="false"
-        />
-
-</ehcache>
+    <cache alias="bwnotifier.org.bedework.notifier.db.SubscriptionImpl"
+           uses-template="notedefaults">
+    </cache>
+</config>
