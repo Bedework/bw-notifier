@@ -51,18 +51,6 @@ public abstract class AbstractConnectorInstance
     return new DtStamp().getValue();
   }
 
-  /*
-
-  private String decryptPw(final BwCalendar val) throws CalFacadeException {
-    try {
-      return getSvc().getEncrypter().decrypt(val.getRemotePw());
-    } catch (Throwable t) {
-      throw new CalFacadeException(t);
-    }
-  }
-   *
-   */
-
   /* ==============================================================
    *                   Logged methods
    * ============================================================== */
