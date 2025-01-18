@@ -20,7 +20,7 @@ package org.bedework.notifier.cnctrs.bedework;
 
 import org.bedework.notifier.conf.ConnectorConfig;
 import org.bedework.util.config.ConfInfo;
-import org.bedework.util.misc.ToString;
+import org.bedework.base.ToString;
 
 /** Bedework notifier connector config
  *

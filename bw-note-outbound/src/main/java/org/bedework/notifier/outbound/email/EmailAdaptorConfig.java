@@ -21,7 +21,7 @@ package org.bedework.notifier.outbound.email;
 import org.bedework.notifier.outbound.common.AdaptorConfig;
 import org.bedework.util.config.ConfInfo;
 import org.bedework.util.jmx.MBeanInfo;
-import org.bedework.util.misc.ToString;
+import org.bedework.base.ToString;
 
 import java.util.List;
 

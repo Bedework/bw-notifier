@@ -20,7 +20,7 @@ package org.bedework.notifier.cnctrs;
 
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.exception.NoteException;
-import org.bedework.util.misc.ToString;
+import org.bedework.base.ToString;
 
 import java.util.HashMap;
 import java.util.Map;

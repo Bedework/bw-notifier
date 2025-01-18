@@ -18,7 +18,7 @@
 */
 package org.bedework.notifier.db;
 
-import org.bedework.util.misc.ToString;
+import org.bedework.base.ToString;
 
 /** Let us block or allow addresses.
  *

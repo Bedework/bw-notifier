@@ -20,7 +20,7 @@ package org.bedework.notifier.outbound.dummy;
 
 import org.bedework.notifier.outbound.common.AdaptorConfig;
 import org.bedework.util.config.ConfInfo;
-import org.bedework.util.misc.ToString;
+import org.bedework.base.ToString;
 
 /** Bedework dummy adaptor config
  *

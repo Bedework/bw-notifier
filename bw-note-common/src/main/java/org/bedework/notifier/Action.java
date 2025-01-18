@@ -22,7 +22,7 @@ import org.bedework.notifier.cnctrs.Connector;
 import org.bedework.notifier.cnctrs.ConnectorInstance;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.notifications.Note;
-import org.bedework.util.misc.ToString;
+import org.bedework.base.ToString;
 
 import static org.bedework.notifier.NotifyEngine.NotificationMsg;
 

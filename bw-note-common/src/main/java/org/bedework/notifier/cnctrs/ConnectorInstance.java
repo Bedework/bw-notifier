@@ -20,7 +20,7 @@ package org.bedework.notifier.cnctrs;
 
 import org.bedework.notifier.db.NotifyDb;
 import org.bedework.notifier.notifications.Note;
-import org.bedework.util.misc.ToString;
+import org.bedework.base.ToString;
 
 import org.apache.http.HttpStatus;
 import org.oasis_open.docs.ws_calendar.ns.soap.BaseResponseType;

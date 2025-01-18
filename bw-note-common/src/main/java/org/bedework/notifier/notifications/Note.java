@@ -21,7 +21,7 @@ package org.bedework.notifier.notifications;
 import org.bedework.caldav.util.notifications.BaseNotificationType;
 import org.bedework.caldav.util.notifications.NotificationType;
 import org.bedework.notifier.cnctrs.ConnectorInstance.ItemInfo;
-import org.bedework.util.misc.ToString;
+import org.bedework.base.ToString;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -21,7 +21,7 @@ package org.bedework.notifier.cnctrs.bedework;
 import org.bedework.notifier.db.Subscription;
 import org.bedework.notifier.db.SubscriptionImpl;
 import org.bedework.notifier.db.SubscriptionWrapper;
-import org.bedework.util.misc.ToString;
+import org.bedework.base.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
