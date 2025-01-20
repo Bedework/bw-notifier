@@ -18,9 +18,9 @@
 */
 package org.bedework.notifier.db;
 
+import org.bedework.base.exc.BedeworkException;
 import org.bedework.notifier.exception.NoteException;
 import org.bedework.util.config.HibernateConfigBase;
-import org.bedework.util.hibernate.HibException;
 import org.bedework.util.hibernate.HibSession;
 import org.bedework.util.hibernate.HibSessionFactory;
 import org.bedework.util.hibernate.HibSessionImpl;
@@ -99,8 +99,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
         if (!sess.rolledback()) {
           sess.commit();
         }
-      } catch (final HibException he) {
-        throw new NoteException(he);
+      } catch (final BedeworkException e) {
+        throw new NoteException(e);
       }
     } catch (final NoteException ne) {
       try {
@@ -129,8 +129,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
       sess.createQuery(getAllQuery);
 
       return wrap(sess.getList());
-    } catch (final HibException he) {
-      throw new NoteException(he);
+    } catch (final BedeworkException e) {
+      throw new NoteException(e);
     }
   }
 
@@ -144,8 +144,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
       sess.createQuery(clearTransientQuery);
 
       sess.executeUpdate();
-    } catch (final HibException he) {
-      throw new NoteException(he);
+    } catch (final BedeworkException e) {
+      throw new NoteException(e);
     }
   }
 
@@ -160,8 +160,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
       sess.setString("subid", id);
 
       return wrap((Subscription)sess.getUnique());
-    } catch (final HibException he) {
-      throw new NoteException(he);
+    } catch (final BedeworkException e) {
+      throw new NoteException(e);
     }
   }
 
@@ -173,8 +173,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
 
     try {
       sess.getSession().refresh(unwrap(sub));
-    } catch (final HibException he) {
-      throw new NoteException(he);
+    } catch (final BedeworkException e) {
+      throw new NoteException(e);
     }
   }
 
@@ -192,8 +192,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
       sess.setString("pref", principalHref);
 
       return wrap((Subscription)sess.getUnique());
-    } catch (final HibException he) {
-      throw new NoteException(he);
+    } catch (final BedeworkException e) {
+      throw new NoteException(e);
     }
   }
 
@@ -207,8 +207,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   public void add(final Subscription sub) {
     try {
       sess.save(unwrap(sub));
-    } catch (final HibException he) {
-      throw new NoteException(he);
+    } catch (final BedeworkException e) {
+      throw new NoteException(e);
     }
   }
 
@@ -216,8 +216,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   public void update(final Subscription sub) {
     try {
       sess.update(unwrap(sub));
-    } catch (final HibException he) {
-      throw new NoteException(he);
+    } catch (final BedeworkException e) {
+      throw new NoteException(e);
     }
   }
 
@@ -225,14 +225,14 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   public void delete(final Subscription sub) {
     try {
       sess.delete(unwrap(sub));
-    } catch (final HibException he) {
-      throw new NoteException(he);
+    } catch (final BedeworkException e) {
+      throw new NoteException(e);
     }
   }
 
-  /* ====================================================================
+  /* ==============================================================
    *                   Session methods
-   * ==================================================================== */
+   * ============================================================== */
 
   protected void checkOpen() {
     if (!isOpen()) {
@@ -271,8 +271,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
         sess.init(sessionFactory);
         debug("Open session for " + sessionCt);
       }
-    } catch (final HibException he) {
-      throw new NoteException(he);
+    } catch (final BedeworkException e) {
+      throw new NoteException(e);
     }
 
     beginTransaction();
@@ -300,7 +300,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
         if (sess.transactionStarted()) {
           sess.rollback();
         }
-//        sess.disconnect();
+
         sess.close();
         sess = null;
       }
@@ -322,8 +322,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
     }
     try {
       sess.beginTransaction();
-    } catch (final HibException he) {
-      throw new NoteException(he);
+    } catch (final BedeworkException e) {
+      throw new NoteException(e);
     }
   }
 
@@ -331,8 +331,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
     try {
       checkOpen();
       sess.rollback();
-    } catch (final HibException he) {
-      throw new NoteException(he);
+    } catch (final BedeworkException e) {
+      throw new NoteException(e);
     }
   }
 
