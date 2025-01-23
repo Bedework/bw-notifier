@@ -172,7 +172,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
     }
 
     try {
-      sess.getSession().refresh(unwrap(sub));
+      sess.refresh(unwrap(sub));
     } catch (final BedeworkException e) {
       throw new NoteException(e);
     }
