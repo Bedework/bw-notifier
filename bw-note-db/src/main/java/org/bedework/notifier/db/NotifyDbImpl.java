@@ -19,11 +19,11 @@
 package org.bedework.notifier.db;
 
 import org.bedework.base.exc.BedeworkException;
-import org.bedework.notifier.exception.NoteException;
-import org.bedework.util.config.HibernateConfigBase;
-import org.bedework.database.hibernate.HibSession;
+import org.bedework.database.db.DbSession;
 import org.bedework.database.hibernate.HibSessionFactory;
 import org.bedework.database.hibernate.HibSessionImpl;
+import org.bedework.notifier.exception.NoteException;
+import org.bedework.util.config.HibernateConfigBase;
 import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
 
@@ -58,9 +58,9 @@ public class NotifyDbImpl implements NotifyDb, Logged {
    */
   private static SessionFactory sessionFactory;
 
-  /** Current hibernate session - exists only across one user interaction
+  /** Current database session - exists only across one user interaction
    */
-  protected HibSession sess;
+  protected DbSession sess;
 
   /**
    * @param config configuration
@@ -128,7 +128,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
     try {
       sess.createQuery(getAllQuery);
 
-      return wrap(sess.getList());
+      return wrap((List<Subscription>)sess.getList());
     } catch (final BedeworkException e) {
       throw new NoteException(e);
     }
@@ -206,7 +206,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   @Override
   public void add(final Subscription sub) {
     try {
-      sess.save(unwrap(sub));
+      sess.add(unwrap(sub));
     } catch (final BedeworkException e) {
       throw new NoteException(e);
     }
