@@ -120,7 +120,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
    * ==================================================================== */
 
   private static final String getAllQuery =
-          "from " + SubscriptionImpl.class.getName();
+          "select sub from SubscriptionImpl sub";
 
   @Override
   @SuppressWarnings("unchecked")
@@ -135,8 +135,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   }
 
   private static final String clearTransientQuery =
-          "delete from " + SubscriptionImpl.class.getName() +
-          " sub where sub.transientSub = true";
+          "delete from SubscriptionImpl sub " +
+                  "where sub.transientSub = true";
 
   @Override
   public void clearTransients() {
@@ -150,8 +150,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   }
 
   private static final String getSubQuery =
-          "from " + SubscriptionImpl.class.getName() +
-                  " sub where sub.subscriptionId=:subid";
+          "select sub from SubscriptionImpl sub " +
+                  "where sub.subscriptionId=:subid";
 
   @Override
   public Subscription get(final String id) {
@@ -179,9 +179,9 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   }
 
   private static final String findSubQuery =
-          "from " + SubscriptionImpl.class.getName() +
-                  " sub where sub.connectorName=:connName" +
-                  " and sub.principalHref=:pref";
+          "select sub from SubscriptionImpl sub " +
+                  "where sub.connectorName=:connName " +
+                  "and sub.principalHref=:pref";
 
   @Override
   public Subscription find(final String conName,
