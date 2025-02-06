@@ -101,3 +101,17 @@ For full details, see [Sonatype's documentation for using Maven to publish relea
 * Upgrade library versions
 * Fix needed to deal with util.hibernate bug relating to static sessionFactory variable.
 
+#### 5.0.3
+* Upgrade library versions
+
+#### 5.0.4
+* Upgrade library versions
+
+#### 5.0.5
+* Upgrade library versions
+* Move response classes and ToString into bw-base module.
+* Use the refresh method
+* Switch to use DbSession from bw-database.
+* Convert the hql queries into valid jpql. No hibernate specific terms were required (I think).
+* Pre-jakarta release
+
