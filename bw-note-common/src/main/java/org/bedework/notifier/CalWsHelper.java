@@ -29,10 +29,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.SOAPMessage;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.soap.MessageFactory;
+import jakarta.xml.soap.SOAPMessage;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXTransformerFactory;

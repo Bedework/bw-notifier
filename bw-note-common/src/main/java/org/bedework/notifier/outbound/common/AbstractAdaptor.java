@@ -36,7 +36,7 @@ import net.fortuna.ical4j.model.property.DtStamp;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /** Some useful methods..
  *
