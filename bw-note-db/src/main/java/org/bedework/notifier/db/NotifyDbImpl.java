@@ -23,7 +23,7 @@ import org.bedework.database.db.DbSession;
 import org.bedework.database.hibernate.HibSessionFactoryProvider;
 import org.bedework.database.hibernate.HibSessionImpl;
 import org.bedework.notifier.exception.NoteException;
-import org.bedework.util.config.HibernateConfigBase;
+import org.bedework.util.config.OrmConfigBase;
 import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
 
@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Mike Douglass
  */
 public class NotifyDbImpl implements NotifyDb, Logged {
-  private final HibernateConfigBase<?> config;
+  private final OrmConfigBase<?> config;
 
   /** */
   protected boolean open;
@@ -66,7 +66,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
    * @param config configuration
    *
    */
-  public NotifyDbImpl(final HibernateConfigBase<?> config) {
+  public NotifyDbImpl(final OrmConfigBase<?> config) {
     this.config = config;
   }
 
@@ -248,7 +248,7 @@ public class NotifyDbImpl implements NotifyDb, Logged {
     try {
       if (sessionFactory == null) {
         sessionFactory = HibSessionFactoryProvider.
-                getSessionFactory(config.getHibernateProperties());
+                getSessionFactory(config.getOrmProperties());
       }
 
       open = true;

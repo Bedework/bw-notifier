@@ -19,14 +19,14 @@
 package org.bedework.notifier;
 
 import org.bedework.util.config.ConfInfo;
-import org.bedework.util.config.HibernateConfigBase;
+import org.bedework.util.config.OrmConfigBase;
 
 /**
  * @author douglm
  *
  */
 @ConfInfo(elementName = "note-confinfo")
-public class NotifyConfPropertiesImpl extends HibernateConfigBase<NotifyConfPropertiesImpl>
+public class NotifyConfPropertiesImpl extends OrmConfigBase<NotifyConfPropertiesImpl>
         implements NotifyConfProperties {
   /* Size of noteling pool */
   private int notelingPoolSize;

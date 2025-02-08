@@ -384,7 +384,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
   public String listHibernateProperties() {
     final StringBuilder res = new StringBuilder();
 
-    final List<String> ps = getConfig().getHibernateProperties();
+    final List<String> ps = getConfig().getOrmProperties();
 
     for (final String p: ps) {
       res.append(p);
@@ -396,7 +396,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
   @Override
   public String displayHibernateProperty(final String name) {
-    final String val = getConfig().getHibernateProperty(name);
+    final String val = getConfig().getOrmProperty(name);
 
     if (val != null) {
       return val;
@@ -407,19 +407,19 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
   @Override
   public void removeHibernateProperty(final String name) {
-    getConfig().removeHibernateProperty(name);
+    getConfig().removeOrmProperty(name);
   }
 
   @Override
   public void addHibernateProperty(final String name,
                                    final String value) {
-    getConfig().addHibernateProperty(name, value);
+    getConfig().addOrmProperty(name, value);
   }
 
   @Override
   public void setHibernateProperty(final String name,
                                    final String value) {
-    getConfig().setHibernateProperty(name, value);
+    getConfig().setOrmProperty(name, value);
   }
 
   /* ========================================================================
