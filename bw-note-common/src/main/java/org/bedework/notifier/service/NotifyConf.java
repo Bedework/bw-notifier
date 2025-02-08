@@ -25,11 +25,8 @@ import org.bedework.notifier.conf.NotifyConfig;
 import org.bedework.notifier.outbound.common.AdaptorConf;
 import org.bedework.notifier.outbound.common.AdaptorConfig;
 import org.bedework.util.config.ConfigurationStore;
-import org.bedework.database.hibernate.HibConfig;
-import org.bedework.database.hibernate.SchemaThread;
 import org.bedework.util.jmx.ConfBase;
 import org.bedework.util.jmx.ConfigHolder;
-import org.bedework.util.jmx.InfoLines;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +55,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
   private String schemaOutFile;
 
+  /*
   private class SchemaBuilder extends SchemaThread {
 
     SchemaBuilder(final String outFile,
@@ -80,6 +78,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
   }
 
   private SchemaBuilder buildSchema;
+   */
 
   private class ProcessorThread extends Thread {
     boolean showedTrace;
@@ -340,6 +339,8 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
   @Override
   public String schema() {
+    return "Unimplemented";
+    /*
     try {
       buildSchema = new SchemaBuilder(
               getSchemaOutFile(),
@@ -355,10 +356,13 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
 
       return "Exception: " + t.getLocalizedMessage();
     }
+     */
   }
 
   @Override
   public synchronized List<String> schemaStatus() {
+    return null;
+    /*
     if (buildSchema == null) {
       final InfoLines infoLines = new InfoLines();
 
@@ -368,6 +372,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
     }
 
     return buildSchema.infoLines;
+     */
   }
 
   @Override
@@ -381,7 +386,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
   }
 
   @Override
-  public String listHibernateProperties() {
+  public String listOrmProperties() {
     final StringBuilder res = new StringBuilder();
 
     final List<String> ps = getConfig().getOrmProperties();
@@ -395,7 +400,7 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
   }
 
   @Override
-  public String displayHibernateProperty(final String name) {
+  public String displayOrmProperty(final String name) {
     final String val = getConfig().getOrmProperty(name);
 
     if (val != null) {
@@ -406,19 +411,19 @@ public class NotifyConf extends ConfBase<NotifyConfig> implements
   }
 
   @Override
-  public void removeHibernateProperty(final String name) {
+  public void removeOrmProperty(final String name) {
     getConfig().removeOrmProperty(name);
   }
 
   @Override
-  public void addHibernateProperty(final String name,
-                                   final String value) {
+  public void addOrmProperty(final String name,
+                             final String value) {
     getConfig().addOrmProperty(name, value);
   }
 
   @Override
-  public void setHibernateProperty(final String name,
-                                   final String value) {
+  public void setOrmProperty(final String name,
+                             final String value) {
     getConfig().setOrmProperty(name, value);
   }
 

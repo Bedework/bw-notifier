@@ -98,7 +98,7 @@ public class SubscriptionImpl extends DbItem<Subscription>
 
   private boolean deleted;
 
-  /** null constructor for hibernate
+  /** null constructor for orm
    *
    */
   public SubscriptionImpl() {

@@ -92,43 +92,43 @@ public interface NotifyConfMBean
   @MBeanInfo("Get the hibernate dialect")
   String getHibernateDialect();
 
-  /** List the hibernate properties
+  /** List the orm properties
    *
    * @return properties
    */
-  @MBeanInfo("List the hibernate properties")
-  String listHibernateProperties();
+  @MBeanInfo("List the orm properties")
+  String listOrmProperties();
 
   /** Display the named property
    *
    * @param name property name
    * @return value
    */
-  @MBeanInfo("Display the named hibernate property")
-  String displayHibernateProperty(@MBeanInfo("name") String name);
+  @MBeanInfo("Display the named orm property")
+  String displayOrmProperty(@MBeanInfo("name") String name);
 
   /** Remove the named property
    *
    * @param name property name
    */
-  @MBeanInfo("Remove the named hibernate property")
-  void removeHibernateProperty(@MBeanInfo("name") String name);
+  @MBeanInfo("Remove the named orm property")
+  void removeOrmProperty(@MBeanInfo("name") String name);
 
   /**
    * @param name property name
    * @param value property value
    */
-  @MBeanInfo("Add a hibernate property")
-  void addHibernateProperty(@MBeanInfo("name") String name,
-                            @MBeanInfo("value") String value);
+  @MBeanInfo("Add an orm property")
+  void addOrmProperty(@MBeanInfo("name") String name,
+                      @MBeanInfo("value") String value);
 
   /**
    * @param name property name
    * @param value property value
    */
-  @MBeanInfo("Set a hibernate property")
-  void setHibernateProperty(@MBeanInfo("name") String name,
-                            @MBeanInfo("value") String value);
+  @MBeanInfo("Set an orm property")
+  void setOrmProperty(@MBeanInfo("name") String name,
+                      @MBeanInfo("value") String value);
 
   /** List connector names
    *

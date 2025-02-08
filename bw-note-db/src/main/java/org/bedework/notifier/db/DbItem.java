@@ -30,13 +30,13 @@ import java.io.Serializable;
  */
 public class DbItem<T> extends SerializableProperties
         implements Comparable<T>, Serializable {
-  // hibernate
+  // orm
   private long id;
 
-  // hibernate
+  // orm
   private int seq;
 
-  /** null constructor for hibernate
+  /** null constructor for orm
    *
    */
   public DbItem() {

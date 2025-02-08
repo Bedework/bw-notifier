@@ -43,7 +43,7 @@
 
     <dependency>
       <groupId>org.bedework.database</groupId>
-      <artifactId>bw-hibernate</artifactId>
+      <artifactId>bw-db</artifactId>
     </dependency>
 
     <dependency>
@@ -115,11 +115,6 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.hibernate.orm</groupId>
-      <artifactId>hibernate-core</artifactId>
     </dependency>
 
     <dependency>

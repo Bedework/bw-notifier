@@ -161,7 +161,7 @@ public interface EmailAdaptorConfigI extends AdaptorConfigI {
    */
   void removeSubject(String name);
 
-  /** Set a hibernate property
+  /** Set a subject
    *
    * @param name of property
    * @param val of property
