@@ -31,7 +31,7 @@
 
     <dependency>
       <groupId>org.bedework.database</groupId>
-      <artifactId>bw-hibernate</artifactId>
+      <artifactId>bw-db</artifactId>
     </dependency>
 
     <dependency>
