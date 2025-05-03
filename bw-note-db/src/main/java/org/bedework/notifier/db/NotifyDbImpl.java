@@ -124,9 +124,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   @SuppressWarnings("unchecked")
   public List<Subscription> getAll() {
     try {
-      sess.createQuery(getAllQuery);
-
-      return wrap((List<Subscription>)sess.getList());
+      return wrap((List<Subscription>)sess.createQuery(getAllQuery)
+                                          .getList());
     } catch (final BedeworkException e) {
       throw new NoteException(e);
     }
@@ -139,9 +138,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   @Override
   public void clearTransients() {
     try {
-      sess.createQuery(clearTransientQuery);
-
-      sess.executeUpdate();
+      sess.createQuery(clearTransientQuery)
+          .executeUpdate();
     } catch (final BedeworkException e) {
       throw new NoteException(e);
     }
@@ -154,10 +152,8 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   @Override
   public Subscription get(final String id) {
     try {
-      sess.createQuery(getSubQuery);
-      sess.setString("subid", id);
-
-      return wrap((Subscription)sess.getUnique());
+      return wrap((Subscription)sess.createQuery(getSubQuery)
+                                    .setString("subid", id).getUnique());
     } catch (final BedeworkException e) {
       throw new NoteException(e);
     }
@@ -185,11 +181,10 @@ public class NotifyDbImpl implements NotifyDb, Logged {
   public Subscription find(final String conName,
                            final String principalHref) {
     try {
-      sess.createQuery(findSubQuery);
-      sess.setString("connName", conName);
-      sess.setString("pref", principalHref);
-
-      return wrap((Subscription)sess.getUnique());
+      return wrap((Subscription)sess.createQuery(findSubQuery)
+                                    .setString("connName", conName)
+                                    .setString("pref", principalHref)
+                                    .getUnique());
     } catch (final BedeworkException e) {
       throw new NoteException(e);
     }
@@ -228,9 +223,9 @@ public class NotifyDbImpl implements NotifyDb, Logged {
     }
   }
 
-  /* ==============================================================
+  /* ============================================================
    *                   Session methods
-   * ============================================================== */
+   * ============================================================ */
 
   protected void checkOpen() {
     if (!isOpen()) {
