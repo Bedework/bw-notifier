@@ -1,0 +1,7 @@
+[[introduction]]
+== Introduction
+This project provides a notification service for https://www.apereo.org/projects/bedework[Bedework].
+
+e application server which can deliver
+notifications to subscribed users via email.
+This is a service running on th
